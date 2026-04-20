@@ -96,9 +96,7 @@ class Kunpeng implements IProfitSharing
     }
 
     //分账回退
-    public function return($trade_no, $api_trade_no, $rdata){
-        global $DB;
-        $settle_no = $DB->findColumn('psorder', 'settle_no', ['trade_no'=>$trade_no]);
+    public function return($trade_no, $api_trade_no, $settle_no, $rdata){
         $sharingInfos = [];
         $i = 1;
         foreach($rdata as $row){

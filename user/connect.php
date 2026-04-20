@@ -46,8 +46,7 @@ $Oauth_config['callback']=$siteurl.'user/connect.php';
 if($_GET['code'] && ($conf['login_qq']==1 || $conf['login_qq']==3 || $conf['login_wx']==-1 || $conf['login_alipay']==-1)){
 	if($conf['login_qq']==1 && !isset($_GET['type'])){
 		$QC=new \lib\QC($QC_config);
-		$access_token=$QC->qq_callback();
-		$openid=$QC->get_openid($access_token);
+		[$access_token,$openid]=$QC->qq_callback();
 		$typename = 'QQ';
 		$typecolumn = 'qq_uid';
 	}else{

@@ -72,6 +72,7 @@ class Order
             return ['code'=>-1, 'msg'=>'当前订单不存在！'];
         if(!in_array($order['status'], [1,2,3]))
             return ['code'=>-1, 'msg'=>'该订单状态不支持退款！'];
+        if(empty($money)) $money = $order['realmoney'];
         if($money>$order['realmoney']) return ['code'=>-1, 'msg'=>'退款金额不能大于订单金额'];
         if(!$order['api_trade_no']) return ['code'=>-1, 'msg'=>'接口订单号不存在'];
         if($order['status'] == 2 && empty($order['refundmoney'])) return ['code'=>-1, 'msg'=>'该订单已退款！'];

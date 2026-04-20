@@ -48,13 +48,39 @@ class Suixingpay
 		}
 	}
 
+	public function upload($picture_type, $file_path, $file_name){
+		$apiurl = $this->gateway.'/merchant/uploadPicture';
+		$params = [
+			'orgId' => $this->org_id,
+			'reqId' => $this->getMillisecond(),
+			'pictureType' => $picture_type,
+			'file' => new \CURLFile($file_path, null, $file_name),
+		];
+		$response = get_curl($apiurl, $params);
+		if(!$response){
+			throw new Exception('请求接口失败');
+		}
+		$result = json_decode($response, true);
+		if (isset($result['code']) && $result['code'] == '0000') {
+			if($result['respData']['bizCode'] == '0000'){
+				return $result['respData']['PhotoUrl'];
+			}else{
+				throw new Exception($result['respData']['bizMsg']);
+			}
+		} elseif(isset($result['msg'])) {
+			throw new Exception($result['msg']);
+		}else{
+			throw new Exception('返回数据解析失败');
+		}
+	}
+
 	//获取待签名字符串
 	private function getSignContent($param){
 		ksort($param);
 		$signstr = '';
 	
 		foreach($param as $k => $v){
-			if($k != "sign" && $v!==null && $v!==''){
+			if($k != "sign"){
 				if(is_array($v)){
 					$signstr .= $k.'='.json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES).'&';
 				}else{

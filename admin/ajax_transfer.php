@@ -18,6 +18,10 @@ case 'transferList':
 		$type = intval($_POST['type']);
 		$sql.=" AND `type`='$type'";
 	}
+	if(isset($_POST['channel']) && !empty($_POST['channel'])) {
+		$channel = intval($_POST['channel']);
+		$sql.=" AND `channel`='$channel'";
+	}
 	if(isset($_POST['dstatus']) && $_POST['dstatus']>-1) {
 		$dstatus = intval($_POST['dstatus']);
 		$sql.=" AND `status`={$dstatus}";
@@ -205,7 +209,7 @@ case 'batch_submit':
 
 	$channelid = isset($_POST['channel'])?$_POST['channel']:null;
 
-	$result = \lib\Transfer::add(0, $type, $out_biz_no, $payee_account, $payee_real_name, $money, $desc, null, $channelid);
+	$result = \lib\Transfer::add(0, $type, $out_biz_no, $payee_account, $payee_real_name, $money, null, $desc, null, $channelid);
 
 	if($result['code']==0){
 		if($result['status'] == 1){

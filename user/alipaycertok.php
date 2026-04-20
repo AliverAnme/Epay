@@ -126,6 +126,31 @@ if($conf['cert_open'] == 1){ //支付宝身份验证
     }else{
 		sysmsg('接口返回异常['.$result['Code'].']'.$result['Message']);
 	}
+}elseif($conf['cert_open'] == 6){ //蚂蚁数科实人认证
+	$uid = authcode($_GET['state'], 'DECODE', SYS_KEY);
+	if(!$uid || $uid<=0)sysmsg('state校验失败');
+	$uid = intval($uid);
+
+	$userrow=$DB->getRow("SELECT * FROM pre_user WHERE uid='{$uid}' limit 1");
+	if(!$userrow)sysmsg('uid不存在');
+	$certtoken = $userrow['certtoken'];
+
+	$certify = new \lib\AntiDigitalCertify($conf['cert_antiid'], $conf['cert_antikey'], $conf['cert_antisceneid']);
+	$result = $certify->query($certtoken);
+    if(isset($result['response']['result_code']) && $result['response']['result_code'] == 'OK'){
+		if($result['response']['passed'] == 'T'){
+			if($DB->exec("update `pre_user` set `cert`=1 where `uid`='$uid'")){
+				$DB->exec("update `pre_user` set `certtime`='$date' where `uid`='$uid'");
+				if($conf['cert_money']>0){
+					changeUserMoney($uid, $conf['cert_money'], false, '实名认证');
+				}
+			}
+		}else{
+			sysmsg('<center>实名认证未通过</center>');
+		}
+    }else{
+		sysmsg('接口返回异常['.$result['response']['result_code'].'] '.$result['response']['result_msg']);
+	}
 }
 if($islogin2==1){
 	exit("<script language='javascript'>window.location.href='./certificate.php';</script>");

@@ -57,6 +57,12 @@ if($days<=0)showmsg('请确保每项不能为空',3);
 $DB->exec("DELETE FROM `pre_psorder` WHERE addtime<'".date("Y-m-d H:i:s",strtotime("-{$days} days"))."'");
 $DB->exec("OPTIMIZE TABLE `pre_psorder`");
 showmsg('删除分账记录成功！',1);
+}elseif($mod=='cleanlogi' && $_POST['do']=='submit'){
+$days = intval($_POST['days']);
+if($days<=0)showmsg('请确保每项不能为空',3);
+$DB->exec("DELETE FROM `pre_log` WHERE `date`<'".date("Y-m-d H:i:s",strtotime("-{$days} days"))."'");
+$DB->exec("OPTIMIZE TABLE `pre_log`");
+showmsg('删除登录记录成功！',1);
 }else{
 ?>
 <div class="panel panel-primary">
@@ -81,6 +87,9 @@ showmsg('删除分账记录成功！',1);
 </form><br/>
 <form action="./clean.php?mod=cleanpsorderi" method="post" role="form"><input type="hidden" name="do" value="submit"/>
 <b>分账记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的分账记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
+</form><br/>
+<form action="./clean.php?mod=cleanlogi" method="post" role="form"><input type="hidden" name="do" value="submit"/>
+<b>登录记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的登录记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
 </form><br/>
 </div>
 <div class="panel-footer">

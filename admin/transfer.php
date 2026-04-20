@@ -25,13 +25,16 @@ tbody tr>td:nth-child(5){max-width:300px;word-break: break-all;}
   <div class="form-group">
     <input type="text" class="form-control" name="uid" style="width: 100px;" placeholder="商户号" value="">
   </div>
+  <div class="form-group">
+    <input type="text" class="form-control" name="channel" style="width: 80px;" placeholder="通道ID" value="">
+  </div>
   <div class="input-group input-daterange">
 	<input type="text" id="starttime" name="starttime" class="form-control dates" placeholder="开始日期" autocomplete="off" title="留空则不限时间范围">
 	<span class="input-group-addon" onclick="$('#starttime').val('');$('#endtime').val('');" title="清除"><i class="fa fa-chevron-right"></i></span>
 	<input type="text" id="endtime" name="endtime" class="form-control dates" placeholder="结束日期" autocomplete="off" title="留空则不限时间范围">
   </div>
   <div class="form-group">
-	<select name="type" class="form-control"><option value="">所有付款方式</option><option value="alipay">支付宝</option><option value="wxpay">微信</option><option value="qqpay">QQ钱包</option><option value="bank">银行卡</option></select>
+	<select name="type" class="form-control"><option value="">付款方式</option><option value="alipay">支付宝</option><option value="wxpay">微信</option><option value="qqpay">QQ钱包</option><option value="bank">银行卡</option></select>
   </div>
   <div class="form-group">
 	<select name="dstatus" class="form-control"><option value="-1">全部状态</option><option value="0">正在处理</option><option value="1">转账成功</option><option value="2">转账失败</option><option value="3">待处理</option></select>

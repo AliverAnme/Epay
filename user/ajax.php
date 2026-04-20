@@ -2,7 +2,7 @@
 include("../includes/common.php");
 $act=isset($_GET['act'])?daddslashes($_GET['act']):null;
 
-if(!checkRefererHost())exit('{"code":403}');
+if(!checkRefererHost() && !checkwechat())exit('{"code":403}');
 
 @header('Content-Type: application/json; charset=UTF-8');
 
@@ -114,6 +114,18 @@ case 'login':
 		$result=array("code"=>-1,"msg"=>"用户名或密码不正确！");
 	}
 	exit(json_encode($result));
+break;
+case 'wxaopenid':
+	$wechatid = intval($_POST['wechatid']);
+	$code = isset($_POST['code'])?trim($_POST['code']):exit('{"code":-1,"msg":"code不能为空"}');
+	$wxinfo = \lib\Channel::getWeixin($wechatid);
+	if(!$wxinfo)exit('{"code":-1,"msg":"该微信小程序不存在"}');
+	try{
+		$openid = wechat_applet_oauth($code, $wxinfo);
+	}catch(Exception $e){
+		exit('{"code":-1,"msg":"'.$e->getMessage().'"}');
+	}
+	exit(json_encode(['code'=>0, 'msg'=>'succ', 'openid'=>$openid]));
 break;
 case 'wxalogin':
 	$code = isset($_POST['code'])?trim($_POST['code']):exit('{"code":-1,"msg":"code不能为空"}');

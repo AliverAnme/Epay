@@ -14,7 +14,7 @@ $app = isset($_GET['app'])?$_GET['app']:'wechat';
         <div class="panel-heading"><h3 class="panel-title">获取用户标识</h3></div>
         <div class="panel-body">
 		<ul class="nav nav-tabs">
-			<li class="<?php echo $app=='wechat'?'active':null;?>"><a href="?app=wechat">微信Openid</a></li><li class="<?php echo $app=='alipayuid'?'active':null;?>"><a href="?app=alipayuid">支付宝用户ID</a></li><li class="<?php echo $app=='apptoken'?'active':null;?>"><a href="?app=apptoken">支付宝应用授权Token</a></li>
+			<li class="<?php echo $app=='wechat'?'active':null;?>"><a href="?app=wechat">微信公众号Openid</a></li><li class="<?php echo $app=='applet'?'active':null;?>"><a href="?app=applet">微信小程序Openid</a></li><li class="<?php echo $app=='alipayuid'?'active':null;?>"><a href="?app=alipayuid">支付宝用户ID</a></li><li class="<?php echo $app=='apptoken'?'active':null;?>"><a href="?app=apptoken">支付宝应用授权Token</a></li>
 		</ul>
 		<div class="tab-pane active">
 		<input type="hidden" id="apptype" value="<?php echo $app?>">
@@ -51,6 +51,35 @@ $app = isset($_GET['app'])?$_GET['app']:'wechat';
 		</div>
 		<div class="list-group-item text-center">
 			<div id="qrcode"></div>
+		</div>
+<?php }elseif($app=='applet'){
+	$wxpay_channel = $DB->getAll("SELECT * FROM pre_weixin WHERE type=1");
+	$default_wx = $conf['login_wxa'];
+	?>
+		<div class="list-group-item">
+			<div class="input-group">
+				<div class="input-group-addon">选择微信小程序</div>
+				<select id="channel" class="form-control">
+					<?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'" '.($channel['id']==$default_wx?'selected':'').'>'.$channel['name'].'</option>';} ?>
+				</select>
+			</div><br/>
+			<button type="button" class="btn btn-primary btn-block" onclick="generate_wxa_link()">生成获取链接</button>
+		</div>
+		<div id="result" style="display:none;">
+		<div class="list-group-item">
+			<div class="input-group">
+				<div class="input-group-addon">获取链接</div>
+				<input type="text" id="geturl" value="" class="form-control" readonly="readonly">
+				<div class="input-group-btn"><a href="javascript:;" class="btn btn-default copy-btn" data-clipboard-text="" title="点击复制"><i class="fa fa-copy"></i></a></div>
+			</div>
+			<font color="green">复制链接后在微信打开</font>
+		</div>
+		<div class="list-group-item list-group-item-info text-center">
+			或使用微信扫描以下二维码
+		</div>
+		<div class="list-group-item text-center">
+			<div id="qrcode"></div>
+		</div>
 		</div>
 <?php }elseif($app=='alipayuid'){
 	$alipay_channel = $DB->getAll("SELECT * FROM pre_channel WHERE plugin='alipay' OR plugin='alipaysl' OR plugin='alipayd' OR plugin='alipayrp'");
@@ -145,6 +174,8 @@ $(document).ready(function(){
 				}else{
 					var geturl = siteurl+'user/openid.php?act=app_auth&channel='+channel;
 				}
+			}else if(apptype == 'applet'){
+				return;
 			}
 			$("#geturl").val(geturl);
 			$(".copy-btn").attr('data-clipboard-text', geturl);
@@ -166,4 +197,41 @@ $(document).ready(function(){
 		$("#channel").change();
 	});
 });
+function generate_wxa_link(){
+	var channel = $("#channel").val();
+	if(channel == null) {
+		layer.msg('无可用的通道')
+		return;
+	}
+	var ii = layer.load(2, {shade:[0.1,'#fff']});
+	$.ajax({
+		type: "POST",
+		url: "ajax.php?act=generate_wxa_link",
+		data: {channel:channel},
+		dataType: 'json',
+		success: function(data) {
+			layer.close(ii);
+			if(data.code==0){
+				$("#geturl").val(data.url);
+				$(".copy-btn").attr('data-clipboard-text', data.url);
+				$('#qrcode').empty();
+				$('#qrcode').qrcode({
+					text: data.url,
+					width: 180,
+					height: 180,
+					foreground: "#000000",
+					background: "#ffffff",
+					typeNumber: -1
+				});
+				$("#result").show();
+			}else{
+				layer.alert(data.msg, {icon: 2});
+			}
+		},
+		error:function(data){
+			layer.close(ii);
+			layer.msg('服务器错误');
+		}
+	});
+}
 </script>

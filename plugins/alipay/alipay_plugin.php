@@ -128,7 +128,7 @@ class alipay_plugin
 			return self::apppay();
 		}
 		elseif($method=='jsapi'){
-			if(in_array('7',$channel['apptype'])){
+			if(in_array('7',$channel['apptype']) && $order['is_applet'] == 1){
 				return self::jsapipay();
 			}else{
 				return self::jspay();
@@ -311,17 +311,6 @@ class alipay_plugin
 				$code_url = $conf['localurl_alipay'].'pay/preauth/'.TRADE_NO.'/';
 			}
 		}else{
-
-			if($conf['alipay_qrpaylogin'] == 1){
-				if(checkalipay() || $mdevice=='alipay'){
-					[$user_type, $user_id] = alipay_oauth(require(PAY_ROOT.'inc/config.php'));
-					$blocks = checkBlockUser($user_id, TRADE_NO);
-					if($blocks) return $blocks;
-				}else{
-					$code_url = $siteurl.'pay/qrcode/'.TRADE_NO.'/';
-					return ['type'=>'qrcode','page'=>'alipay_qrcode','url'=>$code_url];
-				}
-			}
 
 			$alipay_config = require(PAY_ROOT.'inc/config.php');
 			$alipay_config['notify_url'] = $conf['localurl'].'pay/notify/'.TRADE_NO.'/';
@@ -812,24 +801,95 @@ class alipay_plugin
 
 	//转账
 	static public function transfer($channel, $bizParam){
+		global $conf;
 		if(empty($channel) || empty($bizParam))exit();
 		
-		if($bizParam['type'] == 'alipay'){
-			if(is_numeric($bizParam['payee_account']) && substr($bizParam['payee_account'],0,4)=='2088')$is_userid = 1;
-			elseif(strpos($bizParam['payee_account'], '@')!==false || is_numeric($bizParam['payee_account']))$is_userid = 0;
-			else $is_userid = 2;
-		}
-
 		$alipay_config = require(PLUGIN_ROOT.$channel['plugin'].'/inc/config.php');
 		try{
-			$transfer = new \Alipay\AlipayTransferService($alipay_config);
+			$transfer = new \Alipay\AlipayService($alipay_config);
 			if($bizParam['type'] == 'alipay'){
-				$result = $transfer->transferToAccount($bizParam['out_biz_no'], $bizParam['money'], $is_userid, $bizParam['payee_account'], $bizParam['payee_real_name'], $bizParam['transfer_name']);
-			}else{
-				$result = $transfer->transferToBankCard($bizParam['out_biz_no'], $bizParam['money'], $bizParam['payee_account'], $bizParam['payee_real_name'], $bizParam['transfer_name']);
-			}
 
-			return ['code'=>0, 'status'=>1, 'orderid'=>$result['order_id'], 'paydate'=>$result['trans_date']];
+				if (!empty($alipay_config['app_cert_path']) && !empty($alipay_config['alipay_cert_path']) && !empty($alipay_config['root_cert_path'])) {
+					if(is_numeric($bizParam['payee_account']) && substr($bizParam['payee_account'],0,4)=='2088') $payee_type = 'ALIPAY_USER_ID';
+					elseif(strpos($bizParam['payee_account'], '@')!==false || is_numeric($bizParam['payee_account'])) $payee_type = 'ALIPAY_LOGON_ID';
+					else $payee_type = 'ALIPAY_OPEN_ID';
+					$bizContent = [
+						'out_biz_no' => $bizParam['out_biz_no'], //商户转账唯一订单号
+						'trans_amount' => $bizParam['money'], //转账金额
+						'product_code' => 'TRANS_ACCOUNT_NO_PWD',
+						'biz_scene' => 'DIRECT_TRANSFER',
+						'order_title' => $bizParam['transfer_name'], //付款方显示名称
+						'payee_info' => [
+							'identity' => $bizParam['payee_account'],
+							'identity_type' => $payee_type
+						],
+						'business_params' => json_encode(['payer_show_name_use_alias'=>'true']),
+					];
+					if(!empty($bizParam['payee_real_name'])) $bizContent['payee_info']['name'] = $bizParam['payee_real_name']; //收款方真实姓名
+					if(!empty($bizParam['transfer_desc'])) $bizContent['remark'] = $bizParam['transfer_desc'];
+					if(!empty($conf['transfer_alipay_scene_name'])){
+						$bizContent['transfer_scene_name'] = $conf['transfer_alipay_scene_name'];
+						$bizContent['transfer_scene_report_infos'] = [];
+						$info_types = explode('|',$conf['transfer_alipay_info_type']);
+						$info_contents = explode('|',$conf['transfer_alipay_info_content']);
+						foreach($info_types as $i => $info_type){
+							$bizContent['transfer_scene_report_infos'][] = [
+								'info_type' => $info_type,
+								'info_content' => $info_contents[$i] ?? $info_contents[0],
+							];
+						}
+					}
+					$result = $transfer->aopExecute('alipay.fund.trans.uni.transfer', $bizContent);
+					return ['code'=>0, 'status'=>1, 'orderid'=>$result['order_id'], 'paydate'=>$result['trans_date']];
+
+				}else{
+
+					$payee_type = is_numeric($bizParam['payee_account']) && substr($bizParam['payee_account'],0,4)=='2088'?'ALIPAY_USERID':'ALIPAY_LOGONID';
+					$bizContent = [
+						'out_biz_no' => $bizParam['out_biz_no'], //商户转账唯一订单号
+						'payee_type' => $payee_type, //收款方账户类型
+						'payee_account' => $bizParam['payee_account'], //收款方账户
+						'amount' => $bizParam['money'], //转账金额
+						'payer_show_name' => $bizParam['transfer_name'], //付款方显示姓名
+					];
+					if(!empty($bizParam['payee_real_name'])) $bizContent['payee_real_name'] = $bizParam['payee_real_name']; //收款方真实姓名
+					if(!empty($bizParam['transfer_desc'])) $bizContent['remark'] = $bizParam['transfer_desc'];
+					$result = $transfer->aopExecute('alipay.fund.trans.toaccount.transfer', $bizContent);
+					return ['code'=>0, 'status'=>1, 'orderid'=>$result['order_id'], 'paydate'=>$result['pay_date']];
+				}
+
+			}else{
+
+				$bizContent = [
+					'out_biz_no' => $bizParam['out_biz_no'], //商户转账唯一订单号
+					'trans_amount' => $bizParam['money'], //转账金额
+					'product_code' => 'TRANS_BANKCARD_NO_PWD',
+					'biz_scene' => 'DIRECT_TRANSFER',
+					'order_title' => $bizParam['transfer_name'], //付款方显示名称
+					'payee_info' => [
+						'identity_type' => 'BANKCARD_ACCOUNT',
+						'identity' => $bizParam['payee_account'],
+						'name' => $bizParam['payee_real_name'],
+						'bankcard_ext_info' => [
+							'account_type' => '2'
+						]
+					],
+				];
+				if(!empty($bizParam['transfer_desc'])) $bizContent['remark'] = $bizParam['transfer_desc'];
+				if(!empty($conf['transfer_alipay_scene_name'])){
+					$bizContent['transfer_scene_name'] = $conf['transfer_alipay_scene_name'];
+					$bizContent['transfer_scene_report_infos'] = [];
+					$info_types = explode('|',$conf['transfer_alipay_info_type']);
+					$info_contents = explode('|',$conf['transfer_alipay_info_content']);
+					foreach($info_types as $i => $info_type){
+						$bizContent['transfer_scene_report_infos'][] = [
+							'info_type' => $info_type,
+							'info_content' => $info_contents[$i] ?? $info_contents[0],
+						];
+					}
+				}
+				$result = $transfer->aopExecute('alipay.fund.trans.uni.transfer', $bizContent);
+			}
 		}catch(\Alipay\Aop\AlipayResponseException $e){
 			$result = $e->getResponse();
 			return ['code'=>-1, 'errcode'=>$result['sub_code'], 'msg'=>$e->getMessage()];

@@ -7,8 +7,8 @@ class wxpayn_plugin
 		'showname'    => '微信官方支付V3', //支付插件显示名称
 		'author'      => '微信', //支付插件作者
 		'link'        => 'https://pay.weixin.qq.com/', //支付插件作者链接
-		'types'       => ['wxpay'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
-		'transtypes'  => ['wxpay'], //支付插件支持的转账方式，可选的有alipay,qqpay,wxpay,bank
+		'types'       => ['wxpay','qqpay'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
+		'transtypes'  => ['wxpay','qqpay'], //支付插件支持的转账方式，可选的有alipay,qqpay,wxpay,bank
 		'inputs' => [ //支付插件要求传入的参数以及参数显示名称，可选的有appid,appkey,appsecret,appurl,appmchid
 			'appid' => [
 				'name' => '服务号/小程序/开放平台AppID',
@@ -172,7 +172,11 @@ class wxpayn_plugin
 		}else{
 			return ['type'=>'error','msg'=>'当前支付通道没有开启的支付方式'];
 		}
-		return ['type'=>'qrcode','page'=>'wxpay_qrcode','url'=>$code_url];
+		if($order['typename'] == 'qqpay'){
+			return ['type'=>'qrcode','page'=>'qqpay_qrcode','url'=>$code_url];
+		}else{
+			return ['type'=>'qrcode','page'=>'wxpay_qrcode','url'=>$code_url];
+		}
 	}
 
 	//JS支付
@@ -183,9 +187,15 @@ class wxpayn_plugin
 			if(!empty($order['sub_appid'])){
 				$channel['appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-				$channel['appid'] = $wxinfo['appid'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+					$channel['appid'] = $wxinfo['appid'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+					$channel['appid'] = $wxinfo['appid'];
+				}
 			}
 			$openid = $order['sub_openid'];
 		}else{
@@ -194,11 +204,7 @@ class wxpayn_plugin
 			$channel['appid'] = $wxinfo['appid'];
 
 			//①、获取用户openid
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 
 		$blocks = checkBlockUser($openid, TRADE_NO);
@@ -631,13 +637,16 @@ class wxpayn_plugin
 		return $newparam;
 	}
 
-	static private $fail_reason_desc = ['ACCOUNT_FROZEN'=>'该用户账户被冻结', 'REAL_NAME_CHECK_FAIL'=>'收款人未实名认证', 'NAME_NOT_CORRECT'=>'收款人姓名校验不通过', 'OPENID_INVALID'=>'Openid校验失败', 'TRANSFER_QUOTA_EXCEED'=>'超过用户单笔收款额度', 'DAY_RECEIVED_QUOTA_EXCEED'=>'超过用户单日收款额度', 'MONTH_RECEIVED_QUOTA_EXCEED'=>'超过用户单月收款额度', 'DAY_RECEIVED_COUNT_EXCEED'=>'超过用户单日收款次数', 'PRODUCT_AUTH_CHECK_FAIL'=>'未开通该权限或权限被冻结', 'OVERDUE_CLOSE'=>'超过系统重试期，系统自动关闭', 'ID_CARD_NOT_CORRECT'=>'收款人身份证校验不通过', 'ACCOUNT_NOT_EXIST'=>'该用户账户不存在', 'TRANSFER_RISK'=>'该笔转账可能存在风险，已被微信拦截', 'OTHER_FAIL_REASON_TYPE'=>'其它失败原因', 'REALNAME_ACCOUNT_RECEIVED_QUOTA_EXCEED'=>'用户账户收款受限，请引导用户在微信支付查看详情', 'RECEIVE_ACCOUNT_NOT_PERMMIT'=>'未配置该用户为转账收款人', 'PAYER_ACCOUNT_ABNORMAL'=>'商户账户付款受限，可前往商户平台获取解除功能限制指引', 'PAYEE_ACCOUNT_ABNORMAL'=>'用户账户收款异常，请引导用户完善身份信息', 'TRANSFER_REMARK_SET_FAIL'=>'转账备注设置失败，请调整后重新再试','TRANSFER_SCENE_UNAVAILABLE'=>'该转账场景暂不可用，请确认转账场景ID是否正确','TRANSFER_SCENE_INVALID'=>'你尚未获取该转账场景，请确认转账场景ID是否正确','RECEIVE_ACCOUNT_NOT_CONFIGURE'=>'请前往商户平台-商家转账到零钱-前往功能-转账场景中添加','BLOCK_B2C_USERLIMITAMOUNT_MONTH'=>'用户账户存在风险收款受限，本月不支持继续向该用户付款','MERCHANT_REJECT'=>'转账验密人已驳回转账','MERCHANT_NOT_CONFIRM'=>'转账验密人超时未验密'];
+	static private $fail_reason_desc = ['ACCOUNT_FROZEN'=>'该用户账户被冻结', 'REAL_NAME_CHECK_FAIL'=>'收款人未实名认证', 'NAME_NOT_CORRECT'=>'收款人姓名校验不通过', 'OPENID_INVALID'=>'Openid校验失败', 'TRANSFER_QUOTA_EXCEED'=>'超过用户单笔收款额度', 'DAY_RECEIVED_QUOTA_EXCEED'=>'超过用户单日收款额度', 'MONTH_RECEIVED_QUOTA_EXCEED'=>'超过用户单月收款额度', 'DAY_RECEIVED_COUNT_EXCEED'=>'超过用户单日收款次数', 'PRODUCT_AUTH_CHECK_FAIL'=>'未开通该权限或权限被冻结', 'OVERDUE_CLOSE'=>'超过系统重试期，系统自动关闭', 'ID_CARD_NOT_CORRECT'=>'收款人身份证校验不通过', 'ACCOUNT_NOT_EXIST'=>'该用户账户不存在', 'TRANSFER_RISK'=>'该笔转账可能存在风险，已被微信拦截', 'OTHER_FAIL_REASON_TYPE'=>'其它失败原因', 'REALNAME_ACCOUNT_RECEIVED_QUOTA_EXCEED'=>'用户账户收款受限，请引导用户在微信支付查看详情', 'RECEIVE_ACCOUNT_NOT_PERMMIT'=>'未配置该用户为转账收款人', 'PAYER_ACCOUNT_ABNORMAL'=>'商户账户付款受限，可前往商户平台获取解除功能限制指引', 'PAYEE_ACCOUNT_ABNORMAL'=>'用户账户收款异常，请引导用户完善身份信息', 'TRANSFER_REMARK_SET_FAIL'=>'转账备注设置失败，请调整后重新再试','TRANSFER_SCENE_UNAVAILABLE'=>'该转账场景暂不可用，请确认转账场景ID是否正确','TRANSFER_SCENE_INVALID'=>'你尚未获取该转账场景，请确认转账场景ID是否正确','RECEIVE_ACCOUNT_NOT_CONFIGURE'=>'请前往商户平台-商家转账到零钱-前往功能-转账场景中添加','BLOCK_B2C_USERLIMITAMOUNT_MONTH'=>'用户账户存在风险收款受限，本月不支持继续向该用户付款','MERCHANT_REJECT'=>'转账验密人已驳回转账','MERCHANT_NOT_CONFIRM'=>'转账验密人超时未验密','BLOCK_B2C_USERLIMITAMOUNT_BSRULE_MONTH'=>'超出用户月转账收款限额，本月不支持继续向该用户付款','MCH_CANCEL'=>'商户撤销付款'];
 
 	//转账
 	static public function transfer($channel, $bizParam){
 		global $conf;
 		if(empty($channel) || empty($bizParam))exit();
 
+		if($bizParam['type'] == 'qqpay'){
+			return self::transfer_qq($channel, $bizParam);
+		}
 		if($conf['transfer_wxpay_type'] == 1){
 			return self::transfer_n($channel, $bizParam);
 		}
@@ -705,6 +714,9 @@ class wxpayn_plugin
 		global $conf;
 		if(empty($channel) || empty($bizParam))exit();
 
+		if($bizParam['type'] == 'qqpay'){
+			return self::transfer_query_qq($channel, $bizParam);
+		}
 		if($conf['transfer_wxpay_type'] == 1){
 			return self::transfer_query_n($channel, $bizParam);
 		}
@@ -819,6 +831,81 @@ class wxpayn_plugin
 		try{
 			$client = new \WeChatPay\V3\TransferService($wechatpay_config);
 			$result = $client->queryTransferByOutNo($bizParam['out_biz_no']);
+			$errmsg = null;
+			if($result['state'] == 'SUCCESS'){
+				$status = 1;
+			}elseif($result['state'] == 'FAIL'){
+				$status = 2;
+				$errmsg = '['.$result['fail_reason'].']'.self::$fail_reason_desc[$result['fail_reason']];
+			}elseif($result['state'] == 'CANCELLED'){
+				$status = 2;
+				$errmsg = '转账已撤销';
+			}else{
+				$status = 0;
+			}
+			return ['code'=>0, 'status'=>$status, 'amount'=>round($result['transfer_amount']/100, 2), 'paydate'=>$result['update_time'], 'errmsg'=>$errmsg];
+		} catch (Exception $e) {
+			return ['code'=>-1, 'msg'=>$e->getMessage()];
+		}
+	}
+
+	//转账到QQ钱包
+	static private function transfer_qq($channel, $bizParam){
+		global $conf;
+
+		$wechatpay_config = require(PLUGIN_ROOT.'wxpayn/inc/config.php');
+		try{
+			$client = new \WeChatPay\V3\TransferService($wechatpay_config);
+		} catch (Exception $e) {
+			return ['code'=>-1, 'msg'=>$e->getMessage()];
+		}
+		if(empty($conf['transfer_wxpay_scene_id'])) return ['code'=>-1, 'msg'=>'未配置转账场景ID'];
+		if(empty($conf['transfer_wxpay_info_type']) || empty($conf['transfer_wxpay_info_content'])) return ['code'=>-1, 'msg'=>'未配置转账报备信息'];
+		$report_infos = [];
+		$info_types = explode('|',$conf['transfer_wxpay_info_type']);
+		$info_contents = explode('|',$conf['transfer_wxpay_info_content']);
+		foreach($info_types as $i => $info_type){
+			$report_infos[] = [
+				'info_type' => $info_type,
+				'info_content' => $info_contents[$i] ?? $info_contents[0],
+			];
+		}
+
+		$param = [
+			'out_bill_no' => $bizParam['out_biz_no'],
+			'transfer_scene_id' => $conf['transfer_wxpay_scene_id'],
+			'user_qq' => $bizParam['payee_account'],
+			'transfer_amount' => intval(round($bizParam['money']*100)),
+			'transfer_remark' => $bizParam['transfer_desc'],
+			'notify_url' => $conf['localurl'].'pay/transfernotify/'.$channel['id'].'/',
+			'transfer_scene_report_infos' => $report_infos,
+		];
+		if($param['transfer_amount'] >= 30 && !empty($bizParam['payee_real_name'])){
+			$param['user_name'] = $client->rsaEncrypt($bizParam['payee_real_name']);
+		}
+
+		try{
+			$result = $client->transferToQQ($param);
+		} catch (Exception $e) {
+			return ['code'=>-1, 'msg'=>$e->getMessage()];
+		}
+		if($result['state'] == 'SUCCESS'){
+			return ['code'=>0, 'status'=>1, 'orderid'=>$result['transfer_bill_no'], 'paydate'=>date('Y-m-d H:i:s'), 'wxpackage'=>$result['package_info']];
+		}elseif($result['state'] == 'WAIT_USER_CONFIRM' || $result['state'] == 'TRANSFERING' || $result['state'] == 'ACCEPTED' || $result['state'] == 'PROCESSING'){
+			return ['code'=>0, 'status'=>0, 'orderid'=>$result['transfer_bill_no'], 'paydate'=>date('Y-m-d H:i:s'), 'wxpackage'=>$result['package_info']];
+		}elseif($result['state'] == 'FAIL'){
+			return ['code'=>-1, 'errcode'=>$result['fail_reason'], 'msg'=>'['.$result['fail_reason'].']'.self::$fail_reason_desc[$result['fail_reason']], 'wxpackage'=>$result['package_info']];
+		}else{
+			return ['code'=>-1, 'msg'=>'转账状态未知('.$result['state'].')'];
+		}
+	}
+
+	//转账到QQ钱包查询
+	static private function transfer_query_qq($channel, $bizParam){
+		$wechatpay_config = require(PLUGIN_ROOT.'wxpayn/inc/config.php');
+		try{
+			$client = new \WeChatPay\V3\TransferService($wechatpay_config);
+			$result = $client->queryQQTransfer($bizParam['out_biz_no']);
 			$errmsg = null;
 			if($result['state'] == 'SUCCESS'){
 				$status = 1;

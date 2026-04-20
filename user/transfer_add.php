@@ -32,6 +32,7 @@ if(isset($_POST['submit'])){
 	$payee_account = htmlspecialchars(trim($_POST['payee_account']));
 	$payee_real_name = htmlspecialchars(trim($_POST['payee_real_name']));
 	$money = trim($_POST['money']);
+	$title = isset($_POST['title'])?htmlspecialchars(trim($_POST['title'])):'';
 	$desc = htmlspecialchars(trim($_POST['desc']));
 	$pwd = trim($_POST['paypwd']);
 	$pwdenc = getMd5Pwd($pwd, $userrow['uid']);
@@ -43,7 +44,7 @@ if(isset($_POST['submit'])){
 	$need_money = round($money + $money*$conf['transfer_rate']/100,2);
 	if($userrow['settle']==0)showmsg('您的商户出现异常，无法使用代付功能',3);
 
-	$result = \lib\Transfer::add($uid, $app, $out_biz_no, $payee_account, $payee_real_name, $money, $desc);
+	$result = \lib\Transfer::add($uid, $app, $out_biz_no, $payee_account, $payee_real_name, $money, $title, $desc);
 
 	if($result['code']==0){
 		if($result['status'] == 1){

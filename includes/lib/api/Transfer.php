@@ -29,8 +29,13 @@ class Transfer
         if(!preg_match('/^[a-zA-Z0-9.\_\-|]+$/',$out_biz_no))throw new Exception('交易号输入不规范');
         if($desc && mb_strlen($desc)>32)throw new Exception('转账备注最多32个字');
         if(!is_numeric($money) || !preg_match('/^[0-9.]+$/', $money) || $money<=0)throw new Exception('转账金额输入不规范');
+        $title = null;
+        if($type == 'alipay'){
+            $title = $desc;
+            $desc = null;
+        }
 
-        $result = \lib\Transfer::add($pid, $type, $out_biz_no, $account, $name, $money, $desc, $queryArr['bookid']);
+        $result = \lib\Transfer::add($pid, $type, $out_biz_no, $account, $name, $money, $title, $desc, $queryArr['bookid']);
         return $result;
     }
 
@@ -48,7 +53,7 @@ class Transfer
             $order = $DB->find('transfer', '*', ['biz_no'=>$biz_no, 'uid'=>$pid]);
         }elseif(!empty($queryArr['out_biz_no'])){
             $out_biz_no = trim($queryArr['out_biz_no']);
-            $order = $DB->find('transfer', '*', ['biz_no'=>$out_biz_no, 'uid'=>$pid]);
+            $order = $DB->find('transfer', '*', ['out_biz_no'=>$out_biz_no, 'uid'=>$pid]);
         }else{
             throw new Exception('转账交易号不能为空');
         }

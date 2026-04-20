@@ -122,8 +122,9 @@ class PaymentService extends BaseService
      */
     private function getAppParameters(string $prepay_id): array
     {
+        $appId = !empty($this->subAppId) ? $this->subAppId : $this->appId;
         $params = [
-            'appid' => $this->appId,
+            'appid' => $appId,
             'partnerid' => $this->mchId,
             'prepayid' => $prepay_id,
             'package' => 'Sign=WXPay',

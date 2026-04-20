@@ -47,24 +47,25 @@ class Wxpay implements IProfitSharing
             $allmoney += $money;
             $rdata[] = ['account'=>$receiver['account'], 'money'=>$money];
         }
+        $out_order_no = date('YmdHis').rand(1000,9999);
         if($this->ecommerce){
             $param = [
                 'transaction_id' => $api_trade_no,
-                'out_order_no' => $trade_no,
+                'out_order_no' => $out_order_no,
                 'receivers' => $receivers,
                 'finish' => true,
             ];
         }else{
             $param = [
                 'transaction_id' => $api_trade_no,
-                'out_order_no' => $trade_no,
+                'out_order_no' => $out_order_no,
                 'receivers' => $receivers,
                 'unfreeze_unsplit' => true,
             ];
         }
         try{
             $result = $this->service->submit($param);
-            return ['code'=>0, 'msg'=>'请求分账成功', 'settle_no'=>$result['order_id'], 'money'=>round($allmoney, 2), 'rdata'=>$rdata];
+            return ['code'=>0, 'msg'=>'请求分账成功', 'settle_no'=>$out_order_no, 'money'=>round($allmoney, 2), 'rdata'=>$rdata];
         } catch (Exception $e) {
             return ['code'=>-1, 'msg'=>$e->getMessage()];
         }
@@ -75,7 +76,7 @@ class Wxpay implements IProfitSharing
         $reason_desc = ['ACCOUNT_ABNORMAL'=>'分账接收账户异常', 'NO_RELATION'=>'分账关系已解除', 'RECEIVER_HIGH_RISK'=>'高风险接收方', 'RECEIVER_REAL_NAME_NOT_VERIFIED'=>'接收方未实名', 'NO_AUTH'=>'分账权限已解除', 'RECEIVER_RECEIPT_LIMIT'=>'接收方已达收款限额', 'PAYER_ACCOUNT_ABNORMAL'=>'分出方账户异常', 'INVALID_REQUEST'=>'描述参数设置失败'];
 
         try{
-            $result = $this->service->query($trade_no, $api_trade_no);
+            $result = $this->service->query($settle_no, $api_trade_no);
             if(isset($result['state']) && $result['state'] == 'FINISHED' || isset($result['status']) && $result['status'] == 'FINISHED'){
                 $receiver = $result['receivers'][0];
                 if($receiver['result'] == 'SUCCESS'){
@@ -95,8 +96,9 @@ class Wxpay implements IProfitSharing
 
     //解冻剩余资金
     public function unfreeeze($trade_no, $api_trade_no){
+        $out_order_no = date('YmdHis').rand(1000,9999);
         try{
-            $this->service->unfreeze($trade_no, $api_trade_no);
+            $this->service->unfreeze($out_order_no, $api_trade_no);
             return ['code'=>0, 'msg'=>'解冻剩余资金成功'];
         } catch (Exception $e) {
             return ['code'=>-1, 'msg'=>$e->getMessage()];
@@ -104,7 +106,7 @@ class Wxpay implements IProfitSharing
     }
 
     //分账回退
-    public function return($trade_no, $api_trade_no, $rdata){
+    public function return($trade_no, $api_trade_no, $settle_no, $rdata){
         $i = 1;
         $success = 0;
         $errmsg = null;
@@ -112,8 +114,8 @@ class Wxpay implements IProfitSharing
             $type = self::get_wxpay_account_type($receiver['account']);
             if($type == 'MERCHANT_ID'){
                 $params = [
-                    'out_order_no' => $trade_no,
-                    'out_return_no' => 'REF'.$trade_no.$i++,
+                    'out_order_no' => $settle_no,
+                    'out_return_no' => 'REF'.$settle_no.$i++,
                     'return_mchid' => $receiver['account'],
                     'amount' => intval(round($receiver['money']*100)),
                     'description' => '分账回退'
@@ -132,6 +134,16 @@ class Wxpay implements IProfitSharing
             return ['code'=>0, 'msg'=>'分账回退成功'];
         }else{
             return ['code'=>-1, 'msg'=>$errmsg];
+        }
+    }
+
+    //查询分账结果
+    public function amount($trade_no, $api_trade_no){
+        try{
+            $result = $this->service->orderAmountQuery($api_trade_no);
+            return ['code'=>0, 'amount'=>round($result['unsplit_amount']/100,2)];
+        } catch (Exception $e) {
+            return ['code'=>-1, 'msg'=>$e->getMessage()];
         }
     }
 

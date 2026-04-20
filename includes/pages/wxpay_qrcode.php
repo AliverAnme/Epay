@@ -84,6 +84,12 @@ if(!defined('IN_PLUGIN'))exit();
             background: "#ffffff",
             typeNumber: -1
         });
+        if(navigator.userAgent.indexOf('MicroMessage/')>0){
+            const canvas = $('#qrcode canvas')[0];
+            const img = new Image();
+            img.src = canvas.toDataURL('image/png');
+            $('#qrcode').empty().append(img);
+        }
     }else{
         $('#qrcode').html('<img src="'+code_url+'"/>');
     }

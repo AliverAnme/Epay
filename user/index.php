@@ -202,7 +202,7 @@ if(empty($userrow['pwd'])){
 		</div>
 		<div class="list-group">
 <?php foreach($list as $row){?>
-			<a class="list-group-item"><em class="fa fa-fw fa-volume-up"></em><font color="<?php echo $row['color']?$row['color']:null?>"><?php echo $row['content']?></font><span class="text-xs text-muted">&nbsp;-<?php echo $row['addtime']?></span></a>
+			<div class="list-group-item"><em class="fa fa-fw fa-volume-up"></em><font color="<?php echo $row['color']?$row['color']:null?>"><?php echo $row['content']?></font><span class="text-xs text-muted">&nbsp;-<?php echo $row['addtime']?></span></div>
 <?php }?>
 		</div>
 		</div>
@@ -212,21 +212,47 @@ if(empty($userrow['pwd'])){
               <input type="checkbox" ng-model="showSpline">
               <i></i>
             </label>
-            <h4 class="font-thin m-t-none m-b text-muted">结算统计表</h4>
-            <div ui-jq="plot" ui-refresh="showSpline" ui-options="
-              [
-                { data: [ <?php echo $chart?> ], label:'结算金额', points: { show: true, radius: 1}, splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.8 } }
-              ], 
-              {
-                colors: ['#23b7e5', '#7266ba'],
-                series: { shadowSize: 3 },
-                xaxis:{ font: { color: '#a1a7ac' } },
-                yaxis:{ font: { color: '#a1a7ac' }, max:<?php echo ($max_settle+10)?> },
-                grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#dce5ec' },
-                tooltip: true,
-                tooltipOpts: { content: '结算金额¥%y',  defaultTheme: false, shifts: { x: 10, y: -25 } }
-              }
-            " style="height:246px" >
+            
+            <!-- Tab导航 -->
+            <ul class="nav nav-tabs" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#settle-tab" aria-controls="settle-tab" role="tab" data-toggle="tab">结算统计</a>
+              </li>
+              <li role="presentation">
+                <a href="#order-tab" aria-controls="order-tab" role="tab" data-toggle="tab">订单金额统计</a>
+              </li>
+            </ul>
+            
+            <!-- Tab内容 -->
+            <div class="tab-content">
+              <!-- 结算统计表 -->
+              <div role="tabpanel" class="tab-pane active" id="settle-tab">
+                <div ui-jq="plot" ui-refresh="showSpline" ui-options="
+                  [
+                    { data: [ <?php echo $chart?> ], label:'结算金额', points: { show: true, radius: 1}, splines: { show: true, tension: 0.4, lineWidth: 1, fill: 0.8 } }
+                  ], 
+                  {
+                    colors: ['#23b7e5', '#7266ba'],
+                    series: { shadowSize: 3 },
+                    xaxis:{ font: { color: '#a1a7ac' } },
+                    yaxis:{ font: { color: '#a1a7ac' }, max:<?php echo ($max_settle+10)?> },
+                    grid: { hoverable: true, clickable: true, borderWidth: 0, color: '#dce5ec' },
+                    tooltip: true,
+                    tooltipOpts: { content: '结算金额¥%y',  defaultTheme: false, shifts: { x: 10, y: -25 } }
+                  }
+                " style="height:260px" >
+                </div>
+              </div>
+              
+              <!-- 订单统计表 -->
+              <div role="tabpanel" class="tab-pane" id="order-tab">
+                <div id="order-chart-container" style="height:260px">
+                  <div class="text-center" style="padding:100px 0;">
+                    <p>点击切换到此标签页将加载订单统计数据</p>
+                    <p class="text-muted">显示近7天订单金额趋势</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -236,6 +262,7 @@ if(empty($userrow['pwd'])){
     </div>
   </div>
 
+<script src="/assets/js/chart.js"></script>
 <?php include 'foot.php';?>
 <script>
 $(document).ready(function(){
@@ -266,5 +293,72 @@ $(document).ready(function(){
 	<?php if(!empty($conf['modal'])){?>
 	$('#myModal').modal('show');
 	<?php }?>
+
+	// 监听tab切换事件
+	$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+		var target = $(e.target).attr("href"); // 激活的tab
+		if (target === '#order-tab') {
+			// 当切换到订单统计表时
+			loadOrderChart();
+		}
+	});
+
+	function loadOrderChart() {
+		// 如果图表已经初始化，则销毁它，避免重复初始化
+		if (window.orderChartInstance) {
+			window.orderChartInstance.destroy();
+		}
+		
+		// 显示加载中
+		$('#order-chart-container').html('<div class="text-center" style="padding:100px 0;">加载中...</div>');
+		
+		$.ajax({
+			type : "GET",
+			url : "ajax2.php?act=orderCount",
+			dataType : 'json',
+			async: true,
+			success : function(data) {
+				initOrderChart(data);
+			}
+		});
+	}
+
+	function initOrderChart(data) {
+		// 准备canvas容器
+		$('#order-chart-container').html('<canvas id="orderChart"></canvas>');
+		
+		var ctx = document.getElementById('orderChart').getContext('2d');
+		window.orderChartInstance = new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels: data.labels,
+				datasets: data.datasets
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					y: {
+						beginAtZero: true,
+						ticks: {
+							callback: function(value) {
+								return '¥' + value;
+							}
+						}
+					}
+				},
+				plugins: {
+					legend: {
+						display: true,
+						position: 'top'
+					},
+					tooltip: {
+						mode: 'index',
+						intersect: false
+					}
+				}
+			}
+		});
+	}
 });
 </script>

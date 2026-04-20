@@ -32,7 +32,12 @@ class yinyingtong_plugin
 			'trade_platform_no' => [
                 'name' => '平台商企业号(参考号)',
                 'type' => 'input',
-                'note' => '',
+                'note' => '仅分账需要填写',
+			],
+			'terminal_number' => [
+                'name' => '终端号',
+                'type' => 'input',
+                'note' => '仅快捷支付填写',
 			],
 			'channel_merch_no' => [
                 'name' => '渠道商户号',
@@ -50,7 +55,11 @@ class yinyingtong_plugin
 			'2' => '银盈通小程序',
 			'3' => '自有公众号/小程序',
 		],
-		'note' => '如使用进件，需要将商户私钥证书 <font color="red">应用ID.pfx</font> 上传到 /plugins/yinyingtong/cert 文件夹内', //支付密钥填写说明
+		'select_bank' => [
+			'1' => 'H5快捷支付',
+			'2' => '协议快捷支付',
+		],
+		'note' => '如使用进件、代付、协议快捷支付，需要将商户私钥证书 <font color="red">应用ID.pfx</font> 上传到 /plugins/yinyingtong/cert 文件夹内', //支付密钥填写说明
 		'bindwxmp' => true, //是否支持绑定微信公众号
 		'bindwxa' => true, //是否支持绑定微信小程序
 	];
@@ -73,7 +82,11 @@ class yinyingtong_plugin
 				return ['type'=>'jump','url'=>'/pay/wxpay/'.TRADE_NO.'/'];
 			}
 		}elseif($order['typename']=='bank'){
-			return ['type'=>'jump','url'=>'/pay/quickpay/'.TRADE_NO.'/'];
+			if(in_array('1',$channel['apptype'])){
+				return ['type'=>'jump','url'=>'/pay/bank/'.TRADE_NO.'/'];
+			}else{
+				return ['type'=>'jump','url'=>'/pay/quickpay/'.TRADE_NO.'/'];
+			}
 		}
 	}
 
@@ -103,7 +116,11 @@ class yinyingtong_plugin
 				return self::wxpay();
 			}
 		}elseif($order['typename']=='bank'){
-			return self::quickpay();
+			if(in_array('1',$channel['apptype'])){
+				return self::bank();
+			}else{
+				return self::quickpay();
+			}
 		}
 	}
 
@@ -318,7 +335,7 @@ class yinyingtong_plugin
 				return ['type'=>'error','msg'=>'微信支付下单失败！'.$ex->getMessage()];
 			}
 			$query = 'orderId='.$bank_order_id.'&showPayButton=0';
-			$code_url = 'weixin://dl/business/?appid=wx135edf7e3c7a1e7d&path=pages/wechat/preOrder/orderpay&query='.urlencode($query).'&env_version=release';
+			$code_url = 'weixin://dl/business/?appid='.$result['app_id'].'&path=pages/wechat/preOrder/orderpay&query='.urlencode($query).'&env_version=release';
 			return ['type'=>'scheme','page'=>'wxpay_mini','url'=>$code_url];
 		}
 		else{
@@ -342,25 +359,26 @@ class yinyingtong_plugin
 			if(!empty($order['sub_appid'])){
 				$wxinfo['appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				}
 			}
 			$openid = $order['sub_openid'];
 		}else{
 			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
 			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 		$blocks = checkBlockUser($openid, TRADE_NO);
 		if($blocks) return $blocks;
 
 		//②、统一下单
 		try{
-			$paydata = self::jsapipay('02', $openid, $wxinfo['appid']);
+			$paydata = self::jsapipay('02', $openid, $wxinfo['appid'], $order['is_applet'] == 1);
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'微信支付下单失败！'.$ex->getMessage()];
 		}
@@ -415,7 +433,7 @@ class yinyingtong_plugin
 	}
 
 	//快捷支付
-	static public function quickpay(){
+	static public function bank(){
 		global $channel, $order;
 		if(!empty($_COOKIE['yyt_user_id'])){
 			$user_id = $_COOKIE['yyt_user_id'];
@@ -437,6 +455,136 @@ class yinyingtong_plugin
 		$url = 'https://h5.gomepay.com/cashier-h5/index.html#/pages/paymentB/cashRegister?'.http_build_query($params);
 
 		return ['type'=>'jump','url'=>$url];
+	}
+
+	static public function quickpay(){
+		global $siteurl, $channel, $order, $ordername, $conf, $clientip, $cdnpublic, $DB, $device;
+
+		require_once(PAY_ROOT."inc/M2Client.php");
+		try{
+			$client = new M2Client($channel['appid'], $channel['appkey']);
+		}catch(Exception $ex){
+			return ['type'=>'error','msg'=>$ex->getMessage()];
+		}
+
+		if(isset($_POST['action'])){
+			switch($_POST['action']){
+				case 'query_card':
+					$cardno = trim($_POST['cardno']);
+					if(empty($cardno)) exit(json_encode(['code'=>-1, 'msg'=>'银行卡号不能为空']));
+					try{
+						$result = getBankCardInfo($cardno);
+						exit(json_encode(['code'=>0, 'data'=>$result]));
+					}catch(Exception $ex){
+						exit(json_encode(['code'=>-1, 'msg'=>$ex->getMessage()]));
+					}
+					break;
+				case 'request':
+					$phone = trim($_POST['phone']);
+					$cardno = trim($_POST['cardno']);
+					$cardtype = trim($_POST['cardtype']);
+					$name = trim($_POST['name']);
+					$idcard = trim($_POST['idcard']);
+					if(empty($phone) || empty($cardno) || empty($name) || empty($idcard)){
+						exit(json_encode(['code'=>-1, 'msg'=>'参数不能为空']));
+					}
+					if(!is_idcard($idcard)) exit(json_encode(['code'=>-1, 'msg'=>'身份证号码不正确']));
+
+					$DB->update('order', ['mobile'=>$phone, 'buyer'=>$cardno], ['trade_no'=>TRADE_NO]);
+					$black = $DB->find('blacklist', '*', ['type'=>0, 'content'=>$phone], null, 1);
+					if($black) exit(json_encode(['code'=>-1, 'msg'=>'系统异常无法完成付款']));
+					$black = $DB->find('blacklist', '*', ['type'=>0, 'content'=>$cardno], null, 1);
+					if($black) exit(json_encode(['code'=>-1, 'msg'=>'系统异常无法完成付款']));
+					
+					$randomKey = random(16);
+					$customer_info = [
+						'customer_name' => $name,
+						'cert_type' => '01',
+						'cert_code' => $idcard,
+						'account_number' => $cardno,
+						'mobile' => $phone,
+					];
+					$customer_info = $client->sm4Encrypt(json_encode($customer_info), $randomKey);
+					$param = [
+						'login_token' => '',
+						'req_no' => date('YmdHis').rand(1000,9999),
+						'plat_form' => checkmobile()||$device=='mobile' ? '02' : '01',
+						'interface_version' => '3.0',
+						'scene' => '0406',
+						'merchant_number' => $channel['appmchid'],
+						'terminal_number' => $channel['terminal_number'],
+						'order_number' => TRADE_NO,
+						'amount' => $order['realmoney'],
+						'currency' => 'CNY',
+						'business_type' => 'A1',
+						'customer_info' => $customer_info,
+					];
+					try{
+						$result = $client->execute('epos_api_trans@c_quick_sms', $param, $randomKey, 1);
+						exit(json_encode(['code'=>0, 'token'=>$result['order_id']]));
+					}catch(Exception $ex){
+						exit(json_encode(['code'=>-1, 'msg'=>'快捷短信获取失败！'.$ex->getMessage()]));
+					}
+					break;
+				case 'confirm':
+					$phone = trim($_POST['phone']);
+					$cardno = trim($_POST['cardno']);
+					$cardtype = trim($_POST['cardtype']);
+					$name = trim($_POST['name']);
+					$idcard = trim($_POST['idcard']);
+					$token = trim($_POST['token']);
+					$smscode = trim($_POST['smscode']);
+					if(empty($phone) || empty($cardno) || empty($name) || empty($idcard) || empty($token) || empty($smscode)) exit(json_encode(['code'=>-1, 'msg'=>'参数不能为空']));
+
+					$randomKey = random(16);
+					$customer_info = [
+						'customer_name' => $name,
+						'cert_type' => '01',
+						'cert_code' => $idcard,
+						'account_number' => $cardno,
+						'mobile' => $phone,
+					];
+					$customer_info = $client->sm4Encrypt(json_encode($customer_info), $randomKey);
+					$param = [
+						'login_token' => '',
+						'req_no' => date('YmdHis').rand(1000,9999),
+						'plat_form' => checkmobile()||$device=='mobile' ? '02' : '01',
+						'interface_version' => '3.0',
+						'merchant_number' => $channel['appmchid'],
+						'terminal_number' => $channel['terminal_number'],
+						'order_number' => TRADE_NO,
+						'amount' => $order['realmoney'],
+						'currency' => 'CNY',
+						'sms_verification_code' => $smscode,
+						'sms_order_id' => $token,
+						'async_notification_addr' => $conf['localurl'].'pay/notify/'.TRADE_NO.'/',
+						'business_type' => 'A1',
+						'number_of_types' => '1',
+						'number_of_items' => '1',
+						'goods_list' => json_encode([[
+							'goods_name' => $order['name'],
+							'amount' => $order['realmoney'],
+							'quantity' => '1',
+						]]),
+						'customer_info' => $customer_info,
+					];
+					if($order['profits']>0){
+						$params['profit_sharing'] = '1';
+						$params['ref_no'] = $channel['trade_platform_no'];
+					}
+					try{
+						$result = $client->execute('epos_api_trans@c_quick_sign_pay', $param, $randomKey, 1);
+						$DB->update('order', ['ext'=>json_encode(['sign_id'=>$result['sign_id'], 'order_id'=>$result['order_id']])], ['trade_no'=>TRADE_NO]);
+						exit(json_encode(['code'=>0, 'backurl'=>'/pay/return/'.TRADE_NO.'/']));
+					}catch(Exception $ex){
+						exit(json_encode(['code'=>-1, 'msg'=>'快捷支付下单失败！'.$ex->getMessage()]));
+					}
+					break;
+			}
+		}
+
+		include PAY_ROOT.'inc/pay.page.php';
+	    exit;
 	}
 
 	//支付成功页面

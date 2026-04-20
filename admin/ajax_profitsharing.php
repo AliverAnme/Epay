@@ -86,6 +86,7 @@ case 'add_receiver':
 		'subchannel' => !empty($_POST['subchannel']) ? intval($_POST['subchannel']) : null,
 		'info' => trim($_POST['info']),
 		'minmoney' => trim($_POST['minmoney']),
+		'mode' => intval($_POST['mode']),
 		'status' => 0,
 		'addtime' => 'NOW()'
 	];
@@ -119,6 +120,7 @@ case 'edit_receiver':
 		'subchannel' => !empty($_POST['subchannel']) ? intval($_POST['subchannel']) : null,
 		'info' => trim($_POST['info']),
 		'minmoney' => trim($_POST['minmoney']),
+		'mode' => intval($_POST['mode']),
 	];
 	if(!$data['channel'] || !$data['info'])exit('{"code":-1,"msg":"必填项不能为空"}');
 	if(!empty($data['uid']) && !$DB->find('user', 'uid', ['uid'=>$data['uid']]))exit('{"code":-1,"msg":"商户ID不存在"}');
@@ -272,10 +274,22 @@ case 'return':
 	$model = \lib\ProfitSharing\CommUtil::getModel($channel);
 	$row['rdata'] = json_decode($row['rdata'], true) ?? [];
 	if(!empty($row['sub_trade_no'])) $row['trade_no'] = $row['sub_trade_no'];
-	$result = $model->return($row['trade_no'], $row['api_trade_no'], $row['rdata']);
+	$result = $model->return($row['trade_no'], $row['api_trade_no'], $row['settle_no'], $row['rdata']);
 	if($result['code'] == 0){
 		$DB->update('psorder', ['status'=>4], ['id'=>$id]);
 	}
+	exit(json_encode($result));
+break;
+
+case 'amount':
+	$id=intval($_POST['id']);
+	$row = $DB->getRow("SELECT A.*,B.channel,B.uid psuid,C.uid,C.subchannel FROM pre_psorder A LEFT JOIN pre_psreceiver B ON A.rid=B.id LEFT JOIN pre_order C ON C.trade_no=A.trade_no WHERE A.id=:id", [':id'=>$id]);
+	if(!$row)exit('{"code":-1,"msg":"订单不存在"}');
+	$channel = $row['subchannel'] > 0 ? \lib\Channel::getSub($row['subchannel']) : \lib\Channel::get($row['channel'], $row['uid']?$DB->findColumn('user', 'channelinfo', ['uid'=>$row['uid']]):null);
+	if(!$channel) exit('{"code":-1,"msg":"通道信息不存在"}');
+	$model = \lib\ProfitSharing\CommUtil::getModel($channel);
+	if(!empty($row['sub_trade_no'])) $row['trade_no'] = $row['sub_trade_no'];
+	$result = $model->amount($row['trade_no'], $row['api_trade_no']);
 	exit(json_encode($result));
 break;
 

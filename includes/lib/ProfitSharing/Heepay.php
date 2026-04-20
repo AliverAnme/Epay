@@ -133,7 +133,7 @@ class Heepay implements IProfitSharing
     }
 
     //分账回退
-    public function return($trade_no, $api_trade_no, $rdata){
+    public function return($trade_no, $api_trade_no, $settle_no, $rdata){
         $allmoney = 0;
         foreach($rdata as $row){
             $allmoney += $row['money'];

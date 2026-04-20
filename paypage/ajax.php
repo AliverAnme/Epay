@@ -15,12 +15,6 @@ if($_POST['token']!=$_SESSION['paypage_token'])showerrorjson('CSRF TOKEN ERROR')
 if(!$uid || $uid!=$_SESSION['paypage_uid'])showerrorjson('收款方信息无效');
 if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))showerrorjson('金额不合法');
 
-$groupconfig = getGroupConfig($userrow['gid']);
-$conf = array_merge($conf, $groupconfig);
-
-if($conf['pay_maxmoney']>0 && $money>$conf['pay_maxmoney'])showerrorjson('最大支付金额是'.$conf['pay_maxmoney'].'元');
-if($conf['pay_minmoney']>0 && $money<$conf['pay_minmoney'])showerrorjson('最小支付金额是'.$conf['pay_minmoney'].'元');
-
 $blackip = $DB->find('blacklist', '*', ['type'=>1, 'content'=>$clientip], null, 1);
 if($blackip)showerrorjson('系统异常无法完成付款');
 if($payer){
@@ -41,6 +35,12 @@ $userrow = $DB->getRow("SELECT `mode`,`ordername`,`channelinfo`,`money`,`pay_min
 
 if($userrow['pay_maxmoney']>0 && $money>$userrow['pay_maxmoney'])showerrorjson('最大支付金额是'.$userrow['pay_maxmoney'].'元');
 if($userrow['pay_minmoney']>0 && $money<$userrow['pay_minmoney'])showerrorjson('最小支付金额是'.$userrow['pay_minmoney'].'元');
+
+$groupconfig = getGroupConfig($userrow['gid']);
+$conf = array_merge($conf, $groupconfig);
+
+if($conf['pay_maxmoney']>0 && $money>$conf['pay_maxmoney'])showerrorjson('最大支付金额是'.$conf['pay_maxmoney'].'元');
+if($conf['pay_minmoney']>0 && $money<$conf['pay_minmoney'])showerrorjson('最小支付金额是'.$conf['pay_minmoney'].'元');
 
 if($conf['pay_daymax'] > 0){
 	$daytotal = $DB->getColumn("select sum(money) from pre_order where `uid`=:uid and `date`='".date('Y-m-d')."' and status>0", ['uid'=>$uid]);
@@ -84,7 +84,11 @@ if(!empty($paytype) && isset($_SESSION['paypage_typeid']) && isset($_SESSION['pa
 			showerrorjson('当前商户余额不足，无法完成支付，请商户登录用户中心充值余额');
 		}
 
-		if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
+		if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart']){
+			$randmoney = randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
+			$realmoney = round($realmoney + $randmoney, 2);
+			if($submitData['mode']==1) $getmoney = round($getmoney + $randmoney, 2);
+		}
 
 		$DB->update('order', ['type'=>$typeid, 'channel'=>$channelid, 'subchannel'=>$subchannelid, 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no]);
 

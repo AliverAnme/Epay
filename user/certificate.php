@@ -21,7 +21,7 @@ $csrf_token = md5(mt_rand(0,999).time());
 $_SESSION['csrf_token'] = $csrf_token;
 
 
-if ($isqrcode && ($conf['cert_open']==1 || $conf['cert_open']==5)) {
+if ($isqrcode && ($conf['cert_open']==1 || $conf['cert_open']==5 || $conf['cert_open']==6)) {
 	$page = 'alipayqrcode';
 }elseif($isqrcode && $conf['cert_open']==3){
 	$page = 'alipayqrcode2';

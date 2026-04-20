@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * https://doc.adapay.tech/document/api/#/
+ */
 class AdapayClient
 {
     const SDK_VERSION = 'v1.0.0';
@@ -9,29 +12,39 @@ class AdapayClient
     private $rsaPrivateKey;
     private $app_id;
 
-    public function __construct($api_key_live, $rsa_private_key, $app_id)
+    public function __construct($api_key_live, $rsa_private_key, $app_id = null)
 	{
         $this->api_key = $api_key_live;
         $this->rsaPrivateKey = $rsa_private_key;
         $this->app_id = $app_id;
     }
 
-    public function request($method, $endpoint, $params = null)
+    public function request($method, $endpoint, $params = null, $json = true)
 	{
 		$req_url = $this->gateWayUrl . $endpoint;
         $headers = [];
         $postData = '';
 		if($method == 'GET'){
+			$signstr = '';
 			if($params){
 				ksort($params);
 				$req_url .= '?' . http_build_query($params);
+				$signstr = http_build_query($params);
 			}
-		}else{
-            $postData = json_encode($params);
+		}elseif($json){
+			$postData = json_encode($params);
+			$signstr = $postData;
             $headers[] = 'Content-Type: application/json';
+		}else{
+			$postData = $params;
+			if(is_array($postData)){
+				$signstr = $this->createLinkstring($postData);
+			}else{
+				$signstr = $postData;
+			}
 		}
         $headers[] = 'Authorization: ' . $this->api_key;
-        $headers[] = 'Signature: ' . $this->generateSignature($req_url , $postData);
+        $headers[] = 'Signature: ' . $this->generateSignature($endpoint , $signstr);
         $headers[] = 'sdk_version: ' . self::SDK_VERSION;
 
         $response = get_curl($req_url, $postData, 0, 0, 0, 0, 0, $headers);
@@ -65,7 +78,7 @@ class AdapayClient
 	//通用请求
 	public function queryAdapay($params)
 	{
-		self::$gateWayUrl = "https://page.adapay.tech";
+		$this->gateWayUrl = "https://page.adapay.tech";
 		$adapayFuncCode = $params["adapay_func_code"];
 		$endpoint = '/v1/'.str_replace(".", "/",$adapayFuncCode);
 		$public_params = [
@@ -169,6 +182,10 @@ class AdapayClient
 	//创建支付撤销对象
 	public function createPaymentReverse($params){
 		$endpoint = '/v1/payments/reverse';
+		$public_params = [
+			'app_id' => $this->app_id,
+		];
+		$params = array_merge($params, $public_params);
 		return $this->request('POST', $endpoint, $params);
 	}
 
@@ -244,12 +261,24 @@ class AdapayClient
 		return $this->request('GET', $endpoint, $params);
 	}
 
-    private function generateSignature($url , $postData):string
+    private function generateSignature($endpoint , $postData):string
 	{
-		$data = $url . $postData;
+		$data = $this->gateWayUrl . $endpoint . $postData;
 		$sign = $this->SHA1withRSA($data);
 		return $sign;
 	}
+
+	private function createLinkstring($params)
+    {
+		ksort($params);
+        $arg = "";
+        foreach ($params as $key => $val){
+            if($val instanceof \CURLFile || $val === '' || $val === null) continue;
+            $arg .= $key . "=" . $val . "&";
+        }
+        $arg = substr($arg, 0, -1);
+        return $arg;
+    }
 	
 	private function SHA1withRSA($data)
 	{
@@ -273,5 +302,17 @@ class AdapayClient
 		}
 		$result = openssl_verify($data , base64_decode($signature) , $keyid , OPENSSL_ALGO_SHA1);
 		return $result === 1;
+	}
+
+	public function getPublicKey()
+	{
+		$privKey = trim($this->rsaPrivateKey);
+		$key = "-----BEGIN PRIVATE KEY-----\n" . wordwrap($privKey, 64, "\n", true) . "\n-----END PRIVATE KEY-----";
+		$keyid = openssl_pkey_get_private($key);
+		if(!$keyid){
+			throw new \Exception('商户私钥不正确');
+		}
+		$details = openssl_pkey_get_details($keyid);
+		return pemToBase64($details['key']);
 	}
 }

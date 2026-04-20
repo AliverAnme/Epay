@@ -18,7 +18,7 @@ class Transfer
 
     //通用转账
     //type alipay:支付宝,wxpay:微信,qqpay:QQ钱包,bank:银行卡
-    public static function submit($type, $channel, $out_biz_no, $payee_account, $payee_real_name, $money, $desc = null){
+    public static function submit($type, $channel, $out_biz_no, $payee_account, $payee_real_name, $money, $title = null, $desc = null){
         global $conf;
 
         $bizParam = [
@@ -27,13 +27,13 @@ class Transfer
             'payee_account' => $payee_account,
             'payee_real_name' => $payee_real_name,
             'money' => $money,
-            'transfer_name' => $desc?$desc:$conf['transfer_name'],
+            'transfer_name' => $title?$title:$conf['transfer_name'],
             'transfer_desc' => $desc?$desc:$conf['transfer_desc'],
         ];
         return \lib\Plugin::call('transfer', $channel, $bizParam);
     }
 
-    public static function add($uid, $type, $out_biz_no, $payee_account, $payee_real_name, $money, $desc = null, $bookid = null, $channelid = null){
+    public static function add($uid, $type, $out_biz_no, $payee_account, $payee_real_name, $money, $title = null, $desc = null, $bookid = null, $channelid = null){
         global $conf, $DB, $userrow, $siteurl;
         $biz_no = $out_biz_no;
         if(strlen($biz_no)!=19 || !is_numeric($biz_no)) $biz_no = date("YmdHis").rand(11111,99999);
@@ -116,14 +116,14 @@ class Transfer
         if($channelid == -1){
             $result = ['code'=>0, 'status'=>3, 'orderid'=>null, 'biz_no'=>$biz_no, 'out_biz_no'=>$out_biz_no];
         }else{
-            $result = self::submit($type, $channel, $biz_no, $payee_account, $payee_real_name, $money, $desc);
+            $result = self::submit($type, $channel, $biz_no, $payee_account, $payee_real_name, $money, $title, $desc);
             $result['biz_no'] = $biz_no;
             $result['out_biz_no'] = $out_biz_no;
         }
 
         if($result['code']==0){
             $paytime = $result['status'] == 1 ? 'NOW()' : null;
-            $data = ['biz_no'=>$biz_no, 'out_biz_no'=>$out_biz_no, 'uid'=>$uid, 'type'=>$type, 'channel'=>$channelid, 'account'=>$payee_account, 'username'=>$payee_real_name, 'money'=>$money, 'costmoney'=>$need_money??$money, 'addtime'=>'NOW()', 'paytime'=>$paytime, 'pay_order_no'=>$result['orderid'], 'status'=>$result['status'], 'desc'=>$desc];
+            $data = ['biz_no'=>$biz_no, 'out_biz_no'=>$out_biz_no, 'uid'=>$uid, 'type'=>$type, 'channel'=>$channelid, 'account'=>$payee_account, 'username'=>$payee_real_name, 'money'=>$money, 'costmoney'=>$need_money??$money, 'addtime'=>'NOW()', 'paytime'=>$paytime, 'pay_order_no'=>$result['orderid'], 'status'=>$result['status'], 'desc'=>$title?$title:$desc];
             if(isset($result['wxpackage'])) $data['ext'] = $result['wxpackage'];
             $id = $DB->insert('transfer', $data);
             if($need_money>0 && $id!==false){
@@ -355,7 +355,7 @@ class Transfer
             $channel = \lib\Channel::get($trans['channel'], $userrow['channelinfo']);
             if(!$channel) return ['code'=>-1, 'msg'=>'当前支付通道信息不存在'];
 
-            $result = self::submit($trans['type'], $channel, $biz_no, $openid, '', $trans['money'], $trans['desc']);
+            $result = self::submit($trans['type'], $channel, $biz_no, $openid, '', $trans['money'], $trans['desc'], $trans['type']=='alipay'?null:$trans['desc']);
             if($result['code']==0){
                 $data = ['account'=>$openid, 'status'=>$result['status'], 'paytime'=>'NOW()', 'pay_order_no'=>$result['orderid'], 'result'=>''];
                 if(isset($result['wxpackage'])){

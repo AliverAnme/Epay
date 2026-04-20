@@ -114,7 +114,7 @@ elseif($_GET['do']=='order'){
 	$lastday=date("Y-m-d",strtotime("-1 day"));
 	$today=date("Y-m-d");
 
-	$rs=$DB->query("SELECT type,channel,realmoney,profitmoney from pre_order where status=1 and date>='$lastday' and date<'$today'");
+	$rs=$DB->query("SELECT type,channel,realmoney,profitmoney from pre_order where (status=1 OR status=3) and date>='$lastday' and date<'$today'");
 	foreach($paytype as $id=>$type){
 		$order_paytype[$id]=0;
 		$profit_paytype[$id]=0;
@@ -161,7 +161,7 @@ elseif($_GET['do']=='order'){
 	$DB->exec("update pre_channel set daystatus=0");
 
 	if($conf['invite_mode'] == 1){
-		$moneylist = $DB->getAll("SELECT uid,SUM(realmoney) money FROM pre_order WHERE status=1 AND `date`='$lastday' GROUP BY uid");
+		$moneylist = $DB->getAll("SELECT uid,SUM(realmoney) money FROM pre_order WHERE (status=1 OR status=3) AND `date`='$lastday' GROUP BY uid");
 		foreach($moneylist as $row){
 			$upid = $DB->findColumn('user', 'upid', ['uid'=>$row['uid']]);
 			if($upid > 0){
@@ -274,7 +274,7 @@ elseif($_GET['do']=='complain'){
 	$channel=\lib\Channel::get($channelid);
 	if(!$channel)exit('当前支付通道不存在');
 	$channel['source'] = $source;
-	if($channel['plugin'] == 'alipaysl' && substr($channel['appmchid'],0,1)=='['){
+	if(($channel['plugin'] == 'alipaysl' || $channel['plugin'] == 'allinpay' && $channel['type']==1) && substr($channel['appmchid'],0,1)=='['){
 		$uid = [];
 		$subchannels = [];
 		$orders = $DB->getAll("SELECT DISTINCT uid,subchannel FROM pre_order WHERE channel='$channelid' AND date>='".date("Y-m-d",strtotime("-7 day"))."'");
@@ -288,8 +288,10 @@ elseif($_GET['do']=='complain'){
 			foreach($users as $user){
 				if(empty($user['channelinfo'])) continue;
 				$channel=\lib\Channel::get($channelid, $user['channelinfo']);
+				if(!$channel) continue;
 				$channel['source'] = $source;
 				$model = \lib\Complain\CommUtil::getModel($channel);
+				if(!$model) continue;
 				$result = $model->refreshNewList($num);
 				echo $user['uid'].':'.$result['msg'].'<br/>';
 			}
@@ -298,10 +300,12 @@ elseif($_GET['do']=='complain'){
 		if(count($subchannels)>0){
 			foreach($subchannels as $subchannel){
 				$channel=\lib\Channel::getSub($subchannel);
+				if(!$channel) continue;
 				$channel['source'] = $source;
 				$model = \lib\Complain\CommUtil::getModel($channel);
+				if(!$model) continue;
 				$result = $model->refreshNewList($num);
-				echo $user['uid'].':'.$result['msg'].'<br/>';
+				echo $subchannel.':'.$result['msg'].'<br/>';
 			}
 			$exist = true;
 		}

@@ -69,7 +69,7 @@ case 'savePayType':
 		$name=trim($_POST['name']);
 		$showname=trim($_POST['showname']);
 		$device=intval($_POST['device']);
-		if(!preg_match('/^[a-zA-Z0-9.]+$/',$name)){
+		if(!preg_match('/^[a-zA-Z0-9]+$/',$name)){
 			exit('{"code":-1,"msg":"调用值不符合规则"}');
 		}
 		$row=$DB->getRow("select * from pre_type where name='$name' and device='$device' limit 1");
@@ -83,7 +83,7 @@ case 'savePayType':
 		$name=trim($_POST['name']);
 		$showname=trim($_POST['showname']);
 		$device=intval($_POST['device']);
-		if(!preg_match('/^[a-zA-Z0-9.]+$/',$name)){
+		if(!preg_match('/^[a-zA-Z0-9]+$/',$name)){
 			exit('{"code":-1,"msg":"调用值不符合规则"}');
 		}
 		$row=$DB->getRow("select * from pre_type where name='$name' and device='$device' and id<>$id limit 1");
@@ -203,8 +203,8 @@ case 'saveChannel':
 		$paymin=trim($_POST['paymin']);
 		$paymax=trim($_POST['paymax']);
 		$daymaxorder=intval($_POST['daymaxorder']);
-		$timestart=trim($_POST['timestart']);
-		$timestop=trim($_POST['timestop']);
+		$timestart=!isNullOrEmpty($_POST['timestart'])?trim($_POST['timestart']):null;
+		$timestop=!isNullOrEmpty($_POST['timestart'])?trim($_POST['timestop']):null;
 		if(empty($rate)) $rate = 100;
 		if(!preg_match('/^[0-9.]+$/',$rate)){
 			exit('{"code":-1,"msg":"分成比例不符合规则"}');
@@ -238,8 +238,8 @@ case 'saveChannel':
 		$paymin=trim($_POST['paymin']);
 		$paymax=trim($_POST['paymax']);
 		$daymaxorder=intval($_POST['daymaxorder']);
-		$timestart=trim($_POST['timestart']);
-		$timestop=trim($_POST['timestop']);
+		$timestart=!isNullOrEmpty($_POST['timestart'])?trim($_POST['timestart']):null;
+		$timestop=!isNullOrEmpty($_POST['timestart'])?trim($_POST['timestop']):null;
 		if(!preg_match('/^[0-9.]+$/',$rate)){
 			exit('{"code":-1,"msg":"分成比例不符合规则"}');
 		}
@@ -272,8 +272,8 @@ case 'saveChannel':
 		$paymin=trim($_POST['paymin']);
 		$paymax=trim($_POST['paymax']);
 		$daymaxorder=intval($_POST['daymaxorder']);
-		$timestart=trim($_POST['timestart']);
-		$timestop=trim($_POST['timestop']);
+		$timestart=!isNullOrEmpty($_POST['timestart'])?trim($_POST['timestart']):null;
+		$timestop=!isNullOrEmpty($_POST['timestart'])?trim($_POST['timestop']):null;
 		if(!preg_match('/^[0-9.]+$/',$rate)){
 			exit('{"code":-1,"msg":"分成比例不符合规则"}');
 		}

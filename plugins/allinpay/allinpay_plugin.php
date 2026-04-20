@@ -333,25 +333,26 @@ class allinpay_plugin
 			if(!empty($order['sub_appid'])){
 				$wxinfo['appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				}
 			}
 			$openid = $order['sub_openid'];
 		}else{
 			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
 			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 		$blocks = checkBlockUser($openid, TRADE_NO);
 		if($blocks) return $blocks;
 
 		//②、统一下单
 		try{
-			$payinfo = self::addOrder('W02', $wxinfo['appid'], $openid);
+			$payinfo = self::addOrder($order['is_applet'] == 1 ? 'W06' : 'W02', $wxinfo['appid'], $openid);
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'微信支付下单失败！'.$ex->getMessage()];
 		}
@@ -513,7 +514,9 @@ class allinpay_plugin
 		try{
 			$client = new PayService($channel['orgid'],$channel['appmchid'],$channel['appid'],$channel['appkey'],$channel['appsecret']);
 			$result = $client->submit($apiurl, $params);
-
+			if($result['trxstatus']!='0000'&&$result['trxstatus']!='2008'&&$result['trxstatus']!='2000'){
+				return ['code'=>-1, 'msg'=>$result['errmsg']];
+			}
 			return ['code'=>0, 'trade_no'=>$result['trxid'], 'refund_fee'=>$result['fee']];
 
 		}catch(Exception $ex){

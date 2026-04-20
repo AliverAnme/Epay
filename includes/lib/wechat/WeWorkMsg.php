@@ -16,11 +16,12 @@ class WeWorkMsg
     }
 
     //验证URL有效性
-    public function verifyURL()
+    public function verifyURL($wx = false)
     {
         if (!$this->verifySignature($_GET['echostr'])) {
 			exit('签名验证失败');
 		}
+        if($wx) exit($_GET['echostr']);
         $msg = $this->crypt->decrypt($_GET['echostr']);
         if(!$msg) exit('消息解密失败');
         exit($msg);

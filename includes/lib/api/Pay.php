@@ -57,6 +57,7 @@ class Pay
         if(empty($money))sysmsg('金额(money)不能为空');
         if(!preg_match('/^[a-zA-Z0-9.\_\-|]+$/',$out_trade_no))sysmsg('订单号(out_trade_no)格式不正确');
         if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))sysmsg('金额不合法');
+        if(!is_url($notify_url))sysmsg('通知地址(notify_url)格式不正确');
         if(!empty($cert_no) && !is_idcard($cert_no)) sysmsg('身份证号码格式不正确');
         if(!empty($min_age) && (!is_numeric($min_age) || $min_age < 0)) sysmsg('最低年龄格式不正确');
         $cert_info = null;
@@ -87,6 +88,16 @@ class Pay
         }
         if($conf['user_deposit']==1 && $conf['user_deposit_min'] > 0 && $conf['user_deposit_min'] > $userrow['deposit']){
             sysmsg('商户保证金不足，请前往支付平台充值保证金后再发起支付');
+        }
+        if(!empty($conf['pay_region_block'])){
+            $ipregion = get_ip_region($clientip);
+            if($ipregion){
+                foreach(explode('|',$conf['pay_region_block']) as $rows){
+                    if(strpos($ipregion, $rows) !== false){
+                        sysmsg('您所在的地区无法发起支付，请更换其他支付方式');
+                    }
+                }
+            }
         }
 
         if(!empty($conf['blockname'])){
@@ -212,7 +223,11 @@ class Pay
 
         if($firstGetChannel){
             // 随机增减金额
-            if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = round($realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2)), 2);
+            if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart']){
+                $randmoney = randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
+                $realmoney = round($realmoney + $randmoney, 2);
+                if($submitData['mode']==1) $getmoney = round($getmoney + $randmoney, 2);
+            }
 
             $resCount = $DB->update('order', ['type'=>$submitData['typeid'], 'channel'=>$submitData['channel'], 'subchannel'=>$submitData['subchannel'], 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no, 'channel'=>0]);
             if($resCount == 0) sysmsg('更新订单失败，请返回重试！');
@@ -279,6 +294,7 @@ class Pay
         if(empty($device))$device = 'pc';
         $sub_openid=$queryArr['sub_openid'];
         $sub_appid=$queryArr['sub_appid'];
+        $is_applet=isset($queryArr['is_applet'])?intval($queryArr['is_applet']):0;
         $auth_code=$queryArr['auth_code'];
         $sitename=urlencode(base64_encode(htmlspecialchars($queryArr['sitename'])));
         $param=isset($queryArr['param'])?htmlspecialchars(daddslashes($queryArr['param'])):null;
@@ -303,6 +319,7 @@ class Pay
         if(!preg_match('/^[a-zA-Z0-9.\_\-|]+$/',$out_trade_no))echojsonmsg('订单号(out_trade_no)格式不正确');
         if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))echojsonmsg('金额不合法');
         if(!filter_var($clientip, FILTER_VALIDATE_IP))echojsonmsg('用户IP地址不合法');
+        if(!is_url($notify_url))echojsonmsg('通知地址(notify_url)格式不正确');
         if($method == 'jsapi' && empty($sub_openid))echojsonmsg('jsapi支付时参数(sub_openid)不能为空');
         //if($method == 'jsapi' && $type=='wxpay' && empty($sub_appid))echojsonmsg('jsapi支付时参数(sub_appid)不能为空');
         if($method == 'scan' && empty($auth_code))echojsonmsg('付款码支付时授权码(auth_code)不能为空');
@@ -340,6 +357,16 @@ class Pay
         }
         if($conf['user_deposit']==1 && $conf['user_deposit_min'] > 0 && $conf['user_deposit_min'] > $userrow['deposit']){
             echojsonmsg('商户保证金不足，请前往支付平台充值保证金后再发起支付');
+        }
+        if(!empty($conf['pay_region_block'])){
+            $ipregion = get_ip_region($clientip);
+            if($ipregion){
+                foreach(explode('|',$conf['pay_region_block']) as $rows){
+                    if(strpos($ipregion, $rows) !== false){
+                        echojsonmsg('您所在的地区无法发起支付，请更换其他支付方式');
+                    }
+                }
+            }
         }
 
         if(!empty($conf['blockname'])){
@@ -461,7 +488,11 @@ class Pay
 
         if($firstGetChannel){
             // 随机增减金额
-            if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart'])$realmoney = $realmoney + randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
+            if(!empty($conf['pay_payaddstart'])&&$conf['pay_payaddstart']!=0&&!empty($conf['pay_payaddmin'])&&$conf['pay_payaddmin']!=0&&!empty($conf['pay_payaddmax'])&&$conf['pay_payaddmax']!=0&&$realmoney>=$conf['pay_payaddstart']){
+                $randmoney = randomFloat(round($conf['pay_payaddmin'],2),round($conf['pay_payaddmax'],2));
+                $realmoney = round($realmoney + $randmoney, 2);
+                if($submitData['mode']==1) $getmoney = round($getmoney + $randmoney, 2);
+            }
 
             $resCount = $DB->update('order', ['type'=>$submitData['typeid'], 'channel'=>$submitData['channel'], 'subchannel'=>$submitData['subchannel'], 'realmoney'=>$realmoney, 'getmoney'=>$getmoney], ['trade_no'=>$trade_no, 'channel'=>0]);
             if($resCount == 0) echojsonmsg('更新订单失败，请返回重试！');
@@ -481,6 +512,7 @@ class Pay
         $order['profits'] = \lib\Payment::updateOrderProfits($order, $submitData['plugin']);
         $order['sub_openid'] = $sub_openid;
         $order['sub_appid'] = $sub_appid;
+        $order['is_applet'] = $is_applet;
         $order['auth_code'] = $auth_code;
         $order['cert_no'] = $cert_no;
         $order['cert_name'] = $cert_name;
@@ -516,7 +548,7 @@ class Pay
         }
         if($order){
             $type=$DB->getColumn("SELECT name FROM pre_type WHERE id='{$order['type']}' LIMIT 1");
-            $result = ['code'=>0, 'trade_no'=>$order['trade_no'],'out_trade_no'=>$order['out_trade_no'],'api_trade_no'=>$order['api_trade_no'],'bill_trade_no'=>$order['bill_trade_no'],'type'=>$type,'pid'=>$order['uid'],'addtime'=>$order['addtime'],'endtime'=>$order['endtime'],'name'=>$order['name'],'money'=>$order['money'],'param'=>$order['param'],'buyer'=>$order['buyer'],'clientip'=>$order['ip'],'status'=>$order['status'],'refundmoney'=>$order['refundmoney']];
+            $result = ['code'=>0, 'trade_no'=>$order['trade_no'],'out_trade_no'=>$order['out_trade_no'],'api_trade_no'=>$order['api_trade_no'],'bill_trade_no'=>$order['bill_trade_no'],'bill_mch_trade_no'=>$order['bill_mch_trade_no'],'type'=>$type,'pid'=>$order['uid'],'addtime'=>$order['addtime'],'endtime'=>$order['endtime'],'name'=>$order['name'],'money'=>$order['money'],'param'=>$order['param'],'buyer'=>$order['buyer'],'clientip'=>$order['ip'],'status'=>$order['status'],'refundmoney'=>$order['refundmoney']];
             $result = array_filter($result, function($a){return !isEmpty($a);});
             return $result;
         }else{
@@ -531,7 +563,7 @@ class Pay
         if(!$conf['user_refund']) throw new Exception('管理员未开启商户后台自助退款');
 
         $money = trim($queryArr['money']);
-	    if(!is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))throw new Exception('金额输入错误');
+	    if(!empty($money) && (!is_numeric($money) || !preg_match('/^[0-9.]+$/', $money)))throw new Exception('金额输入错误');
         
         if(!empty($queryArr['trade_no'])){
 			$trade_no=daddslashes($queryArr['trade_no']);

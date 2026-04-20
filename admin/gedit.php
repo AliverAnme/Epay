@@ -40,7 +40,13 @@ if($act == 'edit'){
 	<form class="form-horizontal" id="form-store" onsubmit="return save(this)" method="POST">
 		<input type="hidden" name="action" id="action" value="<?php echo $act?>"/>
 		<input type="hidden" name="gid" id="gid"/>
-		<div class="row">
+		<ul class="nav nav-tabs">
+			<li class="active"><a href="#base" data-toggle="tab" aria-expanded="true">基本信息</a></li>
+			<li><a href="#set" data-toggle="tab" aria-expanded="true">其他配置</a></li>
+		</ul>
+<div id="myTabContent" class="tab-content">
+	<div class="tab-pane fade active in" id="base">
+		<div class="row" style="margin-top:10px;">
 		<div class="col-sm-12 col-md-7">
 		<div class="form-group">
 			<label class="col-sm-2 control-label no-padding-right">显示名称</label>
@@ -120,9 +126,47 @@ echo '<tr><td><b>'.$value.'</b><input type="hidden" name="info['.$key.'][type]" 
 			</div>
 		</div>
 		<div class="form-group">
+			<label class="col-sm-4 control-label no-padding-right">最低结算金额</label>
+			<div class="col-sm-8">
+			<input type="text" name="config[settle_money]" class="form-control" placeholder="留空则与系统设置一致"/>
+			</div>
+		</div>
+		<div class="form-group">
 			<label class="col-sm-4 control-label no-padding-right">结算手续费</label>
 			<div class="col-sm-8">
 			<div class="input-group"><input type="text" name="config[settle_rate]" class="form-control" placeholder="留空则与系统设置一致"/><span class="input-group-addon">%</span></div>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">支付宝结算</label>
+			<div class="col-sm-8">
+				<select name="config[settle_alipay]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">微信结算</label>
+			<div class="col-sm-8">
+				<select name="config[settle_wxpay]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">QQ钱包结算</label>
+			<div class="col-sm-8">
+				<select name="config[settle_qqpay]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">银行卡结算</label>
+			<div class="col-sm-8">
+				<select name="config[settle_bank]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
 			</div>
 		</div>
 		<div class="form-group">
@@ -150,16 +194,56 @@ echo '<tr><td><b>'.$value.'</b><input type="hidden" name="info['.$key.'][type]" 
 			</div>
 		</div>
 		<div class="form-group">
+			<label class="col-sm-4 control-label">创建红包功能</label>
+			<div class="col-sm-8">
+				<select name="config[user_transfer_red]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
 			<label class="col-sm-4 control-label no-padding-right">代付手续费</label>
 			<div class="col-sm-8">
 			<div class="input-group"><input type="text" name="config[transfer_rate]" class="form-control" placeholder="留空则与系统设置一致"/><span class="input-group-addon">%</span></div>
+			</div>
+		</div>
+		<?php if(class_exists('\\lib\\AlipaySATF\\AlipaySATF')){?>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">支付宝安全发</label>
+			<div class="col-sm-8">
+				<select name="config[alipay_satf]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<?php }?>
+		</div>
+		</div>
+	</div>
+	<div class="tab-pane fade in" id="set">
+		<div class="row" style="margin-top:10px;">
+		<div class="col-sm-12 col-md-6">
+		<div class="form-group">
+			<label class="col-sm-4 control-label">云喇叭收款提醒</label>
+			<div class="col-sm-8">
+				<select name="config[voicenotice]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">订单小票打印</label>
+			<div class="col-sm-8">
+				<select name="config[orderprint]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="col-sm-4 control-label">邀请返现</label>
 			<div class="col-sm-8">
 				<select name="config[invite_open]" class="form-control">
-					<option value="">缺省（与系统设置一致）</option><option value="1">开启</option>
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
 				</select>
 			</div>
 		</div>
@@ -178,7 +262,15 @@ echo '<tr><td><b>'.$value.'</b><input type="hidden" name="info['.$key.'][type]" 
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="col-sm-4 control-label">验证授权域名</label>
+			<label class="col-sm-4 control-label">保证金最低金额</label>
+			<div class="col-sm-8"><input type="text" name="config[user_deposit_min]" value="" class="form-control" placeholder="留空则与系统设置一致"/></div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">保证金冻结天数</label>
+			<div class="col-sm-8"><input type="text" name="config[user_deposit_day]" value="" class="form-control" placeholder="留空则与系统设置一致"/></div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">未授权支付域名禁止支付</label>
 			<div class="col-sm-8">
 				<select name="config[pay_domain_forbid]" class="form-control">
 					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
@@ -186,10 +278,18 @@ echo '<tr><td><b>'.$value.'</b><input type="hidden" name="info['.$key.'][type]" 
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="col-sm-4 control-label">结算时间</label>
+			<label class="col-sm-4 control-label">支付宝直付通&微信收付通结算时间</label>
 			<div class="col-sm-8">
 				<select name="config[direct_settle_time]" class="form-control">
 					<option value="">缺省（与系统设置一致）</option><option value="0">支付后立即结算</option><option value="1">支付后延迟24小时结算</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">支付宝快捷登录获取用户手机号</label>
+			<div class="col-sm-8">
+				<select name="config[alipay_getmobile]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
 				</select>
 			</div>
 		</div>
@@ -202,15 +302,82 @@ echo '<tr><td><b>'.$value.'</b><input type="hidden" name="info['.$key.'][type]" 
 			<div class="col-sm-4"><input type="text" name="config[pay_payaddmin]" value="" class="form-control" placeholder="最小增加金额，负数为减少"/></div>
 			<div class="col-sm-4"><input type="text" name="config[pay_payaddmax]" value="" class="form-control" placeholder="最大增加金额，负数为减少"/></div>
 		</div>
+		</div>
+		<div class="col-sm-12 col-md-6">
 		<div class="form-group">
 			<label class="col-sm-4 control-label">最大支付金额</label>
 			<div class="col-sm-8"><input type="text" name="config[pay_maxmoney]" value="" class="form-control" placeholder="留空则与系统设置一致"/></div>
 		</div>
 		<div class="form-group">
+			<label class="col-sm-4 control-label">最小支付金额</label>
+			<div class="col-sm-8"><input type="text" name="config[pay_minmoney]" value="" class="form-control" placeholder="留空则与系统设置一致"/></div>
+		</div>
+		<div class="form-group">
 			<label class="col-sm-4 control-label">日支付限额</label>
 			<div class="col-sm-8"><input type="text" name="config[pay_daymax]" value="" class="form-control" placeholder="留空则不限制"/></div>
 		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">校验扫码IP所在地是否一致</label>
+			<div class="col-sm-8">
+				<select name="config[check_pay_regoin]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">否</option><option value="1">是（不一致时禁止支付）</option><option value="2">是（不一致时弹出提示）</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">创建订单人机验证</label>
+			<div class="col-sm-8">
+				<select name="config[pay_verify]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">按规则开启</option><option value="3">强制开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">商品名称自定义</label>
+			<div class="col-sm-8"><input type="text" name="config[ordername]" value="" class="form-control" placeholder="留空则与系统设置一致"/></div>
+		</div>
+		<?php if(class_exists('\\lib\\Complain\\CommUtil')){?><div class="form-group">
+			<label class="col-sm-4 control-label">交易投诉处理功能</label>
+			<div class="col-sm-8">
+				<select name="config[complain_open]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">自动冻结与解冻被投诉订单</label>
+			<div class="col-sm-8">
+				<select name="config[complain_freeze_order]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">否</option><option value="1">是</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">投诉订单自动退款</label>
+			<div class="col-sm-8">
+				<select name="config[complain_auto_refund]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">否</option><option value="1">是</option>
+				</select>
+			</div>
+		</div>
+		<?php }?>
 		<?php if(class_exists("\\lib\\Applyments\\CommUtil")){?><div class="form-group">
+			<label class="col-sm-4 control-label">进件功能</label>
+			<div class="col-sm-8">
+				<select name="config[applyments_open]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">分账规则管理功能</label>
+			<div class="col-sm-8">
+				<select name="config[user_profitsharing]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
 			<label class="col-sm-4 control-label">免费进件</label>
 			<div class="col-sm-8">
 				<select name="config[applyments_free]" class="form-control">
@@ -218,8 +385,26 @@ echo '<tr><td><b>'.$value.'</b><input type="hidden" name="info['.$key.'][type]" 
 				</select>
 			</div>
 		</div><?php }?>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">微信合单支付</label>
+			<div class="col-sm-8">
+				<select name="config[wxcombine_open]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-4 control-label">支付宝合单支付</label>
+			<div class="col-sm-8">
+				<select name="config[alicombine_open]" class="form-control">
+					<option value="">缺省（与系统设置一致）</option><option value="0">关闭</option><option value="1">开启</option>
+				</select>
+			</div>
 		</div>
 		</div>
+		</div>
+	</div>
+</div>
 		<input type="submit" class="btn btn-primary btn-block" value="保存"></form>
 	</form>
 	

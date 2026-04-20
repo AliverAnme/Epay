@@ -38,6 +38,11 @@ class hnapay_plugin
                 'type' => 'select',
                 'options' => [0 => '公众号/生活号支付', 1 => '支付宝H5', 2 => '扫码支付'],
             ],
+			'wxmchid' => [
+				'name' => '微信服务商商户号',
+				'type' => 'input',
+				'note' => '用于获取微信支付投诉',
+			],
 		],
 		'select' => null,
 		'note' => '需要使用RSA密钥！<br/>如使用扫码支付，需将<b>收款密钥</b>中的<b>商户私钥</b>上传到/plugins/hnapay/cert/mch.key（或cert/商户ID/mch.key）<br/>如使用付款功能，需将<b>付款密钥</b>中的<b>商户私钥</b>上传到/plugins/hnapay/cert/pay.key（或cert/商户ID/pay.key）', //支付密钥填写说明
@@ -282,18 +287,19 @@ class hnapay_plugin
 			if(!empty($order['sub_appid'])){
 				$wxinfo['appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				}
 			}
 			$openid = $order['sub_openid'];
 		}else{
 			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
 			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 		$blocks = checkBlockUser($openid, TRADE_NO);
 		if($blocks) return $blocks;
@@ -447,7 +453,7 @@ class hnapay_plugin
 					];
 					try{
 						$result = $pay->quickPayConfirm($param, TRADE_NO);
-						$DB->update('order', ['ext'=>['bizProtocolNo'=>$result['bizProtocolNo'], 'payProtocolNo'=>$result['payProtocolNo']]], ['trade_no'=>TRADE_NO]);
+						$DB->update('order', ['ext'=>json_encode(['bizProtocolNo'=>$result['bizProtocolNo'], 'payProtocolNo'=>$result['payProtocolNo']])], ['trade_no'=>TRADE_NO]);
 						exit(json_encode(['code'=>0, 'backurl'=>'/pay/return/'.TRADE_NO.'/']));
 					}catch(Exception $ex){
 						exit(json_encode(['code'=>-1, 'msg'=>'快捷支付下单失败！'.$ex->getMessage()]));

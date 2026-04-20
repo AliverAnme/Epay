@@ -61,7 +61,7 @@ class lakala_plugin
 				return ['type'=>'jump','url'=>'/pay/alipay/'.TRADE_NO.'/'];
 			}
 		}elseif($order['typename']=='wxpay'){
-			if(strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger')!==false && $channel['appwxmp']>0){
+			if(checkwechat() && $channel['appwxmp']>0){
 				return ['type'=>'jump','url'=>'/pay/wxjspay/'.TRADE_NO.'/'];
 			}elseif(checkmobile()==true && $channel['appwxa']>0){
 				return ['type'=>'jump','url'=>'/pay/wxwappay/'.TRADE_NO.'/'];
@@ -297,7 +297,11 @@ class lakala_plugin
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'微信支付下单失败！'.$ex->getMessage()];
 		}*/
-		$code_url = $siteurl.'pay/wxjspay/'.TRADE_NO.'/';
+		if($channel['appwxmp']){
+			$code_url = $siteurl.'pay/wxjspay/'.TRADE_NO.'/';
+		}else{
+			$code_url = $siteurl.'pay/wxwappay/'.TRADE_NO.'/';
+		}
 
 		if (checkmobile()==true) {
 			return ['type'=>'qrcode','page'=>'wxpay_wap','url'=>$code_url];
@@ -314,26 +318,27 @@ class lakala_plugin
 			if(!empty($order['sub_appid'])){
 				$wxinfo['appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				}
 			}
 			$openid = $order['sub_openid'];
 		}else{
 			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
 			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
 
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 		$blocks = checkBlockUser($openid, TRADE_NO);
 		if($blocks) return $blocks;
 
 		try{
 			$extend = ['sub_appid' => $wxinfo['appid'], 'user_id' => $openid];
-			$result = self::qrcode('WECHAT', '51', $extend);
+			$result = self::qrcode('WECHAT', $order['is_applet'] == 1 ? '71' : '51', $extend);
 			$pay_info = ['appId'=>$result['app_id'],'timeStamp'=>$result['time_stamp'],'nonceStr'=>$result['nonce_str'],'package'=>$result['package'],'paySign'=>$result['pay_sign'],'signType'=>$result['sign_type']];
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'微信支付下单失败 '.$ex->getMessage()];

@@ -14,7 +14,7 @@ interface IProfitSharing
     function unfreeeze($trade_no, $api_trade_no);
 
     //分账回退
-    function return($trade_no, $api_trade_no, $rdata);
+    function return($trade_no, $api_trade_no, $settle_no, $rdata);
 
     //添加分账接收方
     function addReceiver($account, $name = null);

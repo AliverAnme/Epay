@@ -18,7 +18,7 @@ class Common implements IProfitSharing
     }
 
     //分账回退
-    public function return($trade_no, $api_trade_no, $rdata){
+    public function return($trade_no, $api_trade_no, $settle_no, $rdata){
         return ['code'=>-1,'msg'=>'不支持当前操作'];
     }
 

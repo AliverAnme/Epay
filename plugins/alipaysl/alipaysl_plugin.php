@@ -40,7 +40,7 @@ class alipaysl_plugin
 			'7' => 'JSAPI支付',
 			'8' => '订单码支付',
 		],
-		'note' => '<p>在支付宝服务商后台进件后可获取到子商户的授权链接，子商户访问之后即可得到商户授权token。</p><p>如果使用公钥证书模式，需将<font color="red">应用公钥证书、支付宝公钥证书、支付宝根证书</font>3个crt文件放置于<font color="red">/plugins/alipaysl/cert/</font>文件夹（或<font color="red">/plugins/alipaysl/cert/应用APPID/</font>文件夹）</p>', //支付密钥填写说明
+		'note' => '<p>在支付宝第三方应用商家授权页面，可查看商户授权token。</p><p>如果使用公钥证书模式，需将<font color="red">应用公钥证书、支付宝公钥证书、支付宝根证书</font>3个crt文件放置于<font color="red">/plugins/alipaysl/cert/</font>文件夹（或<font color="red">/plugins/alipaysl/cert/应用APPID/</font>文件夹）</p>', //支付密钥填写说明
 		'bindwxmp' => false, //是否支持绑定微信公众号
 		'bindwxa' => false, //是否支持绑定微信小程序
 	];
@@ -124,7 +124,7 @@ class alipaysl_plugin
 			return self::apppay();
 		}
 		elseif($method=='jsapi'){
-			if(in_array('7',$channel['apptype'])){
+			if(in_array('7',$channel['apptype']) && $order['is_applet'] == 1){
 				return self::jsapipay();
 			}else{
 				return self::jspay();
@@ -298,17 +298,6 @@ class alipaysl_plugin
 				$code_url = $conf['localurl_alipay'].'pay/preauth/'.TRADE_NO.'/';
 			}
 		}else{
-
-			if($conf['alipay_qrpaylogin'] == 1){
-				if(checkalipay() || $mdevice=='alipay'){
-					[$user_type, $user_id] = alipay_oauth(require(PAY_ROOT.'inc/config.php'));
-					$blocks = checkBlockUser($user_id, TRADE_NO);
-					if($blocks) return $blocks;
-				}else{
-					$code_url = $siteurl.'pay/qrcode/'.TRADE_NO.'/';
-					return ['type'=>'qrcode','page'=>'alipay_qrcode','url'=>$code_url];
-				}
-			}
 
 			$alipay_config = require(PAY_ROOT.'inc/config.php');
 			$alipay_config['notify_url'] = $conf['localurl'].'pay/notify/'.TRADE_NO.'/';
@@ -791,7 +780,7 @@ class alipaysl_plugin
 				}
 			}elseif($_POST['notify_type'] == 'open_app_auth_notify'){
 				$bizContent = json_decode($_POST['biz_content'], true);
-				if($bizContent && isset($bizContent['app_auth_token'])){
+				if($bizContent && isset($bizContent['detail']['app_auth_token'])){
 					$model = \lib\Applyments\CommUtil::getModel2($channel);
 					$model->callback($bizContent);
 				}

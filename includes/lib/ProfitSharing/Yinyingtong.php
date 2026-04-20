@@ -53,9 +53,10 @@ class Yinyingtong implements IProfitSharing
             $allmoney += $money;
         }
 
+        $settle_no = date('YmdHis').rand(1000,9999);
         $params = [
             'settlement_type' => '1',
-            'command_no' => $trade_no,
+            'command_no' => $settle_no,
             'yyt_order_pay_id' => $api_trade_no,
             'total_amount' => $allmoney,
             'finish' => '0',
@@ -100,7 +101,7 @@ class Yinyingtong implements IProfitSharing
     }
 
     //分账回退
-    public function return($trade_no, $api_trade_no, $rdata){
+    public function return($trade_no, $api_trade_no, $settle_no, $rdata){
         $receiver_list = [];
         $allmoney = 0;
         foreach($rdata as $row){
@@ -109,7 +110,7 @@ class Yinyingtong implements IProfitSharing
         }
         $params = [
             'command_no' => date('YmdHis').rand(11111,99999),
-            'origin_command_no' => $trade_no,
+            'origin_command_no' => $settle_no,
             'yyt_order_pay_id' => $api_trade_no,
             'total_amount' => $allmoney,
         ];

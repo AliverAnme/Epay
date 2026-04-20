@@ -12,6 +12,8 @@ function curl_get($url)
 			$proxy_type = CURLPROXY_SOCKS4;
 		}elseif($conf['proxy_type'] == 'sock5'){
 			$proxy_type = CURLPROXY_SOCKS5;
+		}elseif($conf['proxy_type'] == 'sock5h'){
+			$proxy_type = CURLPROXY_SOCKS5_HOSTNAME;
 		}else{
 			$proxy_type = CURLPROXY_HTTP;
 		}
@@ -274,6 +276,12 @@ function get_unionpay_ua(){
 		return $matches[0];
 	}
 	return 'UnionPay/1.0 CloudPay';
+}
+function checkdouyin(){
+	if(strpos($_SERVER['HTTP_USER_AGENT'], 'aweme‌') !== false)
+		return true;
+	else
+		return false;
 }
 function getDevice(){
 	$user_agent = strtolower($_SERVER['HTTP_USER_AGENT']);
@@ -547,7 +555,15 @@ function get_main_host($url){
 }
 
 function do_notify($url){
-	$return = curl_get($url);
+	global $conf;
+	if($conf['proxy'] == 2 && !empty($conf['proxy_apiurl']) && !empty($conf['proxy_apikey'])){
+		$url = base64_encode($url);
+		$timestamp = strval(time());
+		$param = ['url' => $url, 'timestamp' => $timestamp, 'sign' => md5($url.$timestamp.$conf['proxy_apikey'])];
+		$return = get_curl($conf['proxy_apiurl'], http_build_query($param));
+	}else{
+		$return = curl_get($url);
+	}
 	if(strpos($return,'success')!==false || strpos($return,'SUCCESS')!==false || strpos($return,'Success')!==false){
 		return true;
 	}else{
@@ -736,7 +752,7 @@ function processOrder(&$srow,$notify=true){
 	if($srow['profits']>0){ //订单分账处理
 		$psreceiver = \lib\ProfitSharing\CommUtil::getReceiver($srow['profits']);
 		if($psreceiver){
-			$status = in_array($srow['plugin'], \lib\ProfitSharing\CommUtil::$no_order_plugins) ? 2 : 0;
+			$status = in_array($srow['plugin'], \lib\ProfitSharing\CommUtil::$no_order_plugins) || (in_array($srow['plugin'], \lib\ProfitSharing\CommUtil::$mode_plugins) && $psreceiver['mode'] == 0) ? 2 : 0;
 			$allpsmoney = 0;
 			$rdata = [];
 			foreach($psreceiver['info'] as $receiver){
@@ -1316,13 +1332,14 @@ function alipaymini_jump_scheme($orderid, $appid = null){
 }
 
 function getBankCardInfo($cardno){
-	$url = 'http://api.cccyun.cc/bankcard.php?cardno='.$cardno;
+	$url = 'https://ccdcapi.alipay.com/validateAndCacheCardInfo.json?_input_charset=utf-8&cardNo='.$cardno.'&cardBinCheck=true';
 	$data = get_curl($url);
 	$arr = json_decode($data, true);
-	if(isset($arr['code']) && $arr['code']==0){
-		return $arr['data'];
+	if($arr['validated']){
+		$bank_arr = json_decode(file_get_contents(SYSTEM_ROOT.'lib/bank.json'), true);
+		return ['card_no'=>$cardno, 'bank_code'=>$arr['bank'], 'bank_name'=>$bank_arr[$arr['bank']] ? $bank_arr[$arr['bank']] : $arr['bank'], 'card_type'=>$arr['cardType']];
 	}else{
-		throw new Exception($arr['msg']?$arr['msg']:'银行卡信息查询失败');
+		throw new Exception('银行卡号校验失败');
 	}
 }
 
@@ -1414,6 +1431,24 @@ function echojsonmsg($msg, $code = -1){
 	echojson(['code'=>$code, 'msg'=>$msg]);
 }
 
+/**
+ * 统一JSON返回方法（包含data层）
+ * @param int $code 状态码，200表示成功，其他表示失败
+ * @param string $msg 消息内容
+ * @param mixed $data 返回数据
+ */
+function json_response($code = 200, $msg = 'success', $data = null){
+	@header('Content-Type: application/json; charset=UTF-8');
+	$response = [
+		'code' => $code,
+		'msg' => $msg
+	];
+	if($data !== null){
+		$response['data'] = $data;
+	}
+	exit(json_encode($response, JSON_UNESCAPED_UNICODE));
+}
+
 function getScanPayType($authCode){
 	$prefix = substr($authCode,0,2);
 	$alipay_prefix = ['25', '26', '27', '28', '29', '30'];
@@ -1489,4 +1524,30 @@ function showstar($num){
 		$data .= '*';
 	}
 	return $data;
+}
+
+function is_url($url){
+	if (preg_match('/^(http|https):\/\/[^\s]+/', $url)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+function is_self_url($url){
+	global $conf, $siteurl;
+	return strpos($url, $siteurl)===0 || !empty($conf['localurl_alipay']) && strpos($url, $conf['localurl_alipay'])===0 || !empty($conf['localurl_wxpay']) && strpos($url, $conf['localurl_wxpay'])===0;
+}
+
+function get_ip_region($ip){
+	if(!class_exists('\\lib\\Ip2Region')) return false;
+	$ipregion = new \lib\Ip2Region();
+	$region = $ipregion->search($ip);
+	if(!$region) return false;
+	$region = explode('|',$region);
+	if($region[1] == '中国'){
+		return $region[2].$region[3];
+	}else{
+		return $region[1].$region[2].$region[3];
+	}
 }

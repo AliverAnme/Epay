@@ -5,7 +5,7 @@ create table `pre_config` (
 PRIMARY KEY  (`k`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `pre_config` VALUES ('version', '2053');
+INSERT INTO `pre_config` VALUES ('version', '2054');
 INSERT INTO `pre_config` VALUES ('admin_user', 'admin');
 INSERT INTO `pre_config` VALUES ('admin_pwd', '123456');
 INSERT INTO `pre_config` VALUES ('admin_paypwd', '123456');
@@ -101,6 +101,7 @@ INSERT INTO `pre_type` VALUES (3, 'qqpay', 0, 'QQ钱包', 1);
 INSERT INTO `pre_type` VALUES (4, 'bank', 0, '网银支付', 0);
 INSERT INTO `pre_type` VALUES (5, 'jdpay', 0, '京东支付', 0);
 INSERT INTO `pre_type` VALUES (6, 'paypal', 0, 'PayPal', 0);
+INSERT INTO `pre_type` VALUES (7, 'douyinpay', 0, '抖音支付', 0);
 
 DROP TABLE IF EXISTS `pre_plugin`;
 CREATE TABLE `pre_plugin` (
@@ -108,7 +109,7 @@ CREATE TABLE `pre_plugin` (
   `showname` varchar(60) DEFAULT NULL,
   `author` varchar(60) DEFAULT NULL,
   `link` varchar(255) DEFAULT NULL,
-  `types` varchar(255) DEFAULT NULL,
+  `types` varchar(50) DEFAULT NULL,
   `transtypes` varchar(50) DEFAULT NULL,
  PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -207,6 +208,7 @@ CREATE TABLE `pre_order` (
   `bill_mch_trade_no` varchar(150) DEFAULT NULL,
   `mobile` varchar(100) DEFAULT NULL,
   `cert_info` varchar(300) DEFAULT NULL,
+  `province` varchar(2) DEFAULT NULL,
  PRIMARY KEY (`trade_no`),
  KEY `uid` (`uid`),
  KEY `out_trade_no` (`out_trade_no`,`uid`),
@@ -408,6 +410,7 @@ CREATE TABLE `pre_psreceiver` (
   `id` int(11) unsigned NOT NULL auto_increment,
   `channel` int(11) NOT NULL,
   `subchannel` int(11) DEFAULT NULL,
+  `mode` tinyint(1) NOT NULL DEFAULT '0',
   `uid` int(11) DEFAULT NULL,
   `account` varchar(128) NOT NULL,
   `name` varchar(50) DEFAULT NULL,

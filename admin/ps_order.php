@@ -303,8 +303,10 @@ function getBatchOperateData(selections, field) {
 		} else if (status == 2) {
 			if (field) {
 				counts['return'].push(row[field]);
+				counts['unfreeze'].push(row[field]);
 			} else {
 				counts['return']++;
+				counts['unfreeze']++;
 			}
 		} else if (status == 3) {
 			if (field) {
@@ -411,6 +413,27 @@ function do_return(id){
 				layer.msg('服务器错误');
 			}
 		});
+	});
+}
+function do_amount(id){
+	var ii = layer.load(2, {shade:[0.1,'#fff']});
+	$.ajax({
+		type : 'POST',
+		url : 'ajax_profitsharing.php?act=amount',
+		data : {id:id},
+		dataType : 'json',
+		success : function(data) {
+			layer.close(ii);
+			if(data.code == 0){
+				layer.alert('订单待分账金额：'+data.amount, {icon: 1});
+			}else{
+				layer.alert('查询失败：'+data.msg, {icon: 2});
+			}
+		},
+		error:function(data){
+			layer.close(ii);
+			layer.msg('服务器错误');
+		}
 	});
 }
 function showmsg(result){

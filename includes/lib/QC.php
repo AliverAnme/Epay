@@ -55,31 +55,24 @@ class QC{
         $keysArr = array(
             "grant_type" => "authorization_code",
             "client_id" => $this->appid,
-            "redirect_uri" => $this->callback,
             "client_secret" => $this->appkey,
-            "code" => $_GET['code']
+            "code" => $_GET['code'],
+            "redirect_uri" => $this->callback,
+            "fmt" => "json",
+			"need_openid" => "1",
         );
 
         //------构造请求access_token的url
         $token_url = self::GET_ACCESS_TOKEN_URL.'?'.http_build_query($keysArr);
         $response = $this->get_curl($token_url);
-
-        if(strpos($response, "callback") !== false){
-
-            $lpos = strpos($response, "(");
-            $rpos = strrpos($response, ")");
-            $response  = substr($response, $lpos + 1, $rpos - $lpos -1);
-            $msg = json_decode($response);
-
-            if(isset($msg->error)){
-                sysmsg('<h3>error:</h3>'.$msg->error.'<h3>msg  :</h3>'.$msg->error_description);
-            }
-        }
-
-        $params = array();
-        parse_str($response, $params);
-
-        return $params["access_token"];
+        $arr = json_decode($response, true);
+        if(isset($arr['access_token'])){
+			return [$arr['access_token'], $arr['openid']];
+		}elseif(isset($arr['error'])){
+            sysmsg('获取access_token失败 ['.$arr['error'].']'.$arr['error_description']);
+		}else{
+            sysmsg('获取access_token失败，原因未知');
+		}
 
     }
 
@@ -87,27 +80,20 @@ class QC{
 
         //-------请求参数列表
         $keysArr = array(
-            "access_token" => $access_token
+            "access_token" => $access_token,
+            "fmt" => "json",
         );
 
         $graph_url = self::GET_OPENID_URL.'?'.http_build_query($keysArr);
         $response = $this->get_curl($graph_url);
-
-        //--------检测错误是否发生
-        if(strpos($response, "callback") !== false){
-
-            $lpos = strpos($response, "(");
-            $rpos = strrpos($response, ")");
-            $response = substr($response, $lpos + 1, $rpos - $lpos -1);
-        }
-
-        $user = json_decode($response);
-        if(isset($user->error)){
-            sysmsg('<h3>error:</h3>'.$user->error.'<h3>msg  :</h3>'.$user->error_description);
-        }
-
-        //------记录openid
-        return $user->openid;
+        $arr = json_decode($response, true);
+        if(isset($arr['openid'])){
+			return $arr['openid'];
+		}elseif(isset($arr['error'])){
+            sysmsg('获取openid失败 ['.$arr['error'].']'.$arr['error_description']);
+		}else{
+            sysmsg('获取openid失败，原因未知');
+		}
     }
 
     public function get_curl($url){

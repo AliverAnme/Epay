@@ -565,6 +565,20 @@ case 'wximg':
 	}
 break;
 
+case 'proxyapi':
+	if(!checkRefererHost())exit();
+	$apikey = trim($_GET['apikey']);
+	if(empty($apikey)) exit("<script language='javascript'>alert('请先保存API接口密钥');history.go(-1);</script>");
+	$content = file_get_contents('proxy_api.tpl');
+	$content = str_replace('{apikey}', $apikey, $content);
+	$file_name='index.php';
+	$file_size=strlen($content);
+	header("Content-Description: File Transfer");
+	header("Content-Type: application/force-download");
+	header("Content-Length: {$file_size}");
+	header("Content-Disposition:attachment; filename={$file_name}");
+	echo $content;
+break;
 default:
 	exit('No Act');
 break;

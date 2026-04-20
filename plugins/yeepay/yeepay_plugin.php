@@ -283,25 +283,26 @@ class yeepay_plugin
 			if(!empty($order['sub_appid'])){
 				$wxinfo['appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				}
 			}
 			$openid = $order['sub_openid'];
 		}else{
             $wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
             if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-            try{
-                $openid = wechat_oauth($wxinfo);
-            }catch(Exception $e){
-                return ['type'=>'error','msg'=>$e->getMessage()];
-            }
+            $openid = wechat_oauth($wxinfo);
         }
 		$blocks = checkBlockUser($openid, TRADE_NO);
 		if($blocks) return $blocks;
 
 		//②、统一下单
 		try{
-			$payinfo = self::pre_pay('WECHAT_OFFIACCOUNT', 'WECHAT', $wxinfo['appid'], $openid);
+			$payinfo = self::pre_pay($order['is_applet'] == 1 ? 'MINI_PROGRAM' : 'WECHAT_OFFIACCOUNT', 'WECHAT', $wxinfo['appid'], $openid);
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'微信支付下单失败！'.$ex->getMessage()];
 		}

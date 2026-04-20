@@ -17,6 +17,7 @@ tbody tr>td:nth-child(5){overflow: hidden;text-overflow: ellipsis;white-space: n
     <div class="col-md-12">
 <?php
 $support_plugins = \lib\ProfitSharing\CommUtil::$plugins;
+$mode_plugins = \lib\ProfitSharing\CommUtil::$mode_plugins;
 $channels = $DB->getAll("SELECT id,name,plugin,mode FROM pre_channel WHERE plugin IN ('".implode("','",$support_plugins)."') ORDER BY id ASC");
 $channel_select = '';
 foreach($channels as $row){
@@ -63,6 +64,14 @@ foreach($channels as $row){
 						<label class="col-sm-3 control-label no-padding-right">订单最小金额</label>
 						<div class="col-sm-9">
 						<div class="input-group"><input type="text" class="form-control" name="minmoney" id="minmoney" placeholder="订单超过该金额才进行分账，留空则不限制"><span class="input-group-addon">元</span></div>
+						</div>
+					</div>
+					<div class="form-group" style="display:none" id="mode_group">
+						<label class="col-sm-3 control-label">分账模式</label>
+						<div class="col-sm-9">
+							<div class="input-group"><select name="mode" id="mode" class="form-control">
+								<option value="0">实时分账</option><option value="1">延迟分账</option>
+							</select><a tabindex="0" class="input-group-addon" role="button" data-toggle="popover" data-trigger="focus" title="分账模式说明" data-placement="bottom" data-content="实时分账和延迟分账实际都是支付完立即分账，区别是：实时分账是下单时传入分账参数，支付后不需要额外调用接口就能分账；延迟分账是支付完成后再立即调用接口进行分账。根据你所开通的产品选择。"><span class="glyphicon glyphicon-info-sign"></span></a></div>
 						</div>
 					</div>
 					<input type="hidden" name="info" id="info" value="">
@@ -121,6 +130,7 @@ foreach($channels as $row){
 <script src="../assets/js/bootstrap-table-page-jump-to.min.js"></script>
 <script src="../assets/js/custom.js"></script>
 <script>
+const mode_plugins = <?php echo json_encode($mode_plugins); ?>;
 $(document).ready(function(){
 	updateToolbar();
 	const defaultPageSize = 30;
@@ -197,6 +207,7 @@ $(document).ready(function(){
 			},
 		]
 	})
+	$('[data-toggle="popover"]').popover()
 })
 function addframe(){
 	$("#modal-store").modal('show');
@@ -207,6 +218,7 @@ function addframe(){
 	$("#channel").val(0);
 	$("#uid").val('');
 	$("#subchannel").val(0);
+	$("#mode").val(0);
 	$("#minmoney").val('');
 	$("#receiverList").empty();
 	receiverCount = 0;
@@ -217,6 +229,11 @@ function changeChannel(subchannel){
 	var channel = parseInt($("#channel").val());
 	if(channel>0){
 		var plugin = $("#channel option:selected").attr('plugin');
+		if(mode_plugins.includes(plugin)){
+			$("#mode_group").show();
+		}else{
+			$("#mode_group").hide();
+		}
 		if(plugin == 'wxpayn' || plugin == 'wxpaynp')
 			$("#account_note").text('账号支持填写商户号或个人OpenId！OpenId获取地址：<?php echo $siteurl?>user/openid.php?channel='+channel);
 		else if(plugin == 'alipay' || plugin == 'alipaysl')
@@ -250,6 +267,7 @@ function editframe(id){
 				$("#channel").val(data.data.channel);
 				$("#uid").val(data.data.uid);
 				$("#subchannel").val(data.data.subchannel);
+				$("#mode").val(data.data.mode);
 				$("#minmoney").val(data.data.minmoney);
 				changeChannel(data.data.subchannel);
 				

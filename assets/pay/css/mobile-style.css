@@ -56,6 +56,14 @@ ul > li {
     background: linear-gradient(90deg, #1677ff 0%, #3d88f1 49.92%, #84b3f4 100.88%);
 }
 
+.bg-douyin::before{
+    content: '';
+    display: block;
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(90deg, #1e252f 0%, #475971 49.92%, #687482 100.88%);
+}
+
 .payment-logo{
     height: 120px;
     align-items: center;
@@ -68,12 +76,20 @@ ul > li {
 .payment-logo-wxwap{
     height: 80px;
 }
+.payment-logo-douyin{
+    height: 80px;
+}
 .payment-logo img{
     width: 112px;
     filter: drop-shadow(2px 4px 6px rgba(233,86,42,.3));
 }
 .payment-logo-wxwap img{
     width: 80px;
+}
+.payment-logo-douyin img{
+    height: 55px;
+    width: auto;
+    margin-left: 5px;
 }
 .payment-logo img + span{
     color: #fff;

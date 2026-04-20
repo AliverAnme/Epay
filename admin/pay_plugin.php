@@ -8,7 +8,7 @@ include './head.php';
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 ?>
   <div class="container" style="padding-top:70px;">
-    <div class="col-sm-12 col-md-10 col-lg-9 center-block" style="float: none;">
+    <div class="col-md-12 col-lg-10 center-block" style="float: none;">
 <?php
 $my=isset($_GET['my'])?$_GET['my']:null;
 if($my=='refresh') {

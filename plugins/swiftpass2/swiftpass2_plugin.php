@@ -231,11 +231,7 @@ class swiftpass2_plugin
 			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
 			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
 
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 			$blocks = checkBlockUser($openid, TRADE_NO);
 			if($blocks) return $blocks;
 

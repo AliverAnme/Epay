@@ -125,7 +125,7 @@ class alipayd_plugin
 			return self::apppay();
 		}
 		elseif($method=='jsapi'){
-			if(in_array('7',$channel['apptype'])){
+			if(in_array('7',$channel['apptype']) && $order['is_applet'] == 1){
 				return self::jsapipay();
 			}else{
 				return self::jspay();
@@ -311,17 +311,6 @@ class alipayd_plugin
 				$code_url = $conf['localurl_alipay'].'pay/preauth/'.TRADE_NO.'/';
 			}
 		}else{
-
-			if($conf['alipay_qrpaylogin'] == 1){
-				if(checkalipay() || $mdevice=='alipay'){
-					[$user_type, $user_id] = alipay_oauth(require(PAY_ROOT.'inc/config.php'));
-					$blocks = checkBlockUser($user_id, TRADE_NO);
-					if($blocks) return $blocks;
-				}else{
-					$code_url = $siteurl.'pay/qrcode/'.TRADE_NO.'/';
-					return ['type'=>'qrcode','page'=>'alipay_qrcode','url'=>$code_url];
-				}
-			}
 
 			$alipay_config = require(PAY_ROOT.'inc/config.php');
 			$alipay_config['notify_url'] = $conf['localurl'].'pay/notify/'.TRADE_NO.'/';

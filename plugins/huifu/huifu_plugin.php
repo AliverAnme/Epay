@@ -16,7 +16,7 @@ class huifu_plugin
 			'appurl' => [
 				'name' => '汇付产品号',
 				'type' => 'input',
-				'note' => '',
+				'note' => 'product_id',
 			],
 			'appsecret' => [
 				'name' => '商户私钥',
@@ -172,7 +172,7 @@ class huifu_plugin
 			'risk_check_data' => json_encode(['ip_addr' => $clientip]),
 		];
 		if($trade_type == 'T_JSAPI' || $trade_type == 'T_MINIAPP'){
-			$param['wx_data'] = json_encode(['sub_openid' => $sub_openid, 'openid' => $sub_openid, 'device_info' => '4', 'spbill_create_ip' => $clientip]);
+			$param['wx_data'] = json_encode(['sub_appid' => $sub_appid, 'sub_openid' => $sub_openid, 'device_info' => '4', 'spbill_create_ip' => $clientip]);
 		}elseif($trade_type == 'A_JSAPI'){
 			$param['alipay_data'] = json_encode(['subject' => $ordername, 'buyer_id' => $sub_openid]);
 		}elseif($trade_type == 'A_NATIVE'){
@@ -206,15 +206,19 @@ class huifu_plugin
 		global $order;
 		$psreceiver = \lib\ProfitSharing\CommUtil::getReceiver($order['profits']);
 		if($psreceiver){
-			$acct_infos = [];
-			foreach($psreceiver['info'] as $receiver){
-				$psmoney = round($order['realmoney'] * $receiver['rate'] / 100, 2);
-				$acct_infos[] = [
-					'huifu_id' => $receiver['account'],
-					'div_amt' => sprintf('%.2f', $psmoney),
-				];
+			if($psreceiver['mode'] == 1){
+				$param['delay_acct_flag'] = 'Y';
+			}else{
+				$acct_infos = [];
+				foreach($psreceiver['info'] as $receiver){
+					$psmoney = round($order['realmoney'] * $receiver['rate'] / 100, 2);
+					$acct_infos[] = [
+						'huifu_id' => $receiver['account'],
+						'div_amt' => sprintf('%.2f', $psmoney),
+					];
+				}
+				$param['acct_split_bunch'] = json_encode(['acct_infos' => $acct_infos]);
 			}
-			$param['acct_split_bunch'] = json_encode(['acct_infos' => $acct_infos]);
 		}
 	}
 
@@ -322,25 +326,26 @@ class huifu_plugin
 			if(!empty($order['sub_appid'])){
 				$wxinfo['appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				}
 			}
 			$openid = $order['sub_openid'];
 		}else{
 			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
 			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 		$blocks = checkBlockUser($openid, TRADE_NO);
 		if($blocks) return $blocks;
 
 		//②、统一下单
 		try{
-			$jsApiParameters = self::addOrder('T_JSAPI', $wxinfo['appid'], $openid);
+			$jsApiParameters = self::addOrder($order['is_applet'] == 1 ? 'T_MINIAPP' : 'T_JSAPI', $wxinfo['appid'], $openid);
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'微信支付下单失败！'.$ex->getMessage()];
 		}
@@ -917,6 +922,26 @@ class huifu_plugin
 			'org_req_date' => substr($order['trade_no'], 0, 8),
 			'org_req_seq_id' => $order['trade_no']
 		];
+		if($order['refundmoney'] < $order['realmoney'] && $order['profits'] > 0){
+			$psorder = \lib\ProfitSharing\CommUtil::getOrder($order['trade_no']);
+			if($psorder && $psorder['rdata'] && ($psorder['status'] == 1 || $psorder['status'] == 2)){
+				$acct_infos = [];
+				$allmoney = 0;
+				$leftmoney = (float)$order['refundmoney'];
+				foreach($psorder['rdata'] as $receiver){
+					$money = $receiver['money'] > $leftmoney ? $leftmoney : $receiver['money'];
+					$acct_infos[] = [
+						'huifu_id' => $receiver['account'],
+						'div_amt' => sprintf('%.2f', $money),
+					];
+					$allmoney += $receiver['money'];
+					$leftmoney = round($leftmoney - $money, 2);
+					if($leftmoney <= 0) break;
+				}
+				$param['acct_split_bunch'] = json_encode(['acct_infos' => $acct_infos]);
+			}
+		}
+
 		try{
 			$result = $client->requestApi('/v3/trade/payment/scanpay/refund', $param);
 		}catch(Exception $e){

@@ -279,6 +279,9 @@ $("select[name='homepage']").change(function(){
           <span class="glyphicon glyphicon-info-sign"></span> 支付密码用于转账接口以及API退款时使用，默认为123456
         </div>
 </div>
+<?php if(file_exists('./set_totp.php')){ ?>
+<div class="panel panel-primary"><div class="panel-body"><a href="./set_totp.php">TOTP二次验证配置</a></div></div>
+<?php } ?>
 <?php
 }elseif($mod=='template'){
 	$mblist = \lib\Template::getList();
@@ -439,6 +442,10 @@ $(document).ready(function(){
 	  <label class="col-sm-3 control-label">分账失败的24小时后重试</label>
 	  <div class="col-sm-9"><select class="form-control" name="profits_failretry" default="<?php echo $conf['profits_failretry']?>"><option value="0">否</option><option value="1">是</option></select></div>
 	</div><br/>
+	<?php if(class_exists('\\lib\\Ip2Region')){?><div class="form-group">
+	  <label class="col-sm-3 control-label">校验扫码IP所在地与下单IP所在地是否一致</label>
+	  <div class="col-sm-9"><select class="form-control" name="check_pay_regoin" default="<?php echo $conf['check_pay_regoin']?>"><option value="0">否</option><option value="1">是（不一致时禁止支付）</option><option value="2">是（不一致时弹出提示）</option></select><font color="green">仅支持支付宝&微信扫码支付场景，开启前确保<a href="./set.php?mod=iptype">获取IP方式</a>正确。使用此功能需要<a href="http://file.cccyun.cc/resource/ip2region.xdb">下载IP地址数据库</a>并上传到/includes/目录下。</font></div>
+	</div><br/><?php }?>
 	<div class="form-group">
 	  <div class="col-sm-offset-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/><br/>
 	 </div>
@@ -485,6 +492,28 @@ $(document).ready(function(){
   </form>
 </div>
 </div>
+<?php
+$wxpay_channel = $DB->getAll("SELECT * FROM pre_weixin WHERE type=0");
+?>
+<div class="panel panel-primary">
+<div class="panel-heading"><h3 class="panel-title">微信快捷登录相关设置</h3></div>
+<div class="panel-body">
+  <form onsubmit="return saveSetting(this)" method="post" class="form-horizontal" role="form">
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">微信扫码支付前快捷登录</label>
+	  <div class="col-sm-9"><select class="form-control" name="wxpay_qrpaylogin" default="<?php echo $conf['wxpay_qrpaylogin']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">开启后，可在非微信官方插件扫码支付前获取用户openid，用于黑名单屏蔽。官方插件或Native支付不支持。</font></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">微信快捷登录公众号</label>
+	  <div class="col-sm-9"><select class="form-control" name="wxpay_web_login" default="<?php echo $conf['wxpay_web_login']?>"><option value="0">关闭</option><?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?></select><font color="green">用于非微信官方插件的扫码支付前快捷登录判断黑名单。</font></div>
+	</div><br/>
+	<div class="form-group">
+	  <div class="col-sm-offset-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/><br/>
+	 </div>
+	</div>
+  </form>
+</div>
+</div>
 <div class="panel panel-primary">
 <div class="panel-heading"><h3 class="panel-title">商户支付功能设置</h3></div>
 <div class="panel-body">
@@ -523,6 +552,10 @@ $(document).ready(function(){
 	  <div class="col-sm-5"><div class="input-group"><input type="text" name="payfee_mincost" value="<?php echo $conf['payfee_mincost']; ?>" class="form-control" placeholder="最低扣除多少元"/><span class="input-group-addon">元</span></div></div>
 	</div><br/>
 	<?php if(class_exists('\\lib\\Applyments\\CommUtil')){?><div class="form-group">
+	  <label class="col-sm-3 control-label">开启商户后台进件功能</label>
+	  <div class="col-sm-9"><select class="form-control" name="applyments_open" default="<?php echo $conf['applyments_open']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
+	</div><br/>
+	<div class="form-group">
 	  <label class="col-sm-3 control-label">开启商户后台添加分账规则（仅进件商户）</label>
 	  <div class="col-sm-9"><select class="form-control" name="user_profitsharing" default="<?php echo $conf['user_profitsharing']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
 	</div><br/><?php }?>
@@ -595,7 +628,7 @@ $(document).ready(function(){
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">投诉自动回复并处理</label>
-	  <div class="col-sm-9"><select class="form-control" name="complain_auto_reply" default="<?php echo $conf['complain_auto_reply']?>"><option value="0">否</option><option value="1">自动回复并处理</option><option value="2">只自动回复</option><option value="3">只自动回复(仅微信)</option></select></div>
+	  <div class="col-sm-9"><select class="form-control" name="complain_auto_reply" default="<?php echo $conf['complain_auto_reply']?>"><option value="0">否</option><option value="1">自动回复并处理</option><option value="2">微信自动回复+支付宝自动处理</option><option value="3">微信自动回复+支付宝不处理</option></select></div>
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">微信重复投诉后仍然自动回复并处理</label>
@@ -613,14 +646,14 @@ $(document).ready(function(){
 	  <label class="col-sm-3 control-label">投诉自动拉黑支付IP</label>
 	  <div class="col-sm-9"><select class="form-control" name="complain_auto_ipblack" default="<?php echo $conf['complain_auto_ipblack']?>"><option value="0">否</option><option value="1">拉黑3天</option><option value="2">拉黑5天</option><option value="3">拉黑7天</option></select></div>
 	</div><br/>
-	<!--div class="form-group">
+	<div class="form-group">
 	  <label class="col-sm-3 control-label">投诉订单自动退款</label>
 	  <div class="col-sm-9"><select class="form-control" name="complain_auto_refund" default="<?php echo $conf['complain_auto_refund']?>"><option value="0">否</option><option value="1">是</option></select></div>
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">金额低于多少自动退款</label>
 	  <div class="col-sm-9"><div class="input-group"><input type="text" name="complain_auto_refund_money" value="<?php echo $conf['complain_auto_refund_money']; ?>" class="form-control" placeholder="不填写则不限制金额"/><span class="input-group-addon">元</span></div></div>
-	</div><br/-->
+	</div><br/>
 	<div class="form-group">
 	  <div class="col-sm-offset-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/><br/>
 	 </div>
@@ -678,6 +711,10 @@ $(document).ready(function(){
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">限制每支付账号每天支付总额</label>
 	  <div class="col-sm-9"><input type="text" name="pay_daymoney" value="<?php echo $conf['pay_daymoney']; ?>" class="form-control" placeholder="留空为不限制"/><font color="green">只支持支付宝JS支付与微信公众号支付</font></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">禁止支付的省或市</label>
+	  <div class="col-sm-9"><input type="text" name="pay_region_block" value="<?php echo $conf['pay_region_block']; ?>" class="form-control" placeholder="需省或市的全称，多个用|隔开"/><font color="green">使用此功能需要<a href="http://file.cccyun.cc/resource/ip2region.xdb">下载IP地址数据库</a>并上传到/includes/目录下。</font></div>
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">创建订单人机验证</label>
@@ -801,6 +838,10 @@ $(document).ready(function(){
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">发送提醒</label>
 	  <div class="col-sm-9"><select class="form-control" name="check_paymsg_notice" default="<?php echo $conf['check_paymsg_notice']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">关闭后自动重新下单</label>
+	  <div class="col-sm-9"><select class="form-control" name="check_paymsg_retry" default="<?php echo $conf['check_paymsg_retry']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
 	</div><br/>
 	<h4 style="text-align: center;">支付宝直付通结算失败自动关闭支付通道</h4>
 	<div class="form-group">
@@ -966,6 +1007,18 @@ $("select[name='settle_transfer']").change(function(){
 	  <label class="col-sm-3 control-label">支付宝转账接口通道</label>
 	  <div class="col-sm-9"><select class="form-control" name="transfer_alipay" default="<?php echo $conf['transfer_alipay']?>" onchange="changeAliChannel(this)"><option value="0">关闭</option><?php foreach($alipay_channel as $channel){echo '<option value="'.$channel['id'].'" plugin="'.$channel['plugin'].'">'.$channel['name'].'</option>';} ?><option value="-1">手动转账</option></select><font color="green">请先添加支付插件为alipay的支付通道。需签约“转账到支付宝账户”产品。<br/>若选择“手动转账”，用户提交代付后为待转账状态，需管理员手动转账并更改状态。</font></div>
 	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">支付宝-转账场景名称</label>
+	  <div class="col-sm-9"><input type="text" name="transfer_alipay_scene_name" value="<?php echo $conf['transfer_alipay_scene_name']; ?>" class="form-control" placeholder="可留空，若转账时提示“转账场景名称为空”则需要填写"/><font color="green"><a href="https://opendocs.alipay.com/open/0iaxid" target="_blank" rel="noreferrer">转账场景信息字段说明</a></font></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">支付宝-转账场景信息类型</label>
+	  <div class="col-sm-9"><input type="text" name="transfer_alipay_info_type" value="<?php echo $conf['transfer_alipay_info_type']; ?>" class="form-control" placeholder=""/><font color="green">请根据上述文档确认当前转账场景下需传入的信息类型，需按要求填入，有多个类型时用|隔开</font></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">支付宝-转账场景信息描述</label>
+	  <div class="col-sm-9"><input type="text" name="transfer_alipay_info_content" value="<?php echo $conf['transfer_alipay_info_content']; ?>" class="form-control" placeholder=""/><font color="green">请根据信息类型，描述当前这笔转账单的信息内容，有多个类型时用|隔开</font></div>
+	</div><br/>
 	<?php if(class_exists('\\lib\\AlipaySATF\\AlipaySATF')){?>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">支付宝安全发</label>
@@ -1086,7 +1139,7 @@ $(document).ready(function(){
   <form onsubmit="return saveSetting(this)" method="post" class="form-horizontal" role="form">
     <div class="form-group">
 	  <label class="col-sm-3 control-label">是否开启实名认证</label>
-	  <div class="col-sm-9"><select class="form-control" name="cert_open" default="<?php echo $conf['cert_open']?>"><option value="0">关闭</option><option value="1">支付宝身份验证</option><option value="3">支付宝实名信息验证</option><option value="5">阿里云金融级实人认证</option><option value="4">微信扫码实名认证</option><option value="2">手机号三要素实名认证</option></select></div>
+	  <div class="col-sm-9"><select class="form-control" name="cert_open" default="<?php echo $conf['cert_open']?>"><option value="0">关闭</option><option value="1">支付宝身份验证</option><option value="3">支付宝实名信息验证</option><option value="5">阿里云金融级实人认证</option><option value="6">蚂蚁数科实人认证</option><option value="4">微信扫码实名认证</option><option value="2">手机号三要素实名认证</option></select></div>
 	</div><br/>
 	<div id="setform2" style="<?php echo $conf['cert_open']!=1&&$conf['cert_open']!=3?'display:none;':null; ?>">
     <div class="form-group">
@@ -1122,6 +1175,20 @@ $(document).ready(function(){
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">阿里云认证场景ID</label>
 	  <div class="col-sm-9"><input type="text" name="cert_aliyunsceneid" value="<?php echo $conf['cert_aliyunsceneid']; ?>" class="form-control" placeholder="阿里云金融级实人认证-接入设置里面"/></div>
+	</div><br/>
+	</div>
+	<div id="setform6" style="<?php echo $conf['cert_open']!=6?'display:none;':null; ?>">
+    <div class="form-group">
+	  <label class="col-sm-3 control-label">蚂蚁数科AccessId</label>
+	  <div class="col-sm-9"><input type="text" name="cert_antiid" value="<?php echo $conf['cert_antiid']; ?>" class="form-control" placeholder=""/></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">蚂蚁数科AccessSecret</label>
+	  <div class="col-sm-9"><input type="text" name="cert_antikey" value="<?php echo $conf['cert_antikey']; ?>" class="form-control" placeholder=""/></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">蚂蚁数科认证场景ID</label>
+	  <div class="col-sm-9"><input type="text" name="cert_antisceneid" value="<?php echo $conf['cert_antisceneid']; ?>" class="form-control" placeholder=""/></div>
 	</div><br/>
 	</div>
 	<div id="setform1" style="<?php echo $conf['cert_open']==0?'display:none;':null; ?>">
@@ -1209,21 +1276,31 @@ $("select[name='cert_open']").change(function(){
 			$("#setform3").show();
 			$("#setform4").hide();
 			$("#setform5").hide();
+			$("#setform6").hide();
 		}else if($(this).val() == 4){
 			$("#setform2").hide();
 			$("#setform3").hide();
 			$("#setform4").show();
 			$("#setform5").hide();
+			$("#setform6").hide();
 		}else if($(this).val() == 5){
 			$("#setform2").hide();
 			$("#setform3").hide();
 			$("#setform4").hide();
 			$("#setform5").show();
+			$("#setform6").hide();
+		}else if($(this).val() == 6){
+			$("#setform2").hide();
+			$("#setform3").hide();
+			$("#setform4").hide();
+			$("#setform5").hide();
+			$("#setform6").show();
 		}else{
 			$("#setform2").show();
 			$("#setform3").hide();
 			$("#setform4").hide();
 			$("#setform5").hide();
+			$("#setform6").hide();
 		}
 	}else{
 		$("#setform1").hide();
@@ -1231,6 +1308,7 @@ $("select[name='cert_open']").change(function(){
 		$("#setform3").hide();
 		$("#setform4").hide();
 		$("#setform5").hide();
+		$("#setform6").hide();
 	}
 });
 $("select[name='cert_corpopen']").change(function(){
@@ -1790,9 +1868,11 @@ elseif($mod=='proxy'){
 	  <label class="col-sm-2 control-label">中转代理开关</label>
 	  <div class="col-sm-10"><select class="form-control" name="proxy" default="<?php echo $conf['proxy']?>">
 	  <option value="0">关闭</option>
-	  <option value="1">开启</option>
+	  <option value="1">代理服务器</option>
+	  <option value="2">代理API</option>
 	  </select></div>
 	</div><br/>
+	<h5 style="text-align:center">代理服务器设置</h5>
 	<div class="form-group">
 	  <label class="col-sm-2 control-label">代理IP</label>
 	  <div class="col-sm-10"><input type="text" name="proxy_server" value="<?php echo $conf['proxy_server']; ?>" class="form-control"/></div>
@@ -1816,11 +1896,24 @@ elseif($mod=='proxy'){
 	  <option value="https">HTTPS</option>
 	  <option value="sock4">SOCK4</option>
 	  <option value="sock5">SOCK5</option>
+	  <option value="sock5h">SOCK5H</option>
 	  </select></div>
+	</div>
+	<div class="form-group">
+	  <div class="col-sm-offset-2 col-sm-10"><a href="javascript:testproxy()" class="btn btn-default btn-block">测试连通性</a>
+	 </div>
+	</div>
+	<h5 style="text-align:center">代理API设置</h5>
+	<div class="form-group">
+	  <label class="col-sm-2 control-label">API接口地址</label>
+	  <div class="col-sm-10"><input type="text" name="proxy_apiurl" value="<?php echo $conf['proxy_apiurl']; ?>" class="form-control" placeholder="填写代理API站点URL，支持子目录"/></div>
+	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-2 control-label">API接口密钥</label>
+	  <div class="col-sm-10"><div class="input-group"><input type="text" name="proxy_apikey" value="<?php echo $conf['proxy_apikey']; ?>" class="form-control"/><div class="input-group-btn"><a href="javascript:randomkey()" class="btn btn-default">随机</a></div></div></div>
 	</div><br/>
 	<div class="form-group">
 	  <div class="col-sm-offset-2 col-sm-10"><input type="submit" name="submit" value="修改" class="btn btn-primary btn-block"/><br/>
-	  <a href="javascript:testproxy()" class="btn btn-default btn-block">测试连通性</a>
 	 </div>
 	</div>
   </form>
@@ -1828,9 +1921,20 @@ elseif($mod=='proxy'){
 <div class="panel-footer">
 <span class="glyphicon glyphicon-info-sign"></span>
 本功能开启后，在支付成功异步回调的时候，使用中转代理访问商户网站，可解决一些只能国内访问的网站回调问题，也可以防止本站服务器IP泄露。<br/>
-自定义代理可以使用Windows服务器+CCProxy软件搭建<br/>
+<li>代理服务器可以使用Windows服务器+CCProxy软件搭建</li>
+<li>代理API可<a href="download.php?act=proxyapi&apikey=<?php echo $conf['proxy_apikey']?>">下载代理API源码</a>，自行搭建代理API站点对接使用。若修改API接口密钥，则需要重新下载！</li>
 </div>
 </div>
+<script>
+function randomkey(){
+	var chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678';
+	var key = '';
+	for (var i = 0; i < 20; i++) {
+		key += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+	$("input[name='proxy_apikey']").val(key);
+}
+</script>
 <?php
 }elseif($mod=='upimg'){
 echo '<div class="panel panel-primary">

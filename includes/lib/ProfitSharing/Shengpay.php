@@ -32,8 +32,9 @@ class Shengpay implements IProfitSharing
             $allmoney += $money;
         }
 
+        $settle_no = date('YmdHis').rand(1000,9999);
         $params = [
-            'mchSharingNo' => $trade_no,
+            'mchSharingNo' => $settle_no,
             'transactionId' => $api_trade_no,
             'totalAmount' => intval(round($allmoney * 100)),
             'notifyUrl' => $conf['localurl'].'pay/sharingnotify/'.$this->channel['id'].'/',
@@ -45,13 +46,13 @@ class Shengpay implements IProfitSharing
         }catch(Exception $e){
             return ['code'=>-1, 'msg'=>$e->getMessage()];
         }
-        return ['code'=>0, 'msg'=>'分账请求成功', 'settle_no'=>$result['sharingNo'], 'money'=>$allmoney, 'rdata'=>$rdata];
+        return ['code'=>0, 'msg'=>'分账请求成功', 'settle_no'=>$settle_no, 'money'=>$allmoney, 'rdata'=>$rdata];
     }
 
     //查询分账结果
     public function query($trade_no, $api_trade_no, $settle_no){
         $params = [
-            'mchSharingNo' => $trade_no,
+            'mchSharingNo' => $settle_no,
         ];
 
         try{
@@ -80,13 +81,13 @@ class Shengpay implements IProfitSharing
     }
 
     //分账回退
-    public function return($trade_no, $api_trade_no, $rdata){
+    public function return($trade_no, $api_trade_no, $settle_no, $rdata){
         $success = 0;
         $errmsg = null;
         foreach($rdata as $receiver){
             $params = [
                 'mchReturnNo' => date('YmdHis').rand(11111,99999),
-                'mchSharingNo' => $trade_no,
+                'mchSharingNo' => $settle_no,
                 'returnReceiverType' => 'B',
                 'returnReceiverId' => $receiver['account'],
                 'returnAmount' => intval(round($receiver['money']*100)),

@@ -118,8 +118,7 @@ class Yseqt implements IProfitSharing
     }
 
     //分账回退
-    public function return($trade_no, $api_trade_no, $rdata){
-        $i = 1;
+    public function return($trade_no, $api_trade_no, $settle_no, $rdata){
         $success = 0;
         $errmsg = null;
         foreach($rdata as $receiver){
@@ -127,7 +126,7 @@ class Yseqt implements IProfitSharing
             $params = [
                 'requestNo' => $requestNo,
                 'payeeMerchantNo' => $this->channel['appmchid'],
-                'origRequestNo' => $trade_no,
+                'origRequestNo' => $settle_no,
                 'divisionMercId' => $receiver['account'],
                 'amount' => $receiver['money'],
             ];

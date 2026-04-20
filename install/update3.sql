@@ -59,3 +59,11 @@ ADD COLUMN `print_config` varchar(300) DEFAULT NULL;
 
 ALTER TABLE `pre_order`
 ADD COLUMN `cert_info` varchar(300) DEFAULT NULL;
+
+ALTER TABLE `pre_order`
+ADD COLUMN `province` varchar(2) DEFAULT NULL;
+
+ALTER TABLE `pre_psreceiver`
+ADD COLUMN `mode` tinyint(1) NOT NULL DEFAULT '0';
+
+INSERT INTO `pre_type` VALUES (7, 'douyinpay', 0, '抖音支付', 0);

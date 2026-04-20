@@ -7,7 +7,7 @@ class epay_plugin
 		'showname'    => '彩虹易支付', //支付插件显示名称
 		'author'      => '彩虹', //支付插件作者
 		'link'        => '', //支付插件作者链接
-		'types'       => ['alipay','qqpay','wxpay','bank','jdpay'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
+		'types'       => ['alipay','qqpay','wxpay','bank','jdpay','douyinpay'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
 		'inputs' => [ //支付插件要求传入的参数以及参数显示名称，可选的有appid,appkey,appsecret,appurl,appmchid
 			'appurl' => [
 				'name' => '接口地址',
@@ -79,13 +79,16 @@ class epay_plugin
 	}
 
 	static private function getDevice(){
-		if (checkwechat()) {
+		global $device, $mdevice;
+		if (checkwechat() || $mdevice=='wechat') {
 			$device = 'wechat';
-		}elseif (checkmobbileqq()) {
+		}elseif (checkmobbileqq() || $mdevice=='qq') {
 			$device = 'qq';
-		}elseif (checkalipay()) {
+		}elseif (checkalipay() || $mdevice=='alipay') {
 			$device = 'alipay';
-		}elseif (checkmobile()) {
+		}elseif (checkdouyin() || $mdevice=='douyin') {
+			$device = 'douyin';
+		}elseif (checkmobile() || $device=='mobile') {
 			$device = 'mobile';
 		}else{
 			$device = 'pc';
@@ -224,6 +227,25 @@ class epay_plugin
 			return ['type'=>'jump','url'=>$url];
 		}else{
 			return ['type'=>'qrcode','page'=>'jdpay_qrcode','url'=>$url];
+		}
+	}
+
+	//抖音支付
+	static public function douyinpay(){
+		try{
+			list($method, $url) = self::pay_mapi('douyinpay');
+		}catch(Exception $ex){
+			return ['type'=>'error','msg'=>$ex->getMessage()];
+		}
+
+		if($method == 'jump'){
+			return ['type'=>'jump','url'=>$url];
+		}else{
+			if (checkmobile()) {
+				return ['type'=>'qrcode','page'=>'douyinpay_wap','url'=>$url];
+			} else {
+				return ['type'=>'qrcode','page'=>'douyinpay_qrcode','url'=>$url];
+			}
 		}
 	}
 

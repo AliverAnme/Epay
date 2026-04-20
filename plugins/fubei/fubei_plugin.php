@@ -237,10 +237,16 @@ class fubei_plugin
 		if($channel['appwxmp'] > 0){
 			if(!empty($order['sub_openid'])){
 				if(!empty($order['sub_appid'])){
-					$wxinfo['appid'] = $order['sub_appid'];
+					$appid = $order['sub_appid'];
 				}else{
-					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+					if($order['is_applet'] == 1){
+						$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+						if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+					}else{
+						$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+						if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+					}
+					$appid = $wxinfo['appid'];
 				}
 				$openid = $order['sub_openid'];
 			}else{

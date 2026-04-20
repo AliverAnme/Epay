@@ -115,10 +115,11 @@ if($admin_cdnpublic==1){
 			  <li><a href="./set.php?mod=mail">邮箱与短信配置</a><li>
 			  <li><a href="./set.php?mod=upimg">网站Logo上传</a><li>
 			  <li><a href="./set.php?mod=cron">计划任务配置</a><li>
+        <li><a href="./set.php?mod=proxy">中转代理配置</a><li>
         <li><a href="./set_wxkf.php">H5跳转微信客服支付</a></li>
             </ul>
           </li>
-		  <li class="<?php echo checkIfActive('clean,log,risk,gettoken,complain,complain_info')?>">
+		  <li class="<?php echo checkIfActive('clean,log,risk,gettoken,complain,complain_info,mchrisk')?>">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cube"></i> 其他功能<b class="caret"></b></a>
             <ul class="dropdown-menu">
 			  <li><a href="./risk.php">风控记录</a><li>

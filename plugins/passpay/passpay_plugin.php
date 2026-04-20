@@ -188,8 +188,13 @@ class passpay_plugin
 				if(!empty($order['sub_appid'])){
 					$wxinfo['appid'] = $order['sub_appid'];
 				}else{
-					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+					if($order['is_applet'] == 1){
+						$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+						if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+					}else{
+						$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+						if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+					}
 				}
 				$openid = $order['sub_openid'];
 			}else{
@@ -206,7 +211,7 @@ class passpay_plugin
 
 			//②、统一下单
 			try{
-				$result = self::addOrder('wechatPub', $wxinfo['appid'], $openid);
+				$result = self::addOrder($order['is_applet'] == 1 ? 'wechatLite' : 'wechatPub', $wxinfo['appid'], $openid);
 			}catch(Exception $ex){
 				return ['type'=>'error','msg'=>'微信支付下单失败！'.$ex->getMessage()];
 			}

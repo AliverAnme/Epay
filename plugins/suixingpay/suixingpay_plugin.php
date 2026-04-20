@@ -277,19 +277,29 @@ class suixingpay_plugin
 	static public function wxjspay(){
 		global $siteurl, $channel, $order, $ordername, $conf, $clientip;
 
-		$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-		if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-
-		try{
+		if(!empty($order['sub_openid'])){
+			if(!empty($order['sub_appid'])){
+				$wxinfo['appid'] = $order['sub_appid'];
+			}else{
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+				}
+			}
+			$openid = $order['sub_openid'];
+		}else{
+			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
 			$openid = wechat_oauth($wxinfo);
-		}catch(Exception $e){
-			return ['type'=>'error','msg'=>$e->getMessage()];
 		}
 		$blocks = checkBlockUser($openid, TRADE_NO);
 		if($blocks) return $blocks;
 
 		try{
-			$pay_info = self::jsapi('WECHAT', $wxinfo['appid'], $openid);
+			$pay_info = self::jsapi('WECHAT', $wxinfo['appid'], $openid, $order['is_applet'] == 1);
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>'微信支付下单失败 '.$ex->getMessage()];
 		}
@@ -381,6 +391,7 @@ class suixingpay_plugin
 		$json = file_get_contents('php://input');
 		//file_put_contents('logs.txt', $json);
 		$arr = json_decode($json,true);
+		if(!$arr) return ['type'=>'html','data'=>'{"code":"fail","msg":"参数错误"}'];
 
 		require(PAY_ROOT."inc/Suixingpay.class.php");
 		
@@ -442,6 +453,31 @@ class suixingpay_plugin
 			return ['code'=>-1, 'msg'=>'['.$result['bizCode'].']'.$result['bizMsg']];
 		}else{
 			return ['code'=>-1, 'msg'=>'未知错误'];
+		}
+	}
+
+	//进件通知
+	static public function applynotify(){
+		global $channel;
+
+		$json = file_get_contents('php://input');
+		$arr = json_decode($json,true);
+		if(!$arr) return ['type'=>'html','data'=>'{"code":"fail","msg":"参数错误"}'];
+
+		require(PAY_ROOT."inc/Suixingpay.class.php");
+		
+		$client = new Suixingpay($channel['appid'], $channel['appkey'], $channel['appsecret']);
+		$verify_result = $client->verifySign($arr);
+
+		if($verify_result) {//验证成功
+
+			$model = \lib\Applyments\CommUtil::getModel2($channel);
+			if($model) $model->notify($arr);
+			
+			return ['type'=>'html','data'=>'{"code":"success","msg":"成功"}'];
+		}
+		else {
+			return ['type'=>'html','data'=>'{"code":"fail","msg":"签名错误"}'];
 		}
 	}
 }

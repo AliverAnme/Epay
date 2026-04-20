@@ -29,6 +29,16 @@ if($conf['forceqq']==1 && empty($userrow['qq'])){
 if($conf['user_deposit']==1 && $conf['user_deposit_min'] > 0 && $conf['user_deposit_min'] > $userrow['deposit']){
     showerror('商户保证金不足，请前往支付平台充值保证金后再发起支付');
 }
+if(!empty($conf['pay_region_block'])){
+    $ipregion = get_ip_region($clientip);
+    if($ipregion){
+        foreach(explode('|',$conf['pay_region_block']) as $rows){
+            if(strpos($ipregion, $rows) !== false){
+                showerror('您所在的地区无法发起支付，请更换其他支付方式');
+            }
+        }
+    }
+}
 
 $_SESSION['paypage_uid'] = $uid;
 

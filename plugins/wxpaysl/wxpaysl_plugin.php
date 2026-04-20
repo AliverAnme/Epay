@@ -160,9 +160,15 @@ class wxpaysl_plugin
 			if(!empty($order['sub_appid'])){
 				$channel['sub_appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-				$channel['appid'] = $wxinfo['appid'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+					$channel['appid'] = $wxinfo['appid'];
+				}else{
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+					$channel['appid'] = $wxinfo['appid'];
+				}
 			}
 			$openid = $order['sub_openid'];
 		}else{
@@ -171,11 +177,7 @@ class wxpaysl_plugin
 			$channel['appid'] = $wxinfo['appid'];
 
 			//①、获取用户openid
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 		
 		$blocks = checkBlockUser($openid, TRADE_NO);
@@ -306,6 +308,9 @@ class wxpaysl_plugin
 	static public function apppay(){
 		global $siteurl, $channel, $order, $ordername, $conf, $clientip, $method;
 
+		if(!empty($order['sub_appid'])){
+			$channel['sub_appid'] = $order['sub_appid'];
+		}
 		$params = [
 			'body' => $ordername,
 			'out_trade_no' => TRADE_NO,

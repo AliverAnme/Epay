@@ -120,8 +120,9 @@ class PartnerPaymentService extends BaseService
      */
     private function getAppParameters(string $prepay_id): array
     {
+        $appId = !empty($this->subAppId) ? $this->subAppId : $this->appId;
         $params = [
-            'appid' => $this->appId,
+            'appid' => $appId,
             'partnerid' => $this->mchId,
             'prepayid' => $prepay_id,
             'package' => 'Sign=WXPay',
@@ -356,7 +357,8 @@ class PartnerPaymentService extends BaseService
             if(!isset($order['sub_appid'])) $order['sub_appid'] = $this->subAppId;
         }
         $params = array_merge($publicParams, $params);
-        return $this->execute('POST', $path, $params);
+        $result = $this->execute('POST', $path, $params);
+        return $this->getAppParameters($result['prepay_id']);
     }
 
 	/**

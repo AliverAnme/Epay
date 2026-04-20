@@ -24,6 +24,11 @@ class adapay_plugin
 				'type' => 'textarea',
 				'note' => '',
 			],
+			'appmchid' => [
+				'name' => '子商户API_KEY',
+				'type' => 'input',
+				'note' => '非进件模式请留空',
+			],
 		],
 		'select' => null,
 		'select_alipay' => [
@@ -113,6 +118,7 @@ class adapay_plugin
 		global $channel, $order, $ordername, $conf, $clientip;
 
 		require PAY_ROOT . 'inc/AdapayClient.php';
+		if(!empty($channel['appmchid']))$channel['appkey'] = $channel['appmchid'];
 		$client = new AdapayClient($channel['appkey'], $channel['appsecret'], $channel['appid']);
 
 		$params = [
@@ -136,9 +142,9 @@ class adapay_plugin
 		if($order['profits'] > 0){
 			$params['pay_mode'] = 'delay';
 		}
-		/*if($order['profits'] > 0){
+		if($order['profits'] > 0){
 			$psreceiver = \lib\ProfitSharing\CommUtil::getReceiver($order['profits']);
-			if($psreceiver){
+			if($psreceiver && $psreceiver['mode'] == 0){
 				$psmoney = round(floor($order['realmoney'] * $psreceiver['rate']) / 100, 2);
 				$psmoney2 = round($order['realmoney']-$psmoney, 2);
 				$div_members = [];
@@ -150,7 +156,7 @@ class adapay_plugin
 				}
 				$params['div_members'] = $div_members;
 			}
-		}*/
+		}
 		return \lib\Payment::lockPayData(TRADE_NO, function() use($client, $params) {
 			$result = $client->createPayment($params);
 			return $result['expend'];
@@ -162,6 +168,7 @@ class adapay_plugin
 		global $channel, $order, $ordername, $conf, $clientip, $siteurl;
 
 		require PAY_ROOT . 'inc/AdapayClient.php';
+		if(!empty($channel['appmchid']))$channel['appkey'] = $channel['appmchid'];
 		$client = new AdapayClient($channel['appkey'], $channel['appsecret'], $channel['appid']);
 		$params = [
 			'adapay_func_code' => $func_code,
@@ -189,6 +196,7 @@ class adapay_plugin
 		global $channel, $order, $ordername, $conf, $clientip, $siteurl;
 
 		require PAY_ROOT . 'inc/AdapayClient.php';
+		if(!empty($channel['appmchid']))$channel['appkey'] = $channel['appmchid'];
 		$client = new AdapayClient($channel['appkey'], $channel['appsecret'], $channel['appid']);
 		$params = [
 			'adapay_func_code' => 'checkout',
@@ -308,28 +316,18 @@ class adapay_plugin
 
 		//①、获取用户openid
 		if(!empty($order['sub_openid'])){
-			if(!empty($order['sub_appid'])){
-				$wxinfo['appid'] = $order['sub_appid'];
-			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-			}
 			$openid = $order['sub_openid'];
 		}else{
 			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
 			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 		$blocks = checkBlockUser($openid, TRADE_NO);
 		if($blocks) return $blocks;
 
 		//②、统一下单
 		try{
-			$result = self::addOrder('wx_pub', $openid);
+			$result = self::addOrder($order['is_applet'] == 1 ? 'wx_lite' : 'wx_pub', $openid);
 		}catch (Exception $e) {
 			return ['type'=>'error','msg'=>'微信支付下单失败！'.$e->getMessage()];
 		}
@@ -453,6 +451,7 @@ class adapay_plugin
 		}
 
 		require PAY_ROOT . 'inc/AdapayClient.php';
+		if(!empty($channel['appmchid']))$channel['appkey'] = $channel['appmchid'];
 		$client = new AdapayClient($channel['appkey'], $channel['appsecret'], $channel['appid']);
 		if ($client->verifySign($_POST['sign'] , $_POST['data'])) {
 			$_data = json_decode($_POST['data'] , true);
@@ -491,6 +490,7 @@ class adapay_plugin
 		if(empty($order))exit();
 
 		require PAY_ROOT . 'inc/AdapayClient.php';
+		if(!empty($channel['appmchid']))$channel['appkey'] = $channel['appmchid'];
 		$client = new AdapayClient($channel['appkey'], $channel['appsecret'], $channel['appid']);
 		$params = [
 			'payment_id' => $order['api_trade_no'],
@@ -511,8 +511,8 @@ class adapay_plugin
 						$leftmoney = round($leftmoney - $money, 2);
 						if($leftmoney <= 0) break;
 					}
-					if($order_money > $allmoney && $leftmoney > 0){
-						$psmoney2 = round($order_money-$allmoney, 2);
+					if($order['refundmoney'] > $allmoney && $leftmoney > 0){
+						$psmoney2 = round($order['refundmoney']-$allmoney, 2);
 						$psmoney2 = $psmoney2 > $leftmoney ? $leftmoney : $psmoney2;
 						$div_members[] = ['member_id'=>'0', 'amount' => sprintf('%.2f' , $psmoney2)];
 					}
@@ -532,6 +532,23 @@ class adapay_plugin
 				}
 				$params['payment_id'] = $psorder['settle_no'];
 				$params['div_members'] = $div_members;
+			}else{
+				$params = [
+					'payment_id' => $order['api_trade_no'],
+					'order_no' => $order['refund_no'],
+					'reverse_amt' => $order['refundmoney']
+				];
+				try{
+					$res = $client->createPaymentReverse($params);
+				}catch(Exception $e){
+					return ['code'=>-1, 'msg'=>$e->getMessage()];
+				}
+				if($res['status']=='succeeded'||$res['status']=='pending'){
+					$result = ['code'=>0, 'trade_no'=>$res['id']];
+				}else{
+					$result = ['code'=>-1, 'msg'=>'['.$res["error_code"].']'.$res["error_msg"]];
+				}
+				return $result;
 			}
 		}
 		try{

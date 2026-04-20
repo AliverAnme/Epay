@@ -7,7 +7,7 @@ class wxpaynp_plugin
 		'showname'    => '微信官方支付V3服务商版', //支付插件显示名称
 		'author'      => '微信', //支付插件作者
 		'link'        => 'https://pay.weixin.qq.com/partner/public/home', //支付插件作者链接
-		'types'       => ['wxpay'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
+		'types'       => ['wxpay','qqpay'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
 		'inputs' => [ //支付插件要求传入的参数以及参数显示名称，可选的有appid,appkey,appsecret,appurl,appmchid
 			'appid' => [
 				'name' => '服务号/小程序/开放平台AppID',
@@ -181,7 +181,11 @@ class wxpaynp_plugin
 		}else{
 			return ['type'=>'error','msg'=>'当前支付通道没有开启的支付方式'];
 		}
-		return ['type'=>'qrcode','page'=>'wxpay_qrcode','url'=>$code_url];
+		if($order['typename'] == 'qqpay'){
+			return ['type'=>'qrcode','page'=>'qqpay_qrcode','url'=>$code_url];
+		}else{
+			return ['type'=>'qrcode','page'=>'wxpay_qrcode','url'=>$code_url];
+		}
 	}
 
 	//JS支付
@@ -192,12 +196,22 @@ class wxpaynp_plugin
 			if(!empty($order['sub_appid'])){
 				$channel['sub_appid'] = $order['sub_appid'];
 			}else{
-				$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
-				if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-				if($channel['subappwxmp']){
-					$channel['sub_appid'] = $wxinfo['appid'];
+				if($order['is_applet'] == 1){
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxa']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信小程序不存在'];
+					if($channel['subappwxa']){
+						$channel['sub_appid'] = $wxinfo['appid'];
+					}else{
+						$channel['appid'] = $wxinfo['appid'];
+					}
 				}else{
-					$channel['appid'] = $wxinfo['appid'];
+					$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
+					if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
+					if($channel['subappwxmp']){
+						$channel['sub_appid'] = $wxinfo['appid'];
+					}else{
+						$channel['appid'] = $wxinfo['appid'];
+					}
 				}
 			}
 			$openid = $order['sub_openid'];
@@ -211,11 +225,7 @@ class wxpaynp_plugin
 			}
 
 			//①、获取用户openid
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 
 		$blocks = checkBlockUser($openid, TRADE_NO);
@@ -407,6 +417,9 @@ class wxpaynp_plugin
 	static public function apppay(){
 		global $siteurl, $channel, $order, $ordername, $conf, $clientip, $method;
 
+		if(!empty($order['sub_appid'])){
+			$channel['sub_appid'] = $order['sub_appid'];
+		}
 		$param = [
 			'description' => $ordername,
 			'out_trade_no' => TRADE_NO,

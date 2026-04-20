@@ -2,6 +2,7 @@
 
 /**
  * @see https://ecn6ul7ztz1a.feishu.cn/docx/N236dMmCJommkJxWcxzcFwiRnAg
+ * @see https://ecn6ul7ztz1a.feishu.cn/wiki/LcfZwESIRiwPOtkTzgCcON50nST
  */
 class M2Client
 {
@@ -69,6 +70,7 @@ class M2Client
         }
         $url = self::$url_ca . '?' . http_build_query($query);
 
+        $data = urlencode($data);
         $response = get_curl($url, $data, 0, 0, 0, 0, 0, ['Content-Type: application/json']);
         $result = json_decode($response, true);
         if(isset($result['op_ret_code']) && $result['op_ret_code'] == '000'){

@@ -47,6 +47,7 @@ class Kuaiqian implements IProfitSharing
             $allmoney += $money;
         }
 
+        $settle_no = date('YmdHis').rand(1000,9999);
         $params = [
             'merchantId' => $this->channel['merchant_id'],
             'terminalId' => $this->channel['terminal_id'],
@@ -59,11 +60,11 @@ class Kuaiqian implements IProfitSharing
         ];
 
         try{
-            $result = $this->requestApi('A9010', $params, $trade_no);
+            $result = $this->requestApi('A9010', $params, $settle_no);
         }catch(Exception $e){
             return ['code'=>-1, 'msg'=>$e->getMessage()];
         }
-        return ['code'=>0, 'msg'=>'分账请求成功', 'settle_no'=>$trade_no, 'money'=>$allmoney, 'rdata'=>$rdata];
+        return ['code'=>0, 'msg'=>'分账请求成功', 'settle_no'=>$settle_no, 'money'=>$allmoney, 'rdata'=>$rdata];
     }
 
     //查询分账结果
@@ -74,7 +75,7 @@ class Kuaiqian implements IProfitSharing
         ];
 
         try{
-            $result = $this->requestApi('A9013a', $params, $trade_no);
+            $result = $this->requestApi('A9013a', $params, $settle_no);
             if($result['resultcode'] == 'SU' || $result['resultcode'] == 'PU'){
                 return ['code'=>0, 'status'=>1];
             } elseif($result['resultcode'] == 'IN') {
@@ -93,7 +94,7 @@ class Kuaiqian implements IProfitSharing
     }
 
     //分账回退
-    public function return($trade_no, $api_trade_no, $rdata){
+    public function return($trade_no, $api_trade_no, $settle_no, $rdata){
         global $DB;
         $sharingDataList = [];
         $allmoney = 0;

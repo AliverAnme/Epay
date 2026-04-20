@@ -331,11 +331,7 @@ class jeepay_plugin
 		if($channel['appwxmp']>0){
 			$wxinfo = \lib\Channel::getWeixin($channel['appwxmp']);
 			if(!$wxinfo) return ['type'=>'error','msg'=>'支付通道绑定的微信公众号不存在'];
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}else{
 			if (!isset($_GET['channelUserId'])) {
 				$apiurl = $channel['appurl'].'api/channelUserId/jump';

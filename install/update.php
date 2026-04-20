@@ -1,6 +1,6 @@
 <?php
 error_reporting(0);
-define('DB_VERSION', '2053');
+define('DB_VERSION', '2054');
 require '../config.php';
 
 @header('Content-Type: text/html; charset=UTF-8');

@@ -14,7 +14,7 @@ if($row['status']==1)sysmsg('该订单已完成支付，请勿重复支付');
 $gid = $DB->getColumn("SELECT gid FROM pre_user WHERE uid='{$row['uid']}' limit 1");
 $paytype = \lib\Channel::getTypes($row['uid'], $gid);
 
-if(strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger')!==false){
+if(checkwechat()){
 	$paytype = array_values($paytype);
 	foreach($paytype as $i=>$s){
 		if($s['name']=='wxpay'){

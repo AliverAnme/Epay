@@ -16,6 +16,7 @@ if(isset($_POST['submit'])){
 	$payee_account = htmlspecialchars(trim($_POST['payee_account']));
 	$payee_real_name = htmlspecialchars(trim($_POST['payee_real_name']));
 	$money = trim($_POST['money']);
+	$title = isset($_POST['title'])?htmlspecialchars(trim($_POST['title'])):'';
 	$desc = htmlspecialchars(trim($_POST['desc']));
 	if(empty($out_biz_no) || empty($payee_account) || empty($money))showmsg('必填项不能为空',3);
 	if(strlen($out_biz_no)!=19 || !is_numeric($out_biz_no))showmsg('交易号输入不规范',3);
@@ -24,7 +25,7 @@ if(isset($_POST['submit'])){
 
 	$channelid = isset($_POST['channel'])?$_POST['channel']:null;
 
-	$result = \lib\Transfer::add(0, $app, $out_biz_no, $payee_account, $payee_real_name, $money, $desc, null, $channelid);
+	$result = \lib\Transfer::add(0, $app, $out_biz_no, $payee_account, $payee_real_name, $money, $title, $desc, null, $channelid);
 
 	if($result['code']==0){
 		if($result['status'] == 1){
@@ -135,10 +136,21 @@ if(isset($_GET['account']) && isset($_GET['username'])){
 				<div class="input-group"><div class="input-group-addon">转账金额</div>
 				<input type="text" name="money" value="" class="form-control" placeholder="RMB/元" required/>
 			</div></div>
+<?php if($app=='alipay'){?>
+			<div class="form-group">
+				<div class="input-group"><div class="input-group-addon">转账标题</div>
+				<input type="text" name="title" value="<?php echo $copy['title']?>" class="form-control" placeholder="可留空，默认为：<?php echo $conf['transfer_name']?>"/>
+			</div></div>
+			<div class="form-group">
+				<div class="input-group"><div class="input-group-addon">业务备注</div>
+				<input type="text" name="desc" value="" class="form-control" placeholder="默认留空"/>
+			</div></div>
+<?php }else{?>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">转账备注</div>
-				<input type="text" name="desc" value="<?php echo $copy['desc']?>" class="form-control" placeholder="可留空，默认为：<?php echo $app=='alipay'?$conf['transfer_name']:$conf['transfer_desc']?>"/>
+				<input type="text" name="desc" value="<?php echo $copy['desc']?>" class="form-control" placeholder="可留空，默认为：<?php echo $conf['transfer_desc']?>"/>
 			</div></div>
+<?php }?>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">支付密码</div>
 				<input type="text" name="paypwd" value="" class="form-control" required/>

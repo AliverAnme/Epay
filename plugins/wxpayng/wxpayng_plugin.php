@@ -189,11 +189,7 @@ class wxpayng_plugin
 			$channel['appid'] = $wxinfo['appid'];
 
 			//①、获取用户openid
-			try{
-				$openid = wechat_oauth($wxinfo);
-			}catch(Exception $e){
-				return ['type'=>'error','msg'=>$e->getMessage()];
-			}
+			$openid = wechat_oauth($wxinfo);
 		}
 
 		$blocks = checkBlockUser($openid, TRADE_NO);

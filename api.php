@@ -144,6 +144,20 @@ elseif($act=='refund')
 	}
 	exit(json_encode($result));
 }
+elseif($act=='refundapi')
+{
+	$money = trim($_POST['money']);
+	$trade_no=daddslashes($_POST['trade_no']);
+	if(!is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))exit(json_encode(['code'=>-1, 'msg'=>'金额输入错误']));
+	if(!isset($_POST['key']) || $_POST['key']!==md5($trade_no.SYS_KEY.$trade_no))exit(json_encode(['code'=>-1, 'msg'=>'密钥错误']));
+
+	$refund_no = date("YmdHis").rand(11111,99999);
+	$result = \lib\Order::refund($refund_no, $trade_no, $money, 1);
+	if($result['code'] == 0){
+		$result['msg'] = '退款成功！退款金额￥'.$result['money'];
+	}
+	exit(json_encode($result));
+}
 else
 {
 	exit(json_encode(['code'=>-5, 'msg'=>'No Act!']));

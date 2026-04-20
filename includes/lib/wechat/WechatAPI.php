@@ -68,6 +68,24 @@ class WechatAPI
         }
     }
 
+    public function generate_link($path, $query, $expire = 600)
+    {
+        $access_token = $this->getAccessToken();
+        $url = "https://api.weixin.qq.com/wxa/generate_urllink?access_token=".$access_token;
+        $data = ['path'=>$path, 'query'=>$query];
+        if($expire>0){
+            $data['expire_type'] = 0;
+            $data['expire_time'] = time()+$expire;
+        }
+        $output = get_curl($url, json_encode($data));
+        $res = json_decode($output, true);
+        if ($res && $res['errcode'] == 0) {
+            return $res['url_link'];
+        }else{
+            throw new Exception('url_link生成失败：'.$res['errmsg']);
+        }
+    }
+
     public function getPhoneNumber($code)
     {
         $access_token = $this->getAccessToken();
@@ -159,5 +177,24 @@ class WechatAPI
             $params[] = "{$key}={$value}";
         }
         return sha1(join('&', $params));
+    }
+
+    //发送客服消息
+    public function sendCustomMessage($openid, $msgtype, $content)
+    {
+        $access_token = $this->getAccessToken();
+        $url = 'https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token='.$access_token;
+        $data = [
+            'touser' => $openid,
+            'msgtype' => $msgtype,
+            $msgtype => $content
+        ];
+        $output = get_curl($url, json_encode($data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+        $res = json_decode($output, true);
+        if ($res && $res['errcode'] == 0) {
+            return true;
+        }else{
+            throw new Exception('发送客服消息失败：'.$res['errmsg']);
+        }
     }
 }

@@ -3,9 +3,12 @@ include("../includes/common.php");
 if($islogin2==1){}else exit('{"code":-3,"msg":"No Login"}');
 $act=isset($_GET['act'])?daddslashes($_GET['act']):null;
 
-if(!checkRefererHost())exit('{"code":403}');
+if(!checkRefererHost() && !checkwechat())exit('{"code":403}');
 
 @header('Content-Type: application/json; charset=UTF-8');
+
+$groupconfig = getGroupConfig($userrow['gid']);
+$conf = array_merge($conf, $groupconfig);
 
 switch($act){
 case 'info':
@@ -27,8 +30,6 @@ case 'info':
 		$status = '正常';
 	}
 	$complain_total = $DB->getColumn("SELECT count(*) from pre_complain WHERE uid=$uid AND status=0");
-	$groupconfig = getGroupConfig($userrow['gid']);
-	$conf = array_merge($conf, $groupconfig);
 	$mygroup = $DB->getRow("SELECT * FROM pre_group WHERE gid='{$userrow['gid']}'");
 	$mygroupname = $mygroup['name'] ? $mygroup['name'] : '默认用户组';
 	$gexpire = $userrow['endtime'] ? date("Y-m-d", strtotime($userrow['endtime'])) : '永久';
@@ -138,6 +139,32 @@ case 'getcount':
 	}
 
 	$result=['code'=>0, 'orders'=>$orders, 'orders_today'=>$orders_today, 'settle_money'=>$settle_money, 'order_today_all'=>$order_today_all, 'order_lastday_all'=>$order_lastday_all, 'transfer_today_all'=>$transfer_today_all, 'transfer_lastday_all'=>$transfer_lastday_all, 'channels'=>$channels];
+	exit(json_encode($result));
+break;
+case 'orderCount':
+	$days=intval($_POST['days']);
+	if($days<=0 || $days>15)$days=7;
+	$endtime=date("Y-m-d");
+	$starttime=date("Y-m-d",strtotime($endtime)-86400*($days-1));
+	$types = \lib\Channel::getTypes($uid, $userrow['gid']);
+	$datas = [];
+	$labels = [];
+	$colors = ['alipay'=>'#5279F6', 'wxpay'=>'#07c160', 'qqpay'=>'#12b7f5', 'bank'=>'#C83933', 'total'=>'#742def', 'other'=>'#999999'];
+	for($i=0; $i<$days; $i++){
+		$theday = date("Y-m-d",strtotime($starttime)+86400*$i);
+		$labels[] = substr($theday,5);
+		$datas['total'][] = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND status=1 AND date='$theday'"), 2);
+		foreach($types as $row){
+			$datas[$row['name']][] = round($DB->getColumn("SELECT sum(money) FROM pre_order WHERE uid={$uid} AND status=1 AND date='$theday' AND type={$row['id']}"), 2);
+		}
+	}
+	$datasets = [];
+	$datasets[] = ['label'=>'总额', 'data'=>$datas['total'], 'borderColor'=>$colors['total'], 'backgroundColor'=>$colors['total'].'1a', 'tension'=>0.4, 'fill'=>true];
+	foreach($types as $row){
+		$color = array_key_exists($row['name'],$colors) ? $colors[$row['name']] : $colors['other'];
+		$datasets[] = ['label'=>$row['showname'], 'data'=>$datas[$row['name']], 'borderColor'=>$color, 'backgroundColor'=>$color.'1a', 'tension'=>0.4, 'fill'=>true];
+	}
+	$result=['code'=>0, 'labels'=>$labels, 'datasets'=>$datasets];
 	exit(json_encode($result));
 break;
 case 'sendcode':
@@ -669,6 +696,26 @@ case 'certificate':
         }else{
 			exit('{"code":-1,"msg":"接口返回异常['.$result['Code'].']'.$result['Message'].'"}');
 		}
+	}elseif($conf['cert_open'] == 6){ //蚂蚁数科实人认证
+		if(!$conf['cert_antiid'] || !$conf['cert_antikey'] || !$conf['cert_antisceneid'])exit('{"code":-1,"msg":"未配置蚂蚁数科接口信息"}');
+		$certify = new \lib\AntiDigitalCertify($conf['cert_antiid'], $conf['cert_antikey'], $conf['cert_antisceneid']);
+		$return_url = $siteurl.'user/alipaycertok.php?state='.urlencode(authcode($uid, 'ENCODE', SYS_KEY));
+		$result = $certify->initialize($certname, $certno, $return_url);
+        if(isset($result['response']['result_code']) && $result['response']['result_code'] == 'OK'){
+			$_SESSION[$uid.'_certify']=true;
+			$_SESSION['qrcode_url'] = $result['response']['certify_url'];
+			$sqs=$DB->exec("update `pre_user` set `cert`=0,`certtype`=:certtype,`certmethod`=:certmethod,`certno`=:certno,`certname`=:certname,`certtoken`=:certtoken where `uid`=:uid", [':certtype'=>$certtype, ':certmethod'=>0, ':certno'=>$certno, ':certname'=>$certname, ':certtoken'=>$result['response']['certify_id'], ':uid'=>$uid]);
+			if($sqs!==false){
+				if ($certtype==1) {
+					$DB->exec("update `pre_user` set `certcorpno`=:certcorpno,`certcorpname`=:certcorpname where `uid`=:uid", [':certcorpno'=>$certcorpno, ':certcorpname'=>$certcorpname, ':uid'=>$uid]);
+				}
+				exit(json_encode(['code'=>1, 'msg'=>'ok', 'certify_id'=>$result['response']['certify_id']]));
+			}else{
+				exit('{"code":-1,"msg":"保存信息失败'.$DB->error().'"}');
+			}
+        }else{
+			exit('{"code":-1,"msg":"接口返回异常['.$result['response']['result_code'].'] '.$result['response']['result_msg'].'"}');
+		}
 	}else{
 		exit('{"code":-1,"msg":"网站未开启实名认证功能"}');
 	}
@@ -767,7 +814,7 @@ case 'recharge':
 	$name = '充值余额 UID:'.$uid;
 	if(!$_POST['csrf_token'] || $_POST['csrf_token']!=$_SESSION['csrf_token'])exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
 	if($userrow['pay']==0)exit('{"code":-1,"msg":"当前商户已被封禁"}');
-	//if($conf['cert_force']==1 && $userrow['cert']==0)exit('{"code":-1,"msg":"当前商户未完成实名认证，无法收款"}');
+	if($conf['cert_force']==1 && $userrow['cert']==0 && !$conf['cert_money'])exit('{"code":-1,"msg":"当前商户未完成实名认证，无法收款"}');
 	if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))exit('{"code":-1,"msg":"金额不合法"}');
 	if($conf['pay_maxmoney']>0 && $money>$conf['pay_maxmoney'])exit('{"code":-1,"msg":"最大支付金额是'.$conf['pay_maxmoney'].'元"}');
 	if($conf['pay_minmoney']>0 && $money<$conf['pay_minmoney'])exit('{"code":-1,"msg":"最小支付金额是'.$conf['pay_minmoney'].'元"}');
