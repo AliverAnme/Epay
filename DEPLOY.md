@@ -40,7 +40,7 @@ docker compose version
 ### 2.1 获取项目
 
 ```bash
-git clone <your-repo-url> epay
+git clone https://github.com/AliverAnme/Epay.git epay
 cd epay
 ```
 
