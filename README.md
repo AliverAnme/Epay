@@ -38,16 +38,6 @@
 
 ---
 
-## 打赏二维码
-
-如果你觉得对你有帮助，欢迎打赏支持 ❤️
-
-### 微信打赏
-<img src="https://cdn.nodeimage.com/i/kgpolIW90QcsVO85dhO0li6ZDj40KttH.webp" width="180" />
-
-
----
-
 ## 推荐插件
 
 推荐使用 **Bepusdt** 插件进行 USDT（TRC20）收款。  
