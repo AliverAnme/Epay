@@ -11,7 +11,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -32,6 +31,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Lowercase repo name
+        run: |
+          echo "IMAGE_NAME=${OWNER,,}/${REPO,,}" >> $GITHUB_ENV
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -72,6 +78,13 @@ jobs:
       packages: write
 
     steps:
+      - name: Lowercase repo name
+        run: |
+          echo "IMAGE_NAME=${OWNER,,}/${REPO,,}" >> $GITHUB_ENV
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
