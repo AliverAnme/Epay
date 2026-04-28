@@ -1,19 +1,4 @@
-# 自动: main push → latest
-# 手动: Web UI 按钮 → 输入版本号 → 触发 web_trigger_build
-
-main:
-  push:
-    - runner: {tags: "cnb:arch:amd64"}
-      services: [docker]
-      stages:
-        - name: multi-platform build
-          script: |
-            IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
-            docker buildx build \
-              --platform linux/amd64,linux/arm64 \
-              --tag "${IMAGE}:latest" \
-              --push \
-              .
+# 仅手动触发: Web UI 按钮 → 输入版本号 → 构建
 
 "**":
   web_trigger_build:
