@@ -1,16 +1,14 @@
 main:
   push:
-    - services: [docker]
+    - runner: {tags: "cnb:arch:amd64"}
+      services: [docker]
       stages:
-        - name: multi-platform build
-          runner: {tags: "cnb:arch:amd64"}
+        - name: try buildx multi-platform
           script: |
             set -e
             IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
-            TAG="latest"
-
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
-              --tag "${IMAGE}:${TAG}" \
+              --tag "${IMAGE}:latest" \
               --push \
               .
