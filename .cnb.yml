@@ -1,89 +1,16 @@
-# 彩虹易支付 CNB.Cool 流水线
-# 镜像: docker.cnb.cool/aliveranme/epay
-
-.setup: &setup
-  script: |
-    if [ -n "${VERSION}" ]; then
-      TAG="${VERSION}"
-    elif [ "${CNB_PIPELINE_EVENT}" = "tag_push" ]; then
-      TAG="${CNB_BRANCH}"
-    else
-      TAG="latest"
-    fi
-    IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${TAG}-${PLATFORM_ARCH}"
-    echo -n "${IMAGE}"
-  exports:
-    info: IMAGE_TAG
-
-.build: &build
-  services: [docker]
-  jobs:
-    build-amd64:
-      runner: {tags: "cnb:arch:amd64"}
-      env: {PLATFORM_ARCH: "linux-amd64"}
-      steps:
-        - name: tag
-          <<: *setup
-        - name: build
-          script: docker build -t "${IMAGE_TAG}" .
-        - name: push
-          script: docker push "${IMAGE_TAG}"
-    build-arm64:
-      runner: {tags: "cnb:arch:arm64:v8"}
-      env: {PLATFORM_ARCH: "linux-arm64"}
-      steps:
-        - name: tag
-          <<: *setup
-        - name: build
-          script: docker build -t "${IMAGE_TAG}" .
-        - name: push
-          script: docker push "${IMAGE_TAG}"
-
-.merge: &merge
-  stages:
-    - name: merge version
-      image: cnbcool/manifest
-      settings:
-        target: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${TAG}
-        template: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${TAG}-OS-ARCH
-        platforms:
-          - linux/amd64
-          - linux/arm64
-    - name: merge latest
-      image: cnbcool/manifest
-      settings:
-        target: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
-        template: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${TAG}-OS-ARCH
-        platforms:
-          - linux/amd64
-          - linux/arm64
-
 main:
   push:
-    - stages:
-        - name: build
-          <<: *build
-        - name: merge
+    - services: [docker]
+      stages:
+        - name: multi-platform build
           runner: {tags: "cnb:arch:amd64"}
-          env: {TAG: "latest"}
-          <<: *merge
+          script: |
+            set -e
+            IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
+            TAG="latest"
 
-$:
-  tag_push:
-    - stages:
-        - name: build
-          <<: *build
-        - name: merge
-          runner: {tags: "cnb:arch:amd64"}
-          env: {TAG: "${CNB_BRANCH}"}
-          <<: *merge
-
-"**":
-  api_trigger_build:
-    - stages:
-        - name: build
-          <<: *build
-        - name: merge
-          runner: {tags: "cnb:arch:amd64"}
-          env: {TAG: "${VERSION}"}
-          <<: *merge
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --tag "${IMAGE}:${TAG}" \
+              --push \
+              .
