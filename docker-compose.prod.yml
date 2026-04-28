@@ -32,6 +32,7 @@ services:
       SITE_URL: ${SITE_URL:-http://localhost}
     volumes:
       - app_data:/var/www/html
+      - ./plugins:/var/www/html/plugins
       - uploads:/var/www/html/assets/uploads
       - sessions:/var/lib/php/sessions
     networks:

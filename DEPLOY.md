@@ -72,6 +72,8 @@ vim .env  # 填入 CRON_KEY=xxxx
 docker compose up -d cron
 ```
 
+> **插件目录**：`./plugins/` 已通过 bind mount 直接映射到容器，在宿主机 `plugins/` 目录放入插件文件夹即可生效，详见 [Docker 插件管理](#docker-插件管理)。
+
 ### 1.2 架构
 
 ```
@@ -173,8 +175,10 @@ real_ip_recursive on;
 git clone https://github.com/AliverAnme/Epay.git epay
 cd epay
 cp .env.example .env
-vim .env  # 修改密码和 SITE_URL
+vim .env  # 修改密码和 SITE_URL（所有变量必须填写，prod 文件无 fallback 默认值）
 ```
+
+> **插件目录**：与场景一相同，`./plugins/` 通过 bind mount 映射到容器。
 
 ### 2.2 启动
 
@@ -573,6 +577,25 @@ docker compose logs -f --tail=100
 # 进入容器调试
 docker compose exec php sh
 ```
+
+### Docker 插件管理
+
+插件目录通过 bind mount 直接映射到宿主机 `./plugins/`，**添加/删除插件不需要任何 Docker 命令**：
+
+```bash
+# 添加新插件（直接复制到宿主机 plugins 目录）
+cp -r /path/to/new-plugin ./plugins/
+
+# 删除插件
+rm -rf ./plugins/unwanted-plugin/
+
+# 插件立即生效，无需重启容器
+```
+
+> **Linux 用户注意**：容器 PHP-FPM 以 `www-data`（UID 82）运行，如插件 cert 目录写入失败，在宿主机执行：
+> ```bash
+> chown -R 82:82 plugins/
+> ```
 
 ### 直接部署场景
 

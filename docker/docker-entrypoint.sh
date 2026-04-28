@@ -18,6 +18,15 @@ echo "============================================"
 mkdir -p /var/lib/php/sessions
 chown www-data:www-data /var/lib/php/sessions
 
+# 确保插件 cert 目录存在（bind mount 后 Dockerfile 的 mkdir 不生效）
+mkdir -p \
+    /var/www/html/plugins/alipay/cert \
+    /var/www/html/plugins/wxpay/cert \
+    /var/www/html/plugins/wxpayn/cert \
+    /var/www/html/plugins/wxpayng/cert \
+    /var/www/html/plugins/wxpaynp/cert \
+    /var/www/html/plugins/douyinpay/cert
+
 # ============================================
 # 1. 生成 config.php（如果不存在）
 # ============================================
