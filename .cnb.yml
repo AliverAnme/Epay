@@ -1,0 +1,156 @@
+# ============================================
+# 彩虹易支付 CNB.Cool 流水线配置
+# 镜像地址: docker.cnb.cool/aliveranme/epay
+# ============================================
+
+# 公共构建配置（YAML 锚点复用）
+.docker-build: &docker-build
+  services:
+    - docker
+  stages:
+    - name: set image tag
+      script: |
+        if [ -n "${VERSION}" ]; then
+          TAG="${VERSION}"
+        elif [ "${CNB_PIPELINE_EVENT}" = "tag_push" ]; then
+          TAG="${CNB_BRANCH}"
+        else
+          TAG="latest"
+        fi
+        IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${TAG}-${PLATFORM_ARCH}"
+        echo -n "${IMAGE}"
+      exports:
+        info: IMAGE_TAG
+    - name: docker build
+      script: docker build -t "${IMAGE_TAG}" .
+    - name: docker push
+      script: docker push "${IMAGE_TAG}"
+
+# ============================================
+# main 分支 push → 构建 latest
+# ============================================
+main:
+  push:
+    # amd64 平台
+    - <<: *docker-build
+      name: build-amd64
+      runner:
+        tags: cnb:arch:amd64
+      env:
+        PLATFORM_ARCH: amd64
+    # arm64 平台
+    - <<: *docker-build
+      name: build-arm64
+      runner:
+        tags: cnb:arch:arm64:v8
+      env:
+        PLATFORM_ARCH: arm64
+    # 合并 manifest（串行，等上面两个完成）
+    - name: merge-manifest
+      services:
+        - docker
+      runner:
+        tags: cnb:arch:amd64
+      stages:
+        - name: create manifest
+          script: |
+            IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
+            docker manifest create "${IMAGE}:latest" \
+              "${IMAGE}:latest-amd64" \
+              "${IMAGE}:latest-arm64"
+            docker manifest push "${IMAGE}:latest"
+        - name: cleanup temp tags
+          script: |
+            IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
+            docker rmi "${IMAGE}:latest-amd64" 2>/dev/null || true
+            docker rmi "${IMAGE}:latest-arm64" 2>/dev/null || true
+
+# ============================================
+# tag push → 构建版本号（从 tag 提取）
+# ============================================
+$:
+  tag_push:
+    # amd64 平台
+    - <<: *docker-build
+      name: build-amd64
+      runner:
+        tags: cnb:arch:amd64
+      env:
+        PLATFORM_ARCH: amd64
+    # arm64 平台
+    - <<: *docker-build
+      name: build-arm64
+      runner:
+        tags: cnb:arch:arm64:v8
+      env:
+        PLATFORM_ARCH: arm64
+    # 合并 manifest
+    - name: merge-manifest
+      services:
+        - docker
+      runner:
+        tags: cnb:arch:amd64
+      stages:
+        - name: create manifest
+          script: |
+            TAG="${CNB_BRANCH}"
+            IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
+            docker manifest create "${IMAGE}:${TAG}" \
+              "${IMAGE}:${TAG}-amd64" \
+              "${IMAGE}:${TAG}-arm64"
+            docker manifest push "${IMAGE}:${TAG}"
+            # 同时更新 latest
+            docker manifest create "${IMAGE}:latest" \
+              "${IMAGE}:${TAG}-amd64" \
+              "${IMAGE}:${TAG}-arm64"
+            docker manifest push "${IMAGE}:latest"
+        - name: cleanup temp tags
+          script: |
+            TAG="${CNB_BRANCH}"
+            IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
+            docker rmi "${IMAGE}:${TAG}-amd64" 2>/dev/null || true
+            docker rmi "${IMAGE}:${TAG}-arm64" 2>/dev/null || true
+
+# ============================================
+# 手动触发（通过 API 或 Web UI 触发 api_trigger_build）
+# 传递 VERSION 环境变量指定版本号
+# 触发命令: cnb:trigger --slug aliveranme/Epay --event api_trigger_build --env "VERSION=1.0.0"
+# ============================================
+"**":
+  api_trigger_build:
+    - <<: *docker-build
+      name: build-amd64
+      runner:
+        tags: cnb:arch:amd64
+      env:
+        PLATFORM_ARCH: amd64
+    - <<: *docker-build
+      name: build-arm64
+      runner:
+        tags: cnb:arch:arm64:v8
+      env:
+        PLATFORM_ARCH: arm64
+    - name: merge-manifest
+      services:
+        - docker
+      runner:
+        tags: cnb:arch:amd64
+      stages:
+        - name: create manifest
+          script: |
+            TAG="${VERSION:-custom}"
+            IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
+            docker manifest create "${IMAGE}:${TAG}" \
+              "${IMAGE}:${TAG}-amd64" \
+              "${IMAGE}:${TAG}-arm64"
+            docker manifest push "${IMAGE}:${TAG}"
+            docker manifest create "${IMAGE}:latest" \
+              "${IMAGE}:${TAG}-amd64" \
+              "${IMAGE}:${TAG}-arm64"
+            docker manifest push "${IMAGE}:latest"
+        - name: cleanup temp tags
+          script: |
+            TAG="${VERSION:-custom}"
+            IMAGE="${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}"
+            docker rmi "${IMAGE}:${TAG}-amd64" 2>/dev/null || true
+            docker rmi "${IMAGE}:${TAG}-arm64" 2>/dev/null || true
