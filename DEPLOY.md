@@ -178,12 +178,7 @@ vim .env  # 修改密码和 SITE_URL
 
 ### 2.2 启动
 
-```bash
-# 使用 prod 配置（跳过构建，直接拉取镜像）
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-```
-
-或直接用 prod 文件：
+`docker-compose.prod.yml` 是**完整独立的** compose 文件，**不要**和 `docker-compose.yml` 合并使用（两者都定义了全部 service，合并会导致端口重复等冲突）。
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
@@ -191,11 +186,13 @@ docker compose -f docker-compose.prod.yml up -d
 
 `docker-compose.prod.yml` 与 `docker-compose.yml` 的区别：
 
-| 项目 | 本地构建 | 预构建镜像 |
-|------|---------|-----------|
+| 项目 | `docker-compose.yml`（本地构建） | `docker-compose.prod.yml`（预构建镜像） |
+|------|------|------|
 | PHP 镜像来源 | `build: .` 本地编译 | `image: ghcr.io/aliveranme/epay:latest` 拉取 |
-| 数据库端口暴露 | 有 `DB_EXPOSE_PORT` | 无（更安全） |
-| nginx SSL 端口 | 有 443 映射 | 无 |
+| 环境变量默认值 | 有 fallback（如 `DB_PASSWORD:-epay123`） | 无 fallback，**`.env` 里必须全部填写** |
+| CRON_KEY | 允许为空 `${CRON_KEY:-}` | 无默认值 → 首次启动前必须从日志获取并填入 |
+| 数据库端口暴露 | 有 `DB_EXPOSE_PORT`（调试用） | 无（更安全） |
+| nginx SSL 端口 | 有 443 映射 | 无
 
 ### 2.3 后续步骤
 
@@ -352,11 +349,13 @@ chown -R www-data:www-data assets/uploads
 
 ### 4.1 Docker 侧配置
 
+> **使用的 compose 文件**：`docker-compose.yml`（本地构建）。如需使用预构建镜像，改为 `docker-compose.prod.yml`，所有 `docker compose` 命令前加上 `-f docker-compose.prod.yml`。
+
 编辑 `.env`：
 
 ```ini
-# nginx 只监听本地，端口避免冲突
-NGINX_PORT=8888
+# nginx 只监听本地，避免端口暴露到公网（关键！）
+NGINX_PORT=127.0.0.1:8888
 
 # 站点 URL 设为最终公网地址（必须 HTTPS）
 SITE_URL=https://pay.your-domain.com
