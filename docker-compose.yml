@@ -1,0 +1,123 @@
+version: '3.8'
+
+# ============================================
+# 彩虹易支付系统 Docker 部署
+# 启动: docker-compose up -d
+# 查看日志: docker-compose logs -f
+# ============================================
+
+services:
+  # ==========================================
+  # Nginx - Web 服务器（URL 重写 + 安全规则）
+  # ==========================================
+  nginx:
+    image: nginx:alpine
+    container_name: epay-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - app_data:/var/www/html:ro
+      # SSL 证书（可选）
+      # - ./docker/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      php:
+        condition: service_started
+    networks:
+      - epay-network
+
+  # ==========================================
+  # PHP-FPM - 应用服务
+  # ==========================================
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: epay:latest
+    container_name: epay-php
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      # 数据库配置（首次安装时使用）
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USER: ${DB_USER:-epay}
+      DB_PASSWORD: ${DB_PASSWORD:-epay123}
+      DB_NAME: ${DB_NAME:-epay}
+      DB_PREFIX: ${DB_PREFIX:-pay}
+      # 管理员初始密码（首次安装时设置，建议安装后修改）
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      # 站点域名
+      SITE_URL: ${SITE_URL:-http://localhost}
+    volumes:
+      - app_data:/var/www/html
+      - uploads:/var/www/html/assets/uploads
+      - sessions:/var/lib/php/sessions
+    networks:
+      - epay-network
+
+  # ==========================================
+  # MySQL - 数据库
+  # ==========================================
+  mysql:
+    image: mysql:8.0
+    container_name: epay-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-epay}
+      MYSQL_USER: ${DB_USER:-epay}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-epay123}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --sql-mode=
+      - --default-time-zone=+08:00
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${DB_EXPOSE_PORT:-33060}:3306"
+    networks:
+      - epay-network
+
+  # ==========================================
+  # Cron - 定时任务（结算、对账、回调重试等）
+  # ==========================================
+  cron:
+    image: alpine:latest
+    container_name: epay-cron
+    restart: unless-stopped
+    depends_on:
+      nginx:
+        condition: service_started
+    environment:
+      CRON_KEY: ${CRON_KEY:-}
+      SITE_URL: ${SITE_URL:-http://nginx}
+    entrypoint: |
+      /bin/sh -c '
+      apk add --no-cache curl tzdata;
+      ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime;
+      echo "*/5 * * * * curl -s -o /dev/null -w \"%{http_code}\" $${SITE_URL}/cron.php?key=$${CRON_KEY}" > /etc/crontabs/root;
+      echo "Cron started with key: $${CRON_KEY}";
+      crond -f -l 2
+      '
+    networks:
+      - epay-network
+
+volumes:
+  app_data:
+    driver: local
+  uploads:
+    driver: local
+  sessions:
+    driver: local
+  mysql_data:
+    driver: local
+
+networks:
+  epay-network:
+    driver: bridge

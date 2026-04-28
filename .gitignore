@@ -1,0 +1,9 @@
+/.env
+/config.php
+/install/install.lock
+cache/
+*.log
+lakala_log.txt
+gateway.txt
+.DS_Store
+Thumbs.db

@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+.env
+.env.example
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 文档
+*.md
+!README.md
+
+# 开发工具
+.editorconfig
+
+# 日志（容器内生成）
+*.log
+lakala_log.txt
+gateway.txt
+
+# 缓存（运行时生成）
+cache/
+
+# SSL 证书（生产证书不应打入镜像）
+docker/ssl/
+
+# 敏感文件（通过 Volume 挂载）
+config.php
+install/install.lock
