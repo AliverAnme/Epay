@@ -1,6 +1,8 @@
 <?php
 include("../includes/common.php");
 if($islogin2==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
+$csrf_token = md5(mt_rand(0,999).time());
+$_SESSION['csrf_token'] = $csrf_token;
 $title='新增代付';
 include './head.php';
 ?>
@@ -28,6 +30,7 @@ $app = isset($_GET['app'])?$_GET['app']:'alipay';
 
 if(isset($_POST['submit'])){
 	if(!checkRefererHost())exit();
+	if(!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['csrf_token']) showmsg('CSRF验证失败',3);
 	$out_biz_no = trim($_POST['out_biz_no']);
 	$payee_account = htmlspecialchars(trim($_POST['payee_account']));
 	$payee_real_name = htmlspecialchars(trim($_POST['payee_real_name']));
@@ -95,6 +98,7 @@ if(isset($_GET['copy'])){
 
 			<div class="tab-pane active" id="alipay">
           <form action="?app=<?php echo $app?>" method="POST" role="form">
+			<input type="hidden" name="csrf_token" value="<?php echo $csrf_token?>"/>
 			<input type="hidden" name="type" value="<?php echo $app?>"/>
 			<input type="hidden" name="rate" value="<?php echo $conf['transfer_rate']?>"/>
 			<div class="form-group">

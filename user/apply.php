@@ -1,6 +1,8 @@
 <?php
 include("../includes/common.php");
 if($islogin2==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
+$csrf_token = md5(mt_rand(0,999).time());
+$_SESSION['csrf_token'] = $csrf_token;
 $title='申请提现';
 include './head.php';
 ?>
@@ -51,6 +53,7 @@ if($userrow['remain_money'] > 0 && !strpos($userrow['remain_money'], '%') && $en
 if(isset($_GET['act']) && $_GET['act']=='do'){
 	if($_POST['submit']=='申请提现'){
 		if(!checkRefererHost())exit();
+		if(!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['csrf_token']) showmsg('CSRF验证失败',3);
 		$money=daddslashes(strip_tags($_POST['money']));
 		if(!is_numeric($money) || !preg_match('/^[0-9.]+$/', $money) || $money<=0)exit("<script language='javascript'>alert('提现金额输入不规范');history.go(-1);</script>");
 		if($enable_money<$conf['settle_money']){
@@ -140,6 +143,7 @@ if(isset($_GET['act']) && $_GET['act']=='do'){
 		</div>
 		<div class="panel-body">
 			<form class="form-horizontal devform" action="./apply.php?act=do" method="post">
+				<input type="hidden" name="csrf_token" value="<?php echo $csrf_token?>">
 				<div class="form-group">
 					<label class="col-sm-2 control-label">提现方式</label>
 					<div class="col-sm-9">
