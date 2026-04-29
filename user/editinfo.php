@@ -28,7 +28,7 @@ if(strlen($userrow['phone'])==11){
 					</div>
 					<div class="modal-body">
 <?php if($conf['verifytype']==1){?>
-<div class="list-group-item">密保手机：<?php echo $userrow['phone']?></div>
+<div class="list-group-item">密保手机：<?php echo h($userrow['phone'])?></div>
 <div class="list-group-item">
 <div class="input-group">
 <input type="text" name="code" placeholder="输入短信验证码" class="form-control" required>
@@ -36,7 +36,7 @@ if(strlen($userrow['phone'])==11){
 </div>
 </div>
 <?php }else{?>
-<div class="list-group-item">密保邮箱：<?php echo $userrow['email']?></div>
+<div class="list-group-item">密保邮箱：<?php echo h($userrow['email'])?></div>
 <div class="list-group-item">
 <div class="input-group">
 <input type="text" name="code" placeholder="输入验证码" class="form-control" required>
@@ -153,7 +153,7 @@ if(strlen($userrow['phone'])==11){
 				<div class="form-group">
 					<label class="col-sm-2 control-label">结算方式</label>
 					<div class="col-sm-9">
-						<select class="form-control" name="stype" default="<?php echo $userrow['settle_id']?>">
+						<select class="form-control" name="stype" default="<?php echo h($userrow['settle_id'])?>">
 						<?php if($conf['settle_alipay']){?><option value="1" input="支付宝账号">支付宝结算</option>
 						<?php }if($conf['settle_wxpay']){?><option value="2" input="<?php echo $conf['transfer_wxpay']?'微信OpenId':'微信号';?>">微信结算</option>
 						<?php }if($conf['settle_qqpay']){?><option value="3" input="ＱＱ号码">QQ钱包结算</option>
@@ -164,7 +164,7 @@ if(strlen($userrow['phone'])==11){
 				<div class="form-group">
 					<label class="col-sm-2 control-label" id="typename">收款账号</label>
 					<div class="col-sm-9">
-						<input class="form-control" type="text" name="account" value="<?php echo $userrow['account']?>">
+						<input class="form-control" type="text" name="account" value="<?php echo h($userrow['account'])?>">
 					</div>
 				</div>
 				<?php if($conf['transfer_wxpay']){?>
@@ -177,7 +177,7 @@ if(strlen($userrow['phone'])==11){
 				<div class="form-group">
 					<label class="col-sm-2 control-label">真实姓名</label>
 					<div class="col-sm-9">
-						<input class="form-control" type="text" name="username" value="<?php echo $userrow['username']?>">
+						<input class="form-control" type="text" name="username" value="<?php echo h($userrow['username'])?>">
 					</div>
 				</div>
 				<div class="form-group">
@@ -197,13 +197,13 @@ if(strlen($userrow['phone'])==11){
 				<div class="form-group">
 					<label class="col-sm-2 control-label">设备序列号SN</label>
 					<div class="col-sm-9">
-						<input class="form-control" type="text" name="voice_devid" value="<?php echo $userrow['voice_devid']?>">
+						<input class="form-control" type="text" name="voice_devid" value="<?php echo h($userrow['voice_devid'])?>">
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-2 control-label">订单语音播报</label>
 					<div class="col-sm-9">
-						<select class="form-control" name="voice_order" default="<?php echo $userrow['voice_order']?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">通过聚合收款码收款时的语音播报开关</font>
+						<select class="form-control" name="voice_order" default="<?php echo h($userrow['voice_order'])?>"><option value="0">关闭</option><option value="1">开启</option></select><font color="green">通过聚合收款码收款时的语音播报开关</font>
 					</div>
 				</div>
 				<div class="form-group">
@@ -224,7 +224,7 @@ if(strlen($userrow['phone'])==11){
 				<div class="form-group">
 					<label class="col-sm-2 control-label">小票自动打印开关</label>
 					<div class="col-sm-9">
-						<select class="form-control" name="print_order" default="<?php echo $userrow['print_order']?>"><option value="0">关闭</option><option value="1">开启-仅聚合收款码</option><option value="2">开启-所有订单</option></select>
+						<select class="form-control" name="print_order" default="<?php echo h($userrow['print_order'])?>"><option value="0">关闭</option><option value="1">开启-仅聚合收款码</option><option value="2">开启-所有订单</option></select>
 					</div>
 				</div>
 				<div class="form-group">
@@ -251,7 +251,7 @@ if(strlen($userrow['phone'])==11){
 					<label class="col-sm-2 control-label">手机号码</label>
 					<div class="col-sm-9">
 						<div class="input-group">
-						<input class="form-control" type="text" name="phone" value="<?php echo $userrow['phone']?>" disabled>
+						<input class="form-control" type="text" name="phone" value="<?php echo h($userrow['phone'])?>" disabled>
 						<a class="input-group-addon" id="checkbind">修改绑定</a>
 						</div>
 					</div>
@@ -259,7 +259,7 @@ if(strlen($userrow['phone'])==11){
 				<div class="form-group">
 					<label class="col-sm-2 control-label">邮箱</label>
 					<div class="col-sm-9">
-						<input class="form-control" type="text" name="email" value="<?php echo $userrow['email']?>">
+						<input class="form-control" type="text" name="email" value="<?php echo h($userrow['email'])?>">
 					</div>
 				</div>
 				<?php }else{?>
@@ -267,7 +267,7 @@ if(strlen($userrow['phone'])==11){
 					<label class="col-sm-2 control-label">邮箱</label>
 					<div class="col-sm-9">
 						<div class="input-group">
-						<input class="form-control" type="text" name="email" value="<?php echo $userrow['email']?>" disabled>
+						<input class="form-control" type="text" name="email" value="<?php echo h($userrow['email'])?>" disabled>
 						<a class="input-group-addon" id="checkbind">修改绑定</a>
 						</div>
 					</div>
@@ -276,7 +276,7 @@ if(strlen($userrow['phone'])==11){
 					<label class="col-sm-2 control-label">手机号码</label>
 					<div class="col-sm-9">
 						<div class="input-group">
-						<input class="form-control" type="text" name="phone" value="<?php echo $userrow['phone']?>" disabled>
+						<input class="form-control" type="text" name="phone" value="<?php echo h($userrow['phone'])?>" disabled>
 						<a class="input-group-addon" id="bindphone">修改绑定</a>
 						</div>
 					</div>

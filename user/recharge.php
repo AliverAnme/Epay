@@ -46,7 +46,7 @@ $_SESSION['csrf_token'] = $csrf_token;
 				<div class="form-group">
 					<label class="col-sm-3 control-label">当前余额</label>
 					<div class="col-sm-8">
-						<input class="form-control" type="text" name="rmoney" value="<?php echo $userrow['money']?> 元" readonly="">
+						<input class="form-control" type="text" name="rmoney" value="<?php echo h($userrow['money'])?> 元" readonly="">
 					</div>
 				</div>
 				<div class="form-group">

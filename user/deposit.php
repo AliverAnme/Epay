@@ -52,7 +52,7 @@ if($userrow['deposit'] > 0) $money2 = $userrow['deposit'];
 				<div class="form-group">
 					<label class="col-sm-3 control-label">当前保证金余额</label>
 					<div class="col-sm-8">
-						<input class="form-control" type="text" name="deposit" value="<?php echo $userrow['deposit']?> 元" readonly="">
+						<input class="form-control" type="text" name="deposit" value="<?php echo h($userrow['deposit'])?> 元" readonly="">
 					</div>
 				</div>
 			</form>
