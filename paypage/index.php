@@ -148,7 +148,7 @@ if($type){
 $money = isset($_GET['money'])?$_GET['money']:null;
 if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))$money = null;
 $codename = !empty($userrow['codename'])?$userrow['codename']:$userrow['username'];
-$csrf_token = md5(mt_rand(0,999).time());
+$csrf_token = bin2hex(random_bytes(16));
 $_SESSION['paypage_token'] = $csrf_token;
 ?>
 <html lang="zh-cn">

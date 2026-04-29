@@ -22,7 +22,7 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
     exit(json_encode(['code'=>-1,'msg'=>'验证码错误']));
   }
   $errcount = $DB->getColumn("SELECT count(*) FROM `pre_log` WHERE `ip`=:ip AND `date`>DATE_SUB(NOW(),INTERVAL 1 DAY) AND `uid`=0 AND `type`='登录失败'", [':ip'=>$clientip]);
-  if($errcount >= $login_limit_count && file_exists($login_limit_file) && !$conf['totp_open']){
+  if($errcount >= $login_limit_count && file_exists($login_limit_file)){
     exit(json_encode(['code'=>-1,'msg'=>'多次登录失败，暂时禁止登录。可删除@login.lock文件解除限制']));
   }
   if($enc_type == '1'){
@@ -68,6 +68,10 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
   }
 }elseif(isset($_GET['act']) && $_GET['act']=='totp'){
   if(!checkRefererHost())exit('{"code":403}');
+  $errcount = $DB->getColumn("SELECT count(*) FROM `pre_log` WHERE `ip`=:ip AND `date`>DATE_SUB(NOW(),INTERVAL 1 DAY) AND `uid`=0 AND `type`='登录失败'", [':ip'=>$clientip]);
+  if($errcount >= $login_limit_count && file_exists($login_limit_file)){
+    exit(json_encode(['code'=>-1,'msg'=>'多次登录失败，暂时禁止登录']));
+  }
   $code = trim($_POST['code']);
   if (empty($code)) exit(json_encode(['code'=>-1,'msg'=>'请输入动态口令']));
   if ($conf['totp_open'] != 1 || empty($conf['totp_secret'])) {
@@ -76,16 +80,21 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
   try {
     $totp = \lib\TOTP::create($conf['totp_secret']);
     if (!$totp->verify($code)) {
+      $DB->insert('log', ['uid'=>0, 'type'=>'登录失败', 'date'=>'NOW()', 'ip'=>$clientip]);
       exit(json_encode(['code'=>-1,'msg'=>'动态口令错误']));
     }
   } catch (Exception $e) {
     exit(json_encode(['code'=>-1,'msg'=>$e->getMessage()]));
   }
   $DB->insert('log', ['uid'=>0, 'type'=>'登录后台', 'date'=>'NOW()', 'ip'=>$clientip]);
+  if (file_exists($login_limit_file)) {
+    unlink($login_limit_file);
+  }
   $session=md5($conf['admin_user'].$conf['admin_pwd'].$password_hash);
   $expiretime=time() + 2592000;
   $token=authcode("{$conf['admin_user']}\t{$session}\t{$expiretime}", 'ENCODE', SYS_KEY);
-  setcookie("admin_token", $token, $expiretime, null, null, null, true);
+  $secure = is_https();
+  setcookie("admin_token", $token, $expiretime, '/', '', $secure, true);
   exit(json_encode(['code'=>0]));
 }elseif(isset($_GET['logout'])){
 	if(!checkRefererHost())exit();
