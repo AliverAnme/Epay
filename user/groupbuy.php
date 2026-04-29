@@ -102,7 +102,7 @@ foreach($list as $res){
 		$visible = explode(',',$res['visible']);
 		if(!in_array($userrow['gid'], $visible))continue;
 	}
-	echo '<tr><td><b>'.$res['name'].'</b></td><td>'.display_info($res['info']).'</td><td><span style="font-size:20px;font-weight:700;color:#f40;">'.$res['price'].'</span> / '.($res['expire']==0?'永久':$res['expire'].'个月').'</td><td>'.($userrow['gid']==$res['gid']?'<a class="btn btn-sm btn-info" href="javascript:;" disabled>当前等级</a>':'<a class="btn btn-sm btn-info" href="javascript:buy('.$res['gid'].')">立即购买</a>').'</td></tr>';
+	echo '<tr><td><b>'.h($res['name']).'</b></td><td>'.display_info($res['info']).'</td><td><span style="font-size:20px;font-weight:700;color:#f40;">'.h($res['price']).'</span> / '.($res['expire']==0?'永久':h($res['expire']).'个月').'</td><td>'.($userrow['gid']==$res['gid']?'<a class="btn btn-sm btn-info" href="javascript:;" disabled>当前等级</a>':'<a class="btn btn-sm btn-info" href="javascript:buy('.$res['gid'].')">立即购买</a>').'</td></tr>';
 }
 ?>
 		  </tbody>

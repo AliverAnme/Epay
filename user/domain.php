@@ -44,7 +44,7 @@ $list=$DB->getAll("SELECT * FROM pre_domain WHERE uid={$uid} order by id desc");
           <tbody>
 <?php
 foreach($list as $res){
-	echo '<tr><td>'.$res['domain'].'</td><td>'.display_status($res['status']).'</td><td>'.$res['addtime'].'</td><td><a href="javascript:delDomain('.$res['id'].')" class="btn btn-xs btn-danger">删除</a></td></tr>';
+	echo '<tr><td>'.h($res['domain']).'</td><td>'.display_status($res['status']).'</td><td>'.$res['addtime'].'</td><td><a href="javascript:delDomain('.$res['id'].')" class="btn btn-xs btn-danger">删除</a></td></tr>';
 }
 ?>
 		  </tbody>
