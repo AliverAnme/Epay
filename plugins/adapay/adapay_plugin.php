@@ -419,7 +419,7 @@ class adapay_plugin
 			$user_id = $_COOKIE['adapay_user_id'];
 		}else{
 			$user_id = substr(getSid(), 0, 10);
-			setcookie('adapay_user_id', $user_id, time()+3600*24*365, '/');
+			setcookie('adapay_user_id', $user_id, time()+3600*24*365, '/', '', true, true);
 		}
 		try{
 			$result = self::checkout('fast_pay', $user_id);

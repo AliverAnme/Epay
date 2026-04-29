@@ -439,7 +439,7 @@ class yinyingtong_plugin
 			$user_id = $_COOKIE['yyt_user_id'];
 		}else{
 			$user_id = substr(getSid(), 0, 16);
-			setcookie('yyt_user_id', $user_id, time()+3600*24*365, '/');
+			setcookie('yyt_user_id', $user_id, time()+3600*24*365, '/', '', true, true);
 		}
 		try{
 			$result = self::precreate('10', $user_id);

@@ -337,7 +337,7 @@ class sandpay_plugin
 			$user_id = $_COOKIE['sandpay_user_id'];
 		}else{
 			$user_id = substr(getSid(), 0, 10);
-			setcookie('sandpay_user_id', $user_id, time()+3600*24*365, '/');
+			setcookie('sandpay_user_id', $user_id, time()+3600*24*365, '/', '', true, true);
 		}
 		try{
 			$result = self::addOrder('FASTPAY','SANDH5',$user_id);
