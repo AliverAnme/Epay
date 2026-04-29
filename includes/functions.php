@@ -742,7 +742,7 @@ function processOrder(&$srow,$notify=true){
 				$srow['black'] = true;
 				$DB->exec("UPDATE pre_order SET notify=-1 WHERE trade_no='{$srow['trade_no']}'");
 				if($conf['black_payact'] == 2){
-					$params = ['trade_no'=>$srow['trade_no'], 'money'=>$srow['realmoney'], 'key'=>md5($srow['trade_no'].SYS_KEY.$srow['trade_no'])];
+					$params = ['pid'=>$srow['uid'], 'trade_no'=>$srow['trade_no'], 'money'=>$srow['realmoney'], 'key'=>md5(SYS_KEY.$srow['uid'].$srow['trade_no'].SYS_KEY)];
             		get_curl($conf['localurl'].'api.php?act=refundapi', http_build_query($params));
 				}
 				return;
