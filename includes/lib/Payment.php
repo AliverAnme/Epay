@@ -678,7 +678,8 @@ class Payment {
         $cookiesid = $_COOKIE['mysid'];
         if(!$cookiesid||!preg_match('/^[0-9a-z]{32}$/i', $cookiesid)){
             $cookiesid = getSid();
-            setcookie("mysid", $cookiesid, time() + 2592000, '/');
+            $secure = is_https();
+            setcookie("mysid", $cookiesid, time() + 2592000, '/', '', $secure, true);
         }
 
         if($conf['wework_paykfid'] > 0){
