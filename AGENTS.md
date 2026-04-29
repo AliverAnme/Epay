@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
 **Generated:** 2026-04-30
-**Commit:** 82e27a4
+**Commit:** 413e629
 **Branch:** main
 
 ## OVERVIEW
@@ -175,8 +175,8 @@ docker compose -f docker-compose.prod.yml pull  # Update pre-built image
 - **SSO auditing**: Admin user impersonation now logged to `pre_log` table
 
 ### API Security
-- **Replay protection**: Timestamp validation (300s window) now enforced on ALL API endpoints (was gated behind `defined('API_INIT')` — now always checked)
-- **PID scoping**: `api.php` SYS_KEY-based endpoints (`act=order` with sign, `act=refundapi`) now require PID in signature calculation to prevent cross-merchant access
+- **API replay protection**: Timestamp validation now applied to ALL API endpoints (was gated behind `defined('API_INIT')` — now always checked if present, optional for backward compatibility)
+- **API sign scoping**: `api.php` SYS_KEY-based endpoints (`act=order` with sign, `act=refundapi`) now require PID in signature calculation — `md5(SYS_KEY.$pid.$trade_no.SYS_KEY)` (was `md5(SYS_KEY.$trade_no.SYS_KEY)`)
 - **Parameterized queries**: `api.php` all queries converted to `:named` parameterized form
 
 ### SQL Injection Prevention
@@ -227,11 +227,31 @@ docker compose -f docker-compose.prod.yml pull  # Update pre-built image
 ### HTTPS Upgrades (12 endpoints)
 - SendCloud mail API, AliCloud verification, 360 CDN, SMSBao, Geetest captcha (demo→production), admin URL default, 6 plugin author links
 
+### Additional Security Hardening (2026-04-30 round 2-4)
+- **OAuth CSRF**: WeChat OAuth state now random (was hardcoded "STATE"), validated on callback; aggregated OAuth callback validates state
+- **OAuth credential**: `qrlogin.php` hardcoded QQ AppID moved to class property
+- **OAuth code leak**: `douyinoauth.php` OAuth code removed from redirect URL
+- **Host header injection**: WeChat/Alipay OAuth redirect_uri validates against siteurl domain
+- **Template XSS**: 225+ `$conf[...]` echoes wrapped with `h()` across 36 template files
+- **DOM XSS**: `user/order.php` 25 data fields wrapped with `esc()` in JS template
+- **User login rate limit**: IP-based 10 attempts/5min with DB fail logging
+- **Plugin debug**: `print_r()` removed from kuaiqian/alipayrp plugins
+- **Plugin cookies**: `yyt_user_id`/`adapay_user_id`/`sandpay_user_id` now httponly+secure
+- **Paypage CSRF**: Token now `random_bytes(16)` (was `mt_rand(0,999).time()`)
+- **Registration email**: API key removed from plaintext email body
+- **Cron stealth**: Wrong-key requests return 404 (was Chinese text revealing endpoint)
+- **Transfer TOCTOU**: Duplicate check moved into transaction with FOR UPDATE
+- **Cron settlement**: Money deduction before settle INSERT (prevents phantom records)
+- **ip2region**: Auto-download from multi-mirror (EdgeOne proxy + GitHub fallback)
+- **Docker**: CRON_KEY persists across rebuilds via `/cron_key.txt`
+- **CNB CI**: Matrix AMD64+ARM64 build with dual-tag output (:latest + :vX.Y.Z)
+
 ### Remaining Known Gaps (documented, not yet fixed)
-- ~350 admin panel internal SQL queries still use interpolation (low risk: authenticated admin only)
-- ~300 template file `$conf[...]` echoes not wrapped with `h()` (medium risk: admin-controlled DB values)
+- `~50` template `$conf[...]` echoes not wrapped with `h()` (low priority: admin-controlled DB values)
 - `$conf['footer']` intentionally allows raw HTML (by design — admin formatting)
 - Payment gateway HTTP endpoints (helipay, umfpay, haipay, fuiou2) — requires provider confirmation of HTTPS support
 - `iot.solomo-info.com:9306` voice notification on custom port (no HTTPS available)
 - `sms.php.gs` default SMS provider (no known HTTPS endpoint)
 - Plugin `CURLOPT_SSL_VERIFYPEER=false` in 23 plugins — Chinese payment ecosystem convention, requires per-gateway testing
+- Douyin OAuth no server-side token exchange (requires full flow understanding)
+- `@login.lock` file-based lockout bypassable (delete file)
