@@ -1,8 +1,8 @@
 # 矩阵构建: AMD64 + ARM64 分别构建，合并为多架构镜像
-# 触发方式: Git Push (main 分支)
+# 触发方式: 手动触发 (Web UI)
 
-main:
-  push:
+"**":
+  web_trigger_build:
     # AMD64架构的构建任务
     - runner:
         tags: cnb:arch:amd64  # 指定运行在AMD64架构的runner上
