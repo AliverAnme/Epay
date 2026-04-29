@@ -1,6 +1,6 @@
 # 矩阵构建: AMD64 + ARM64 分别构建，合并为多架构镜像
 # 触发方式: 手动触发 (Web UI)，输入版本号 (默认 latest)
-# 产物: :latest + :v版本号 两个多架构标签
+# 策略: 只推送 :latest-linux-* 中间产物，manifest 同时生成 :latest + :v版本号
 
 "**":
   web_trigger_build:
@@ -10,16 +10,13 @@
       services:
         - docker
       env:
-        TAG_VER: ${VERSION}
         IMAGE_LATEST: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest-linux-amd64
       stages:
         - name: docker login
           script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
         - name: docker build (AMD64)
           script: |
-            VER="${TAG_VER:-latest}"
             docker buildx build --platform linux/amd64 --provenance=false \
-              --tag "${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${VER}-linux-amd64" \
               --tag ${IMAGE_LATEST} --push .
         - name: resolve
           type: cnb:resolve
@@ -32,26 +29,20 @@
       services:
         - docker
       env:
-        TAG_VER: ${VERSION}
         IMAGE_LATEST: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest-linux-arm64
       stages:
-        - name: set version default
-          script: |
-            if [ -z "$TAG_VER" ]; then export TAG_VER=latest; fi
         - name: docker login
           script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
         - name: docker build (ARM64)
           script: |
-            VER="${TAG_VER:-latest}"
             docker buildx build --platform linux/arm64 --provenance=false \
-              --tag "${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${VER}-linux-arm64" \
               --tag ${IMAGE_LATEST} --push .
         - name: resolve
           type: cnb:resolve
           options:
             key: build-arm64
 
-    # 创建多架构镜像 + 清理中间产物
+    # 创建多架构镜像 (latest + version)
     - services:
         - docker
       env:
@@ -83,23 +74,7 @@
             username: $CNB_TOKEN_USER_NAME
             password: $CNB_TOKEN
             target: ${REGISTRY}/${REPO}:${TAG_VER}
-            template: ${REGISTRY}/${REPO}:${TAG_VER}-OS-ARCH
+            template: ${REGISTRY}/${REPO}:latest-OS-ARCH
             platforms:
               - linux/amd64
               - linux/arm64
-        - name: cleanup intermediate tags
-          script: |
-            VER="${TAG_VER:-latest}"
-            for TAG in latest-linux-amd64 latest-linux-arm64 ${VER}-linux-amd64 ${VER}-linux-arm64; do
-              DIGEST=$(curl -sL -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
-                -I "https://${REGISTRY}/v2/${REPO}/manifests/${TAG}" \
-                -H "Accept: application/vnd.docker.distribution.manifest.v2+json" 2>/dev/null \
-                | grep -i "docker-content-digest:" | awk '{print $2}' | tr -d '\r')
-              if [ -n "$DIGEST" ]; then
-                curl -s -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
-                  -X DELETE "https://${REGISTRY}/v2/${REPO}/manifests/${DIGEST}" > /dev/null 2>&1 \
-                  && echo "  cleaned: ${TAG}" || echo "  failed: ${TAG}"
-              else
-                echo "  skip (not found): ${TAG}"
-              fi
-            done
