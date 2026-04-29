@@ -569,14 +569,50 @@ function get_main_host($url){
 	return $host;
 }
 
+function is_public_url($url){
+	$parts = parse_url($url);
+	if(!$parts || !isset($parts['scheme']) || !isset($parts['host'])){
+		return false;
+	}
+	$scheme = strtolower($parts['scheme']);
+	if($scheme !== 'http' && $scheme !== 'https'){
+		return false;
+	}
+	$host = $parts['host'];
+	$ip = gethostbyname($host);
+	// Filter out invalid/unresolvable
+	if(!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)){
+		return false;
+	}
+	// Extra check for loopback/link-local not caught by flags
+	$longip = ip2long($ip);
+	if($longip === false) return false;
+	// 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 (belt-and-suspenders with FILTER_FLAG_NO_PRIV_RANGE)
+	if(($longip >= ip2long('10.0.0.0') && $longip <= ip2long('10.255.255.255'))
+		|| ($longip >= ip2long('127.0.0.0') && $longip <= ip2long('127.255.255.255'))
+		|| ($longip >= ip2long('169.254.0.0') && $longip <= ip2long('169.254.255.255'))
+		|| ($longip >= ip2long('172.16.0.0') && $longip <= ip2long('172.31.255.255'))
+		|| ($longip >= ip2long('192.168.0.0') && $longip <= ip2long('192.168.255.255'))
+		|| $longip == ip2long('0.0.0.0')){
+		return false;
+	}
+	return true;
+}
+
 function do_notify($url){
 	global $conf;
 	if($conf['proxy'] == 2 && !empty($conf['proxy_apiurl']) && !empty($conf['proxy_apikey'])){
+		if(!is_public_url($conf['proxy_apiurl'])){
+			return false;
+		}
 		$url = base64_encode($url);
 		$timestamp = strval(time());
 		$param = ['url' => $url, 'timestamp' => $timestamp, 'sign' => md5($url.$timestamp.$conf['proxy_apikey'])];
 		$return = get_curl($conf['proxy_apiurl'], http_build_query($param));
 	}else{
+		if(!is_public_url($url)){
+			return false;
+		}
 		$return = curl_get($url);
 	}
 	if(strpos($return,'success')!==false || strpos($return,'SUCCESS')!==false || strpos($return,'Success')!==false){

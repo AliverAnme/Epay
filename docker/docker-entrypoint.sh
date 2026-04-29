@@ -126,7 +126,7 @@ if [ "$TABLE_EXISTS" = "0" ]; then
 
     # 生成随机密钥
     SYSKEY=$(php -r "echo substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 32);")
-    CRONKEY=$(php -r "echo rand(100000, 999999);")
+    CRONKEY=$(php -r "echo bin2hex(random_bytes(16));")
     BUILD_DATE=$(date +%Y-%m-%d)
 
     php -r "
@@ -233,9 +233,8 @@ else
 
     \$cronkey = \$pdo->query(\"SELECT v FROM ${DB_PREFIX}_config WHERE k='cronkey'\")->fetchColumn();
     if (!\$cronkey) {
-        \$new_cronkey = rand(100000, 999999);
+        \$new_cronkey = bin2hex(random_bytes(16));
         \$pdo->exec(\"INSERT INTO ${DB_PREFIX}_config VALUES ('cronkey', '\$new_cronkey')\");
-        echo '[entrypoint] 已补充 CRON_KEY: '.\$new_cronkey.PHP_EOL;
     }
 
     \$adminpwd = \$pdo->query(\"SELECT v FROM ${DB_PREFIX}_config WHERE k='admin_pwd'\")->fetchColumn();
@@ -264,18 +263,6 @@ else
         echo "[entrypoint] install.lock 已重建"
     fi
     
-    CRONKEY_FROM_DB=$(php -r "
-    try {
-        \$pdo = new PDO('${DSN}', '${DB_USER}', '${DB_PWD}', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-        \$stmt = \$pdo->query(\"SELECT v FROM ${DB_PREFIX}_config WHERE k='cronkey'\");
-        echo \$stmt->fetchColumn();
-    } catch (Exception \$e) {
-        echo '';
-    }
-    ")
-    if [ -n "$CRONKEY_FROM_DB" ] && [ "$CRONKEY_FROM_DB" != "" ]; then
-        echo "[entrypoint] CRON_KEY: ${CRONKEY_FROM_DB}"
-    fi
 fi
 
 # ============================================
