@@ -354,7 +354,7 @@ case 'reg':
 			if(!empty($email)){
 				$sub = $conf['sitename'].' - 注册成功通知';
 				$host = htmlspecialchars($_SERVER['HTTP_HOST']);
-				$msg = '<h2>商户注册成功通知</h2>感谢您注册'.$conf['sitename'].'！<br/>您的登录账号：'.($info['email']?$info['email']:$info['phone']).'<br/>您的商户ID：'.$uid.'<br/>您的商户秘钥：'.$key.'<br/>'.$conf['sitename'].'官网：<a href="https://'.$host.'/" target="_blank">'.$host.'</a><br/>【<a href="'.$siteurl.'user/" target="_blank">商户管理后台</a>】';
+				$msg = '<h2>商户注册成功通知</h2>感谢您注册'.$conf['sitename'].'！<br/>您的登录账号：'.($info['email']?$info['email']:$info['phone']).'<br/>您的商户ID：'.$uid.'<br/>您的商户密钥请登录后台查看<br/>'.$conf['sitename'].'官网：<a href="https://'.$host.'/" target="_blank">'.$host.'</a><br/>【<a href="'.$siteurl.'user/" target="_blank">商户管理后台</a>】';
 				send_mail($email, $sub, $msg);
 			}
 			\lib\VerifyCode::void_code();

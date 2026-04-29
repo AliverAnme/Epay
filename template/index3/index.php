@@ -439,7 +439,7 @@ if(!defined('IN_CRONLITE'))exit();
               <b>联系方式：</b><br/>
               <b><?php echo $conf['orgname']?></b>
               <p>ＱＱ：<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank"><?php echo $conf['kfqq']?></a></p>
-              <p>网址：<?php echo $siteurl?></p>
+              <p>网址：<?php echo h($siteurl)?></p>
               <p>邮箱：<a href="mailto:<?php echo $conf['email']?>"><?php echo $conf['email']?></a></p>
             </dd>
           </div>

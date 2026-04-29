@@ -13,8 +13,8 @@ if (function_exists("ignore_user_abort"))
 
 @header('Content-Type: text/html; charset=UTF-8');
 
-if(empty($conf['cronkey']))exit("请先设置好监控密钥");
-if($conf['cronkey']!=$_GET['key'])exit("监控密钥不正确");
+if(empty($conf['cronkey'])){ http_response_code(404); exit; }
+if($conf['cronkey']!=$_GET['key']){ http_response_code(404); exit; }
 
 if($_GET['do']=='settle'){
 	$settle_time=getSetting('settle_time', true);

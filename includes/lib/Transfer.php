@@ -85,10 +85,12 @@ class Transfer
             }
         }
 
-        $trans = $DB->find('transfer', '*', ['out_biz_no' => $out_biz_no, 'uid' => $uid]);
-        if($trans) return ['code'=>-1, 'msg'=>'该交易号已存在，请更换交易号'];
-
         $DB->beginTransaction();
+        $trans = $DB->getRow("SELECT biz_no FROM pre_transfer WHERE out_biz_no=:out_biz_no AND uid=:uid FOR UPDATE", [':out_biz_no'=>$out_biz_no, ':uid'=>$uid]);
+        if($trans) {
+            $DB->rollBack();
+            return ['code'=>-1, 'msg'=>'该交易号已存在，请更换交易号'];
+        }
         $need_money = null;
         if($uid > 0){
             $userrow = $DB->getRow('SELECT * FROM pre_user WHERE uid=:uid FOR UPDATE', [':uid'=>$uid]);
