@@ -26,13 +26,15 @@ class WechatOauth
      */
     public function login()
     {
-        $redirect_uri = (is_https() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        $redirect_uri = (is_https() ? 'https://' : 'http://') . htmlspecialchars($_SERVER['HTTP_HOST']) . $_SERVER['REQUEST_URI'];
+        $state = md5(uniqid(rand(), true));
+        $_SESSION['wechat_oauth_state'] = $state;
         $param = [
             "appid" => $this->appid,
             "redirect_uri" => $redirect_uri,
             "response_type" => "code",
             "scope" => "snsapi_base",
-            "state" => "STATE"
+            "state" => $state
         ];
         $url = $this->openurl . '/connect/oauth2/authorize?' . http_build_query($param) . "#wechat_redirect";
         Header("Location: $url");

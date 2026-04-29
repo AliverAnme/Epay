@@ -1076,6 +1076,10 @@ function wechat_oauth($wxinfo){
 	global $conf;
 	$oauth = new \lib\wechat\WechatOauth($wxinfo['appid'], $wxinfo['appsecret']);
 	if (isset($_GET['code'])) {
+		if(isset($_SESSION['wechat_oauth_state']) && (!isset($_GET['state']) || $_GET['state'] !== $_SESSION['wechat_oauth_state'])){
+			throw new Exception('OAuth state validation failed');
+		}
+		unset($_SESSION['wechat_oauth_state']);
 		$code = $_GET['code'];
 		return $oauth->GetOpenidFromMp($code);
 	}else{
