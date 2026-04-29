@@ -91,11 +91,15 @@
           script: |
             VER="${TAG_VER:-latest}"
             for TAG in latest-linux-amd64 latest-linux-arm64 ${VER}-linux-amd64 ${VER}-linux-arm64; do
-              DIGEST=$(curl -s -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
-                -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-                "https://${REGISTRY}/v2/${REPO}/manifests/${TAG}" \
-                -o /dev/null -w "%header{docker-content-digest}" 2>/dev/null)
-              [ -n "$DIGEST" ] && curl -s -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
-                -X DELETE "https://${REGISTRY}/v2/${REPO}/manifests/${DIGEST}" > /dev/null 2>&1
-              echo "  cleaned: ${TAG}"
+              DIGEST=$(curl -sL -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
+                -I "https://${REGISTRY}/v2/${REPO}/manifests/${TAG}" \
+                -H "Accept: application/vnd.docker.distribution.manifest.v2+json" 2>/dev/null \
+                | grep -i "docker-content-digest:" | awk '{print $2}' | tr -d '\r')
+              if [ -n "$DIGEST" ]; then
+                curl -s -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
+                  -X DELETE "https://${REGISTRY}/v2/${REPO}/manifests/${DIGEST}" > /dev/null 2>&1 \
+                  && echo "  cleaned: ${TAG}" || echo "  failed: ${TAG}"
+              else
+                echo "  skip (not found): ${TAG}"
+              fi
             done
