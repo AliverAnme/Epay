@@ -72,7 +72,7 @@ vim .env  # 填入 CRON_KEY=xxxx
 docker compose up -d cron
 ```
 
-> **代码持久化**：整个项目目录通过 bind mount 映射到容器。`config.php`、`install.lock` 等文件直接存储在宿主机，重建镜像不会丢失。代码更新只需 `git pull` + `docker compose restart`，详见 [升级指南](#升级指南)。
+> **代码持久化**：应用代码在镜像中存放于 `/var/www/html-staging/`，entrypoint 启动时通过 rsync 同步到 `app_data` 命名卷。`config.php` 自动生成并保留在卷中，插件通过 `./plugins` bind mount 直接映射。拉取新镜像即可完成代码更新，详见 [升级指南](#升级指南)。
 
 ### 1.2 架构
 
@@ -80,9 +80,6 @@ docker compose up -d cron
 ┌──────────────────────────────────────────────────┐
 │  docker compose 四容器架构                         │
 │                                                   │
-│  宿主机 ./ (项目目录) — bind mount → 容器内        │
-│       │                                           │
-│       ↓                                           │
 │  ┌─────────┐   ┌──────────┐   ┌──────────┐       │
 │  │  nginx  │──→│ php-fpm  │──→│  MySQL   │       │
 │  │ :80     │   │          │   │ :3306    │       │
@@ -94,8 +91,14 @@ docker compose up -d cron
 │  │ (每5分钟) │   curl nginx/cron.php               │
 │  └───────────┘                                     │
 │                                                   │
+│  代码更新机制:                                      │
+│  镜像 /var/www/html-staging/ ─rsync→ app_data 卷    │
+│  (排除 config.php, plugins, install.lock)           │
+│                                                   │
 │  Volumes:                                         │
-│  uploads   → assets/uploads (支付凭证)             │
+│  app_data  → /var/www/html（运行时 + config.php）   │
+│  ./plugins → /var/www/html/plugins（插件 bind mt）  │
+│  uploads   → assets/uploads（支付凭证）             │
 │  sessions  → PHP Session 文件                      │
 │  mysql_data→ MySQL 数据文件                        │
 └──────────────────────────────────────────────────┘
@@ -147,9 +150,9 @@ docker compose logs -f --tail=100
 # 重启某服务
 docker compose restart nginx
 
-# 代码更新（推荐，无需重建镜像）
+# 代码更新（重建镜像后重启，entrypoint 自动同步代码）
 git pull origin main
-docker compose restart php nginx
+docker compose up -d --build
 
 # 重建镜像（仅修改 Dockerfile 或 docker/ 内配置文件时需要）
 docker compose up -d --build
@@ -190,7 +193,7 @@ cp .env.example .env
 vim .env  # 修改密码和 SITE_URL（所有变量必须填写，prod 文件无 fallback 默认值）
 ```
 
-> **代码持久化**：与场景一相同，项目目录通过 bind mount 映射到容器，`config.php` 等文件在宿主机持久化。
+> **代码持久化**：与场景一相同，应用代码在 `app_data` 命名卷中，`config.php` 自动生成并持久化。插件通过 `./plugins` bind mount 管理。
 
 ### 2.2 启动
 
@@ -592,7 +595,7 @@ docker compose exec php sh
 
 ### Docker 插件管理
 
-项目目录通过 bind mount 映射到容器（`.:/var/www/html`），`plugins/` 目录自然包含其中。**添加/删除插件不需要任何 Docker 命令**：
+插件目录通过 bind mount 单独映射到宿主机 `./plugins/`（`./plugins:/var/www/html/plugins`），应用代码和配置文件在 `app_data` 命名卷中。**添加/删除插件不需要任何 Docker 命令**：
 
 ```bash
 # 添加新插件（直接复制到宿主机 plugins 目录）
@@ -606,15 +609,16 @@ rm -rf ./plugins/unwanted-plugin/
 
 ### Docker 数据持久化
 
-整个项目目录通过 bind mount 直接存储在宿主机：
+entrypoint 每次启动时从镜像 staging 目录同步代码到 `app_data` 卷（排除配置文件）：
 
-- `config.php` — 数据库配置，首次启动自动生成，重建镜像不丢失
-- `install/install.lock` — 安装锁，防止重复安装
+- `app_data` 命名卷 — 应用代码 + `config.php` + `install/install.lock`，entrypoint 自动同步代码、生成配置
+- `/var/www/html-staging/` (镜像内) — 代码源，每次拉取新镜像后自动同步到卷
+- `./plugins/` bind mount — 插件文件，直接映射宿主机目录
 - `assets/uploads/` — 上传文件（额外使用命名卷 `uploads`，双重保护）
 
-> **Linux 用户注意**：容器内 PHP-FPM 以 `www-data`（UID 82）运行。如果遇到文件写入权限问题（如插件 cert 目录、config.php），在宿主机执行：
+> **Linux 用户注意**：容器内 PHP-FPM 以 `www-data`（UID 82）运行。如果遇到插件 cert 目录写入权限问题，在宿主机执行：
 > ```bash
-> chown -R 82:82 config.php install/ plugins/ assets/uploads/
+> chown -R 82:82 plugins/
 > ```
 > macOS / Windows Docker Desktop 无此问题。
 
@@ -627,16 +631,16 @@ rm -rf ./plugins/unwanted-plugin/
 │  数据类型               存储位置           持久化方式  │
 ├─────────────────────────────────────────────────────┤
 │  商户/订单/配置          MySQL → mysql_data 命名卷 永久 │
-│  数据库连接信息          ./config.php       bind mount│
-│  安装锁定标记            install/install.lock bind    │
+│  数据库连接信息          app_data 卷 → config.php 永久  │
+│  安装锁定标记            app_data 卷 → install.lock  永久 │
 │  支付凭证上传            uploads 命名卷     永久       │
 │  PHP Session             sessions 命名卷    可丢失     │
 │  插件文件                ./plugins/         bind mount│
-│  程序代码                ./                bind mount │
+│  程序代码                app_data 命名卷    (自动同步) │
 └─────────────────────────────────────────────────────┘
 ```
 
-**核心原则**：所有业务数据（商户账号、支付订单、结算记录、系统配置）全部在 MySQL 数据库中，由 `mysql_data` 命名卷保护。只要不执行 `docker compose down -v`，这些数据**绝不会丢失**。
+**核心原则**：所有业务数据（商户账号、支付订单、结算记录、系统配置）全部在 MySQL 数据库中，由 `mysql_data` 命名卷保护。`config.php` 在 `app_data` 卷中持久化。entrypoint 每次启动自动从镜像同步代码，拉取新镜像即可更新。
 
 ```bash
 # ✅ 安全 — 数据全部保留
@@ -646,8 +650,8 @@ docker compose up -d
 # ✅ 安全 — 数据全部保留
 docker compose restart
 
-# ✅ 安全 — 代码更新，数据不受影响
-git pull origin main && docker compose restart php nginx
+# ✅ 安全 — 代码更新（重建镜像/拉取新镜像，自动同步）
+git pull origin main && docker compose up -d --build
 
 # ❌ 危险 — 删除所有数据（包括整个数据库！）
 docker compose down -v
@@ -676,7 +680,8 @@ cp -r /www/wwwroot/pay.your-domain.com/assets/uploads ./backup_uploads/
 | 支付回调 403 / Referer 错误 | 反向代理未透传 Referer | 确保代理透传 `Referer` 头 |
 | 支付链接生成 `http://` | `is_https()` 检测失败 | 确保代理透传 `X-Forwarded-Proto` |
 | 后台页面空白 | PHP 扩展缺失或 `sql_mode` 问题 | 安装扩展 + 清空 `sql_mode` |
-| 502 Bad Gateway（Docker） | PHP 容器未启动 | `docker compose ps` + `docker compose logs php` |
+| 502 Bad Gateway（Docker） | PHP 容器未启动，或 config.php 未生成 | `docker compose ps` + `docker compose logs php`；检查 config.php 中 host 是否为 `mysql`（非 `localhost`） |
+| 502 Bad Gateway（首次部署后） | entrypoint 未自动生成 config.php | 删除 `app_data` 卷重建：`docker compose down && docker volume rm epay_app_data && docker compose up -d` |
 | 数据库连接失败 | 密码错误或容器间网络不通 | 检查 `.env` 密码；Docker 内主机名应为 `mysql` |
 | 安装后页面空白 | syskey 丢失 | Docker：`docker compose down && docker compose up -d` 重试安装 |
 | Cron 不执行 | CRON_KEY 未配置 | 后台获取 Key 并填入配置 |
@@ -700,21 +705,23 @@ php -m | grep -E "pdo|curl|gd|gmp|mbstring|sodium"  # 扩展检查
 
 ### Docker 场景
 
-代码通过 bind mount 来自宿主机，升级只需更新宿主机文件后重启容器。`config.php` 和数据库数据不会受影响。
+应用代码在 `app_data` 命名卷中。entrypoint 会在每次容器启动时自动从镜像同步代码到该卷（排除 `config.php`、`plugins/`、`install.lock`），因此拉取新镜像后重启即可完成代码更新，无需手动管理卷。
 
 ```bash
-# 代码升级（最常用）
+# 本地构建模式 — 代码更新
 git pull origin main
-docker compose restart php nginx     # 本地构建模式
-# 或
-docker compose -f docker-compose.prod.yml restart php nginx  # 预构建模式
+docker compose up -d --build                      # 重建镜像 + 重启，entrypoint 自动同步代码
 
-# PHP 运行时升级（仅 Dockerfile 或预构建镜像有更新时）
-docker compose up -d --build         # 本地构建模式
-# 或
-docker compose -f docker-compose.prod.yml pull   # 拉取新镜像
-docker compose -f docker-compose.prod.yml up -d  # 预构建模式
+# 预构建模式 — 代码更新（最简洁）
+docker compose -f docker-compose.prod.yml pull    # 拉取新镜像
+docker compose -f docker-compose.prod.yml up -d   # 重启，entrypoint 自动同步代码
 ```
+
+> ⚙️ **工作原理**：镜像内代码存放在 `/var/www/html-staging/`（staging 目录），运行时工作目录为 `/var/www/html/`（`app_data` 卷）。entrypoint 启动时执行 `rsync --delete` 将 staging 同步到工作目录，但排除 `config.php`、`plugins/`、`install.lock`、`assets/uploads/`、`cache/`。因此：
+> - `config.php` 和 `install.lock` 在卷中持久化，不受代码同步影响
+> - `plugins/` 是 bind mount 覆盖，不受影响
+> - `assets/uploads/` 是独立命名卷覆盖，不受影响
+> - 删除旧文件、添加新文件均自动处理
 
 > entrypoint.sh 会在每次启动时自动检测并执行数据库升级 SQL。
 

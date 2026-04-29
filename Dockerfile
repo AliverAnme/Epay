@@ -15,6 +15,7 @@ RUN set -eux; \
         oniguruma-dev \
         libxml2-dev \
         tzdata \
+        rsync \
     ; \
     # 安装 PHP 扩展
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
@@ -44,27 +45,31 @@ COPY docker/php-custom.ini /usr/local/etc/php/conf.d/zz-epay.ini
 # 设置工作目录
 WORKDIR /var/www/html
 
-# 复制项目文件
-COPY --chown=www-data:www-data . /var/www/html/
+# 复制项目文件到 staging 目录（运行时由 entrypoint 同步到 volume）
+COPY --chown=www-data:www-data . /var/www/html-staging/
 
 # 创建必需的目录并设置权限
 RUN set -eux; \
     mkdir -p \
-        assets/uploads \
-        plugins/alipay/cert \
-        plugins/wxpay/cert \
-        plugins/wxpayn/cert \
-        plugins/wxpayng/cert \
-        plugins/wxpaynp/cert \
-        plugins/douyinpay/cert \
+        /var/www/html-staging/assets/uploads \
+        /var/www/html-staging/plugins/alipay/cert \
+        /var/www/html-staging/plugins/wxpay/cert \
+        /var/www/html-staging/plugins/wxpayn/cert \
+        /var/www/html-staging/plugins/wxpayng/cert \
+        /var/www/html-staging/plugins/wxpaynp/cert \
+        /var/www/html-staging/plugins/douyinpay/cert \
     ; \
     chown -R www-data:www-data \
-        assets/uploads \
-        plugins \
-        install \
-        admin \
+        /var/www/html-staging/assets/uploads \
+        /var/www/html-staging/plugins \
+        /var/www/html-staging/install \
+        /var/www/html-staging/admin \
     ; \
-    chmod -R 755 assets/uploads plugins install admin
+    chmod -R 755 \
+        /var/www/html-staging/assets/uploads \
+        /var/www/html-staging/plugins \
+        /var/www/html-staging/install \
+        /var/www/html-staging/admin
 
 # 复制入口脚本
 COPY docker/docker-entrypoint.sh /usr/local/bin/

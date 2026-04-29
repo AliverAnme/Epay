@@ -18,6 +18,21 @@ echo "============================================"
 mkdir -p /var/lib/php/sessions
 chown www-data:www-data /var/lib/php/sessions
 
+# ============================================
+# 0. 从镜像同步代码到 volume（首次部署/镜像更新）
+# ============================================
+if [ -d "/var/www/html-staging" ]; then
+    echo "[entrypoint] 同步代码至工作目录 ..."
+    rsync -a --delete \
+        --exclude='config.php' \
+        --exclude='plugins/' \
+        --exclude='install/install.lock' \
+        --exclude='assets/uploads/' \
+        --exclude='cache/' \
+        /var/www/html-staging/ /var/www/html/
+    echo "[entrypoint] 代码同步完成"
+fi
+
 # 确保插件 cert 目录存在（bind mount 后 Dockerfile 的 mkdir 不生效）
 mkdir -p \
     /var/www/html/plugins/alipay/cert \
@@ -30,7 +45,7 @@ mkdir -p \
 # ============================================
 # 1. 生成 config.php（如果不存在）
 # ============================================
-if [ ! -f "$CONFIG_FILE" ] || ! grep -q "host.*=>" "$CONFIG_FILE" 2>/dev/null; then
+if [ ! -f "$CONFIG_FILE" ] || grep -q "'host' *=> *'localhost'" "$CONFIG_FILE" 2>/dev/null; then
     echo "[entrypoint] 生成 config.php ..."
     cat > "$CONFIG_FILE" << PHPEOF
 <?php

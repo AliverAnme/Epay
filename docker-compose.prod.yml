@@ -9,7 +9,7 @@ services:
       - "${NGINX_PORT:-80}:80"
     volumes:
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - .:/var/www/html:ro
+      - app_data:/var/www/html:ro
     depends_on:
       php:
         condition: service_started
@@ -31,7 +31,8 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       SITE_URL: ${SITE_URL:-http://localhost}
     volumes:
-      - .:/var/www/html
+      - app_data:/var/www/html
+      - ./plugins:/var/www/html/plugins
       - uploads:/var/www/html/assets/uploads
       - sessions:/var/lib/php/sessions
     networks:
@@ -79,6 +80,7 @@ services:
       - epay-network
 
 volumes:
+  app_data:
   uploads:
   sessions:
   mysql_data:
