@@ -11,6 +11,7 @@ $app = isset($_GET['app'])?$_GET['app']:'alipay';
 
 if(isset($_POST['submit'])){
 	if(!checkRefererHost())exit();
+	if(!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token']) showmsg('CSRF验证失败',3);
 	$out_biz_no = trim($_POST['out_biz_no']);
 	if(!isset($_POST['paypwd']) || $_POST['paypwd']!==$conf['admin_paypwd'])showmsg('支付密码错误',3);
 	$payee_account = htmlspecialchars(trim($_POST['payee_account']));
@@ -77,6 +78,7 @@ if(isset($_GET['account']) && isset($_GET['username'])){
 		</ul>
 		<div class="tab-pane active" id="alipay">
           <form action="?app=<?php echo $app?>" method="POST" role="form">
+			<input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 			<input type="hidden" name="type" value="<?php echo $app?>"/>
 		    <div class="form-group">
 				<div class="input-group"><div class="input-group-addon">通道选择</div>

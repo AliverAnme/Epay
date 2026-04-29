@@ -193,6 +193,7 @@ $("select[name='homepage']").change(function(){
 <?php
 }elseif($mod=='paypwd_n' && $_POST['do']=='submit'){
 	if(!checkRefererHost())exit;
+	if(!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token']) showmsg('CSRF验证失败',3);
 	$oldpwd=trim($_POST['oldpwd']);
 	$newpwd=trim($_POST['newpwd']);
 	$newpwd2=trim($_POST['newpwd2']);
@@ -210,6 +211,7 @@ $("select[name='homepage']").change(function(){
 	else showmsg('修改失败！<br/>'.$DB->error(),4);
 }elseif($mod=='account_n' && $_POST['do']=='submit'){
 	if(!checkRefererHost())exit;
+	if(!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token']) showmsg('CSRF验证失败',3);
 	$user=trim($_POST['user']);
 	$oldpwd=trim($_POST['oldpwd']);
 	$newpwd=trim($_POST['newpwd']);
@@ -229,7 +231,7 @@ $("select[name='homepage']").change(function(){
 <div class="panel panel-primary">
 <div class="panel-heading"><h3 class="panel-title">管理员账号配置</h3></div>
 <div class="panel-body">
-  <form action="./set.php?mod=account_n" method="post" class="form-horizontal" role="form"><input type="hidden" name="do" value="submit"/>
+  <form action="./set.php?mod=account_n" method="post" class="form-horizontal" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 	<div class="form-group">
 	  <label class="col-sm-2 control-label">用户名</label>
 	  <div class="col-sm-10"><input type="text" name="user" value="<?php echo $conf['admin_user']; ?>" class="form-control" required/></div>
@@ -256,7 +258,7 @@ $("select[name='homepage']").change(function(){
 <div class="panel panel-primary">
 <div class="panel-heading"><h3 class="panel-title">支付密码修改</h3></div>
 <div class="panel-body">
-  <form action="./set.php?mod=paypwd_n" method="post" class="form-horizontal" role="form"><input type="hidden" name="do" value="submit"/>
+  <form action="./set.php?mod=paypwd_n" method="post" class="form-horizontal" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 	<div class="form-group">
 	  <label class="col-sm-2 control-label">旧密码</label>
 	  <div class="col-sm-10"><input type="password" name="oldpwd" value="" class="form-control" placeholder="请输入当前的支付密码"/></div>
@@ -1942,6 +1944,7 @@ echo '<div class="panel panel-primary">
 <div class="panel-body">';
 if($_POST['s']==1){
 	if(!checkRefererHost())exit;
+	if(!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token']) exit('CSRF验证失败');
 	if(!is_uploaded_file($_FILES['file']['tmp_name'])) exit('非法文件上传');
 	$allowed_types = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 	$finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -1954,7 +1957,7 @@ if($_POST['s']==1){
 	echo "上传失败，可能没有文件写入权限";
 }
 }
-echo '<form action="set.php?mod=upimg" method="POST" enctype="multipart/form-data"><label for="file"></label><input type="file" name="file" id="file" /><input type="hidden" name="s" value="1" /><br><input type="submit" class="btn btn-primary btn-block" value="确认上传" /></form><br>现在的图片：<br><img src="../assets/img/logo.png?r='.rand(10000,99999).'" style="max-width:100%">';
+echo '<form action="set.php?mod=upimg" method="POST" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="'.$admin_csrf_token.'"><label for="file"></label><input type="file" name="file" id="file" /><input type="hidden" name="s" value="1" /><br><input type="submit" class="btn btn-primary btn-block" value="确认上传" /></form><br>现在的图片：<br><img src="../assets/img/logo.png?r='.rand(10000,99999).'" style="max-width:100%">';
 echo '</div></div>';
 }
 ?>
