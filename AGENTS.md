@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-04-28
-**Commit:** 3551f4f
+**Generated:** 2026-04-29
+**Commit:** acd41de
 **Branch:** main
 
 ## OVERVIEW
@@ -10,7 +10,6 @@
 ## STRUCTURE
 ```
 Epay/
-├── config.php              # ONLY file config (DB credentials)
 ├── includes/               # Core application bootstrap & library
 │   ├── common.php          # Bootstrap (autoloader, DB, cache, config, session)
 │   ├── functions.php       # ~1550 lines of procedural helpers
@@ -28,6 +27,10 @@ Epay/
 ├── template/               # 11 frontend themes (index1-index10, default)
 ├── assets/                 # Static assets (JS/CSS/images/icons, vendored libs)
 ├── install/                # Web installer + schema DDL (install.sql 578 lines)
+├── docker/                 # Docker configs (entrypoint, nginx.conf, php.ini)
+├── Dockerfile              # PHP 7.4-fpm-alpine image
+├── docker-compose.yml      # Dev setup (local build, 4 services)
+├── docker-compose.prod.yml # Prod setup (pre-built ghcr.io image)
 ├── pay.php                 # Payment plugin handler (URL: /pay/{s})
 ├── submit.php              # Payment API submit (merchant → create payment)
 ├── submit2.php             # Payment page step 2 (channel selection)
@@ -49,23 +52,25 @@ Epay/
 | Startup/bootstrap logic | `includes/common.php` | Defines constants, inits autoloader→DB→cache→config |
 | Database access | `includes/lib/PdoHelper.php` | Custom PDO wrapper, sets charset utf8mb4, timezone +8:00 |
 | Configuration (runtime) | DB table `pre_config` | Key-value stored in DB, loaded into `$conf` array via `Cache` |
-| Configuration (file) | `config.php` | ONLY file-based config — DB credentials |
+| Configuration (file) | `config.php` | DB credentials only; gitignored, generated at deploy time |
 | Payment processing | `includes/lib/Payment.php` + `includes/lib/Order.php` | Core payment/order lifecycle |
 | Payment plugins | `plugins/{name}/{name}_plugin.php` | Each plugin is a directory with a class file |
 | Plugin loading | `includes/lib/Plugin.php` | `loadForSubmit()` / `loadForPay()` / `loadForSettle()` |
 | Template rendering | `includes/lib/Template.php` | Loads PHP files from `template/{theme}/`, no engine |
 | Admin panel login | `admin/login.php` | TOTP 2FA support |
 | Merchant API | `includes/lib/ApiHelper.php` + `includes/lib/api/` | Signature verification, query/settle/refund |
-| Cache layer | `includes/lib/Cache.php` | File-based cache (`SYSTEM_ROOT.'cache/'`) |
+| Cache layer | `includes/lib/Cache.php` | DB-backed cache via `pre_cache` table (not file-based) |
 | URL rewriting | `nginx.txt` (nginx), `IIS.txt` (IIS) | Maps `/pay/*`→pay.php, `/api/*`→api.php, `*.html`→index.php |
 | Schema/setup | `install/install.sql` + `install/index.php` | Web-based installation wizard |
+| Docker setup | `Dockerfile`, `docker-compose.yml`, `docker/` | 4-container stack, entrypoint auto-installs DB |
+| Docker entrypoint | `docker/docker-entrypoint.sh` | Auto-install/upgrade, config.php generation, code sync from staging |
 
 ## CODE MAP
 | Symbol | Type | Location | Role |
 |--------|------|----------|------|
 | `$conf` | global array | loaded in `common.php` | All runtime config from `pre_config` table |
 | `$DB` | global object | `includes/lib/PdoHelper.php` | Database connection |
-| `$CACHE` | global object | `includes/lib/Cache.php` | File-based key-value cache |
+| `$CACHE` | global object | `includes/lib/Cache.php` | DB-backed key-value cache (pre_cache table) |
 | `$siteurl` | global string | defined in `common.php` | Base site URL (auto-detected) |
 | `VERSION` | constant | `common.php` | Application version (e.g. '3097') |
 | `DB_VERSION` | constant | `common.php` | Database schema version (e.g. '2054') |
@@ -118,10 +123,22 @@ Epay/
 - **Version-based DB migration**: Compare `DB_VERSION` constant vs `$conf['version']` in DB. Upgrade via `install/update.php` + `install/updateN.sql`. No migration framework.
 - **Cron via HTTP**: `cron.php` is a web-facing endpoint triggered by server cron with a secret key, not a CLI script.
 - **Security**: Custom WAF in `includes/txprotect.php`, 360 security SDK, Geetest CAPTCHA, RSA signing for API.
+- **Docker staging sync**: Image stores code at `/var/www/html-staging/`. Entrypoint runs `rsync --delete` from staging to `app_data` volume (excluding `config.php`, `plugins/`, `install.lock`) on every container start. Pull new image + restart = code updated, config preserved.
 
 ## COMMANDS
 ```bash
-# Setup (manual deployment)
+# Docker (dev)
+docker compose up -d              # Start 4-container stack
+docker compose down               # Stop (keeps volumes)
+docker compose logs -f php        # Watch PHP logs
+docker compose exec php sh        # Shell into PHP container
+docker compose up -d --build      # Rebuild + restart (code updates)
+
+# Docker (prod)
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml pull  # Update pre-built image
+
+# Manual deployment
 # 1. Upload all files to PHP 7.4+ web server with MySQL 5.6+
 # 2. Edit config.php with DB credentials
 # 3. Visit /install/ in browser → 4-step wizard
@@ -131,16 +148,14 @@ Epay/
 # Cron (configure in system crontab)
 */5 * * * * php /path/to/cron.php?key=YOUR_CRON_KEY
 
-# Updates
-# Upload new files → visit /install/update.php
-
 # No build/test/lint commands exist. No CI/CD. No phpunit/phpstan/phpcs.
 ```
 
 ## NOTES
-- No `.gitignore` exists at project root. Recommend creating one excluding `config.php`, `cache/`, `install/`.
+- `config.php` is gitignored — generated by Docker entrypoint or manually during setup. Template in repo was removed.
 - No automated tests. Manual sandbox testing via `/user/test.php` when `test_open=1` in DB config.
 - `includes/` and `plugins/` directories must be blocked from direct web access (`.htaccess` deny all or nginx `deny all`).
 - Session started by default in `common.php`. Set `$nosession=true` before including to skip.
 - Set `$is_defend=true` to enable WAF (`txprotect.php`) before including `common.php`.
-- All frontend vendor libs (three.js, moment.js, flot, bootstrap, etc.) frozen at current versions. Upgrade buy replacing entire directory.
+- All frontend vendor libs (three.js, moment.js, flot, bootstrap, etc.) frozen at current versions. Upgrade by replacing entire directory.
+- Docker: entrypoint auto-installs DB on first run, upgrades schema on version change. config.php regenerated if host is `localhost`.
