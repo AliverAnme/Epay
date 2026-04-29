@@ -38,13 +38,6 @@
 
 ---
 
-## 推荐插件
+## 友链
 
-推荐使用 **Bepusdt** 插件进行 USDT（TRC20）收款。  
-Bepusdt 是适用于彩虹易支付系统的 USDT 收款插件，收到的货币直接转入商户钱包，不经过任何第三方。
-
-**插件开源地址**：  
-🔗 [https://github.com/v03413/bepusdt](https://github.com/v03413/bepusdt)
-
----
-
+https://linux.do
