@@ -41,6 +41,11 @@ class Oauth{
 
 	//登录成功返回网站
 	public function callback(){
+		// 验证CSRF state
+		if(!isset($_GET['state']) || $_GET['state'] !== $_SESSION['Oauth_state']){
+			throw new Exception('OAuth state validation failed');
+		}
+		unset($_SESSION['Oauth_state']);
 		//-------请求参数列表
 		$keysArr = array(
 			"act" => "callback",
