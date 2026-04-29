@@ -317,7 +317,7 @@ case 'fillorder': //手动补单
 		exit('{"code":-1,"msg":"当前订单不存在！"}');
 	if($row['status']>0)exit('{"code":-1,"msg":"当前订单不是未完成状态！"}');
 	if($DB->exec("update `pre_order` set `status` ='1' where `trade_no`=:trade_no", [':trade_no'=>$trade_no])){
-		$DB->exec("update `pre_order` set `endtime` ='$date',`date` =NOW() where `trade_no`=:trade_no", [':trade_no'=>$trade_no]);
+		$DB->exec("update `pre_order` set `endtime` =:endtime,`date` =NOW() where `trade_no`=:trade_no2", [':endtime'=>$date, ':trade_no2'=>$trade_no]);
 		$channel=\lib\Channel::get($row['channel']);
 		processOrder($row);
 	}

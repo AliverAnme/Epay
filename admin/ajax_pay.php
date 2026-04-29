@@ -494,11 +494,11 @@ case 'getChannelMoney': //统计支付通道金额
 	$channel=intval($_GET['channel']);
 	if($type == 2 || $type == 3){
 		$today=$type==3 ? date("Y-m-d", strtotime("-1 day")) : date("Y-m-d");
-		$orders=$DB->getColumn("SELECT COUNT(*) FROM pre_order WHERE date='$today' AND channel='$channel' AND status>0");
+		$orders=$DB->getColumn("SELECT COUNT(*) FROM pre_order WHERE date=:today AND channel=:channel AND status>0", [':today'=>$today, ':channel'=>$channel]);
 		exit('{"code":0,"msg":"succ","money":"'.$orders.'"}');
 	}else{
 		$today=$type==1 ? date("Y-m-d", strtotime("-1 day")) : date("Y-m-d");
-		$money=$DB->getColumn("SELECT SUM(realmoney) FROM pre_order WHERE date='$today' AND channel='$channel' AND status>0");
+		$money=$DB->getColumn("SELECT SUM(realmoney) FROM pre_order WHERE date=:today AND channel=:channel AND status>0", [':today'=>$today, ':channel'=>$channel]);
 		exit('{"code":0,"msg":"succ","money":"'.round($money,2).'"}');
 	}
 break;
@@ -508,14 +508,20 @@ case 'getSubChannelMoney': //统计子通道金额
 	$today=$type==1 ? date("Y-m-d", strtotime("-1 day")) : date("Y-m-d");
 	$channel = explode('|', $channel);
 	$channel = array_map('intval', $channel);
-	$money=$DB->getColumn("SELECT SUM(realmoney) FROM pre_order WHERE date='$today' AND subchannel IN (".implode(",", $channel).") AND status>0");
+	$placeholders = [];
+	$params = [':today'=>$today];
+	foreach($channel as $k=>$v){
+		$placeholders[] = ":ch_{$k}";
+		$params[":ch_{$k}"] = $v;
+	}
+	$money=$DB->getColumn("SELECT SUM(realmoney) FROM pre_order WHERE date=:today AND subchannel IN (".implode(",", $placeholders).") AND status>0", $params);
 	exit('{"code":0,"msg":"succ","money":"'.round($money,2).'"}');
 break;
 case 'getTypeMoney': //统计支付方式金额
 	$type=intval($_GET['type']);
 	$typeid=intval($_GET['typeid']);
 	$today=$type==1 ? date("Y-m-d", strtotime("-1 day")) : date("Y-m-d");
-	$money=$DB->getColumn("SELECT SUM(realmoney) FROM pre_order WHERE date='$today' AND type='$typeid' AND status>0");
+	$money=$DB->getColumn("SELECT SUM(realmoney) FROM pre_order WHERE date=:today AND type=:typeid AND status>0", [':today'=>$today, ':typeid'=>$typeid]);
 	exit('{"code":0,"msg":"succ","money":"'.round($money,2).'"}');
 break;
 case 'getChannelRate':
@@ -523,7 +529,7 @@ case 'getChannelRate':
 	$thtime = date("Y-m-d").' 00:00:00';
 	$all = 0;
 	$success = 0;
-	$orders=$DB->getAll("SELECT * FROM pre_order WHERE addtime>='$thtime' AND channel='$channel'");
+	$orders=$DB->getAll("SELECT * FROM pre_order WHERE addtime>=:thtime AND channel=:channel", [':thtime'=>$thtime, ':channel'=>$channel]);
 	foreach($orders as $order){
 		$all++;
 		if($order['status']>0)$success++;
@@ -534,7 +540,7 @@ break;
 case 'getSuccessRate':
 	$channel = intval($_GET['channel']);
 	$thtime = date("Y-m-d");
-	$orderrow=$DB->getRow("SELECT COUNT(*) allnum,COUNT(IF(status>0, 1, NULL)) sucnum FROM pre_order WHERE addtime>='$thtime' AND channel='$channel'");
+	$orderrow=$DB->getRow("SELECT COUNT(*) allnum,COUNT(IF(status>0, 1, NULL)) sucnum FROM pre_order WHERE addtime>=:thtime AND channel=:channel", [':thtime'=>$thtime, ':channel'=>$channel]);
 	$success_rate = $orderrow && $orderrow['allnum'] > 0 ? round($orderrow['sucnum']/$orderrow['allnum']*100,2) : 100;
 	exit('{"code":0,"msg":"succ","data":"' . $success_rate . '"}');
 break;
@@ -543,16 +549,16 @@ case 'testpay':
 	$channel=intval($_POST['channel']);
 	$subchannel=intval($_POST['subchannel']);
 	$param=!empty($_POST['param'])?trim($_POST['param']):null;
-	$row=$DB->getRow("select * from pre_channel where id='$channel' limit 1");
+	$row=$DB->getRow("select * from pre_channel where id=:id limit 1", [':id'=>$channel]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付通道不存在！"}');
 	if($subchannel > 0){
-		if(!$DB->getRow("select * from pre_subchannel where id='$subchannel' limit 1")) exit('{"code":-1,"msg":"当前子通道不存在！"}');
+		if(!$DB->getRow("select * from pre_subchannel where id=:id limit 1", [':id'=>$subchannel])) exit('{"code":-1,"msg":"当前子通道不存在！"}');
 	}
 	if(empty($row['config']))exit('{"code":-1,"msg":"请先配置好密钥"}');
 	if(!$conf['test_pay_uid'])exit('{"code":-1,"msg":"请先配置测试支付收款商户ID"}');
-	$money=trim(daddslashes($_POST['money']));
-	$name=trim(daddslashes($_POST['name']));
+	$money=trim($_POST['money']);
+	$name=trim($_POST['name']);
 	if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))exit('{"code":-1,"msg":"金额不合法"}');
 	if($conf['pay_maxmoney']>0 && $money>$conf['pay_maxmoney'])exit('{"code":-1,"msg":"最大支付金额是'.$conf['pay_maxmoney'].'元"}');
 	if($conf['pay_minmoney']>0 && $money<$conf['pay_minmoney'])exit('{"code":-1,"msg":"最小支付金额是'.$conf['pay_minmoney'].'元"}');
@@ -566,7 +572,7 @@ break;
 
 case 'getWeixin':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_weixin where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_weixin where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前公众号/小程序不存在！"}');
 	$result = ['code'=>0,'msg'=>'succ','data'=>$row];
@@ -574,17 +580,16 @@ case 'getWeixin':
 break;
 case 'delWeixin':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_weixin where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_weixin where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前公众号/小程序不存在！"}');
-	$row=$DB->getRow("select * from pre_channel where appwxmp='$id' limit 1");
+	$row=$DB->getRow("select * from pre_channel where appwxmp=:id limit 1", [':id'=>$id]);
 	if($row)
 		exit('{"code":-1,"msg":"删除失败，存在使用该微信公众号的支付通道"}');
-	$row=$DB->getRow("select * from pre_channel where appwxa='$id' limit 1");
+	$row=$DB->getRow("select * from pre_channel where appwxa=:id limit 1", [':id'=>$id]);
 	if($row)
 		exit('{"code":-1,"msg":"删除失败，存在使用该微信小程序的支付通道"}');
-	$sql = "DELETE FROM pre_weixin WHERE id='$id'";
-	if($DB->exec($sql)){
+	if($DB->delete('weixin', ['id'=>$id])){
 		exit('{"code":0,"msg":"删除公众号/小程序成功！"}');
 	}else exit('{"code":-1,"msg":"删除公众号/小程序失败['.$DB->error().']"}');
 break;
@@ -594,10 +599,10 @@ case 'saveWeixin':
 		$name=trim($_POST['name']);
 		$appid=trim($_POST['appid']);
 		$appsecret=trim($_POST['appsecret']);
-		$row=$DB->getRow("select * from pre_weixin where name='$name' limit 1");
+		$row=$DB->getRow("select * from pre_weixin where name=:name limit 1", [':name'=>$name]);
 		if($row)
 			exit('{"code":-1,"msg":"名称重复"}');
-		$row=$DB->getRow("select * from pre_weixin where appid='$appid' limit 1");
+		$row=$DB->getRow("select * from pre_weixin where appid=:appid limit 1", [':appid'=>$appid]);
 		if($row)
 			exit('{"code":-1,"msg":"APPID重复"}');
 		if($DB->insert('weixin', ['type'=>$type, 'name'=>$name, 'appid'=>$appid, 'appsecret'=>$appsecret, 'status'=>1, 'addtime'=>'NOW()']))exit('{"code":0,"msg":"新增公众号/小程序成功！"}');
@@ -608,10 +613,10 @@ case 'saveWeixin':
 		$name=trim($_POST['name']);
 		$appid=trim($_POST['appid']);
 		$appsecret=trim($_POST['appsecret']);
-		$row=$DB->getRow("select * from pre_weixin where name='$name' and id<>$id limit 1");
+		$row=$DB->getRow("select * from pre_weixin where name=:name and id<>:id limit 1", [':name'=>$name, ':id'=>$id]);
 		if($row)
 			exit('{"code":-1,"msg":"名称重复"}');
-		$row=$DB->getRow("select * from pre_weixin where appid='$appid' and id<>$id limit 1");
+		$row=$DB->getRow("select * from pre_weixin where appid=:appid and id<>:id limit 1", [':appid'=>$appid, ':id'=>$id]);
 		if($row)
 			exit('{"code":-1,"msg":"APPID重复"}');
 		if($DB->update('weixin', ['type'=>$type, 'name'=>$name, 'appid'=>$appid, 'appsecret'=>$appsecret], ['id'=>$id])!==false)exit('{"code":0,"msg":"修改公众号/小程序成功！"}');
@@ -620,7 +625,7 @@ case 'saveWeixin':
 break;
 case 'testweixin':
 	$id=intval($_POST['id']);
-	$row=$DB->getRow("select * from pre_weixin where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_weixin where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前公众号/小程序不存在！"}');
 	try{
@@ -634,7 +639,7 @@ break;
 
 case 'getWework':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_wework where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_wework where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前企业微信不存在！"}');
 	$result = ['code'=>0,'msg'=>'succ','data'=>$row];
@@ -643,16 +648,15 @@ break;
 case 'setWework':
 	$id=intval($_GET['id']);
 	$status=intval($_GET['status']);
-	$row=$DB->getRow("select * from pre_wework where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_wework where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前企业微信不存在！"}');
-	$sql = "UPDATE pre_wework SET status='$status' WHERE id='$id'";
-	if($DB->exec($sql))exit('{"code":0,"msg":"修改企业微信成功！"}');
+	if($DB->exec("UPDATE pre_wework SET status=:status WHERE id=:id", [':status'=>$status, ':id'=>$id]))exit('{"code":0,"msg":"修改企业微信成功！"}');
 	else exit('{"code":-1,"msg":"修改企业微信失败['.$DB->error().']"}');
 break;
 case 'delWework':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_wework where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_wework where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前企业微信不存在！"}');
 	if($DB->delete('wework', ['id'=>$id])){
@@ -665,10 +669,10 @@ case 'saveWework':
 		$name=trim($_POST['name']);
 		$appid=trim($_POST['appid']);
 		$appsecret=trim($_POST['appsecret']);
-		$row=$DB->getRow("select * from pre_wework where name='$name' limit 1");
+		$row=$DB->getRow("select * from pre_wework where name=:name limit 1", [':name'=>$name]);
 		if($row)
 			exit('{"code":-1,"msg":"名称重复"}');
-		$row=$DB->getRow("select * from pre_wework where appid='$appid' limit 1");
+		$row=$DB->getRow("select * from pre_wework where appid=:appid limit 1", [':appid'=>$appid]);
 		if($row)
 			exit('{"code":-1,"msg":"企业ID重复"}');
 		if($DB->insert('wework', ['name'=>$name, 'appid'=>$appid, 'appsecret'=>$appsecret, 'status'=>1, 'addtime'=>'NOW()']))exit('{"code":0,"msg":"新增企业微信成功！请点击刷新客服账号数量"}');
@@ -678,10 +682,10 @@ case 'saveWework':
 		$name=trim($_POST['name']);
 		$appid=trim($_POST['appid']);
 		$appsecret=trim($_POST['appsecret']);
-		$row=$DB->getRow("select * from pre_wework where name='$name' and id<>$id limit 1");
+		$row=$DB->getRow("select * from pre_wework where name=:name and id<>:id limit 1", [':name'=>$name, ':id'=>$id]);
 		if($row)
 			exit('{"code":-1,"msg":"名称重复"}');
-		$row=$DB->getRow("select * from pre_wework where appid='$appid' and id<>$id limit 1");
+		$row=$DB->getRow("select * from pre_wework where appid=:appid and id<>:id limit 1", [':appid'=>$appid, ':id'=>$id]);
 		if($row)
 			exit('{"code":-1,"msg":"企业ID重复"}');
 		if($DB->update('wework', ['name'=>$name, 'appid'=>$appid, 'appsecret'=>$appsecret], ['id'=>$id])!==false)exit('{"code":0,"msg":"修改企业微信成功！"}');
@@ -690,7 +694,7 @@ case 'saveWework':
 break;
 case 'refreshWework':
 	$id=intval($_POST['id']);
-	$row=$DB->getRow("select * from pre_wework where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_wework where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前企业微信不存在！"}');
 	$wework = new \lib\wechat\WeWorkAPI($id);
@@ -729,7 +733,7 @@ case 'refreshWework':
 break;
 case 'testWework':
 	$id=intval($_POST['id']);
-	$row=$DB->getRow("select * from pre_wework where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_wework where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前企业微信不存在！"}');
 	$wework = new \lib\wechat\WeWorkAPI($id);
