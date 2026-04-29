@@ -7,7 +7,7 @@ class helipay_plugin
 		'name'        => 'helipay', //支付插件英文名称，需和目录名称一致，不能有重复
 		'showname'    => '合利宝', //支付插件显示名称
 		'author'      => '合利宝', //支付插件作者
-		'link'        => 'http://www.helipay.com/', //支付插件作者链接
+		'link'        => 'https://www.helipay.com/', //支付插件作者链接
 		'types'       => ['alipay','wxpay','qqpay','bank'], //支付插件支持的支付方式，可选的有alipay,qqpay,wxpay,bank
 		'inputs' => [ //支付插件要求传入的参数以及参数显示名称，可选的有appid,appkey,appsecret,appurl,appmchid
 			'appid' => [

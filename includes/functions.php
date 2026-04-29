@@ -987,7 +987,7 @@ function randFloat($min=0, $max=1){
 function check_cert($idcard, $name, $phone){
 	global $conf;
 	$appcode = $conf['cert_appcode'];
-	$url = 'http://phone3.market.alicloudapi.com/phonethree';
+	$url = 'https://phone3.market.alicloudapi.com/phonethree';
 	$post = ['idcard'=>$idcard, 'phone'=>$phone, 'realname'=>$name];
 	$data = get_curl($url.'?'.http_build_query($post), 0,0,0,0,0,0, ['Authorization: APPCODE '.$appcode, 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8']);
 	$arr=json_decode($data,true);
@@ -1247,9 +1247,9 @@ function verify_captcha($user_id = 'public'){
 function verify_captcha4(){
     if(!isset($_POST['captcha_id']) || !isset($_POST['lot_number']) || !isset($_POST['pass_token']) || !isset($_POST['gen_time']) || !isset($_POST['captcha_output'])) return false;
     $real_ip = real_ip();
-    $url = 'http://gt4.geetest.com/demov4/demo/login';
+    $url = 'https://gcaptcha4.geetest.com/verify';
     $param = ['captcha_id'=>$_POST['captcha_id'], 'lot_number'=>$_POST['lot_number'], 'pass_token'=>$_POST['pass_token'], 'gen_time'=>$_POST['gen_time'], 'captcha_output'=>$_POST['captcha_output']];
-    $referer = 'http://gt4.geetest.com/demov4/invisible-bind-zh.html';
+    $referer = 'https://gcaptcha4.geetest.com/verify';
     $httpheader[] = "X-Real-IP: ".$real_ip;
 	$httpheader[] = "X-Forwarded-For: ".$real_ip;
     $data = get_curl($url.'?'.http_build_query($param),0,$referer,0,0,0,0,$httpheader);

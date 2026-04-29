@@ -27,7 +27,7 @@ class SmsBao {
             $moban = str_replace('{'.$k.'}',$v,$moban);
         }
         $content = '【'.$sign.'】'.$moban;
-        $sendurl = "http://api.smsbao.com/sms?u=".$this->user."&p=".md5($this->pass)."&m=".$phone."&c=".urlencode($content);
+        $sendurl = "https://api.smsbao.com/sms?u=".$this->user."&p=".md5($this->pass)."&m=".$phone."&c=".urlencode($content);
         $result = get_curl($sendurl) ;
         if ($result == '0'){
             return true;

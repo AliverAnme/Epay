@@ -11,7 +11,7 @@ class Sendcloud {
     }
 	public function send($to, $sub, $msg, $from, $from_name){
 		if(empty($this->apiUser)||empty($this->apiKey))return false;
-		$url='http://api.sendcloud.net/apiv2/mail/send';
+		$url='https://api.sendcloud.net/apiv2/mail/send';
 		$data=array(
 			'apiUser' => $this->apiUser,
 			'apiKey' => $this->apiKey,

@@ -1977,7 +1977,7 @@ function checkURL(obj)
 		url = url.replace(/ /g,"");
 	}
 	if (url.toLowerCase().indexOf("http://")<0 && url.toLowerCase().indexOf("https://")<0){
-		url = "http://"+url;
+		url = "https://"+url;
 	}
 	if (url.slice(url.length-1)!="/"){
 		url = url+"/";
