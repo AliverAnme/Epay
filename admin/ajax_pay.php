@@ -395,7 +395,7 @@ case 'saveChannelInfo':
 break;
 case 'getRoll':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_roll where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_roll where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前轮询组不存在！"}');
 	$result = ['code'=>0,'msg'=>'succ','data'=>$row];
@@ -404,23 +404,21 @@ break;
 case 'setRoll':
 	$id=intval($_GET['id']);
 	$status=intval($_GET['status']);
-	$row=$DB->getRow("select * from pre_roll where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_roll where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前轮询组不存在！"}');
 	if($status==1 && empty($row['info'])){
 		exit('{"code":-1,"msg":"请先配置好支付通道后再开启"}');
 	}
-	$sql = "UPDATE pre_roll SET status='$status' WHERE id='$id'";
-	if($DB->exec($sql))exit('{"code":0,"msg":"修改轮询组成功！"}');
+	if($DB->exec("UPDATE pre_roll SET status=:status WHERE id=:id", [':status'=>$status, ':id'=>$id]))exit('{"code":0,"msg":"修改轮询组成功！"}');
 	else exit('{"code":-1,"msg":"修改轮询组失败['.$DB->error().']"}');
 break;
 case 'delRoll':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_roll where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_roll where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前轮询组不存在！"}');
-	$sql = "DELETE FROM pre_roll WHERE id='$id'";
-	if($DB->exec($sql))exit('{"code":0,"msg":"删除轮询组成功！"}');
+	if($DB->delete('roll', ['id'=>$id]))exit('{"code":0,"msg":"删除轮询组成功！"}');
 	else exit('{"code":-1,"msg":"删除轮询组失败['.$DB->error().']"}');
 break;
 case 'saveRoll':
@@ -428,33 +426,34 @@ case 'saveRoll':
 		$name=trim($_POST['name']);
 		$type=intval($_POST['type']);
 		$kind=intval($_POST['kind']);
-		$row=$DB->getRow("select * from pre_roll where name='$name' limit 1");
+		$row=$DB->getRow("select * from pre_roll where name=:name limit 1", [':name'=>$name]);
 		if($row)
 			exit('{"code":-1,"msg":"轮询组名称重复"}');
-		$sql = "INSERT INTO pre_roll (name, type, kind) VALUES ('{$name}', {$type}, {$kind})";
-		if($DB->exec($sql))exit('{"code":0,"msg":"新增轮询组成功！"}');
+		if($DB->insert('roll', ['name'=>$name, 'type'=>$type, 'kind'=>$kind]))exit('{"code":0,"msg":"新增轮询组成功！"}');
 		else exit('{"code":-1,"msg":"新增轮询组失败['.$DB->error().']"}');
 	}else{
 		$id=intval($_POST['id']);
 		$name=trim($_POST['name']);
 		$type=intval($_POST['type']);
 		$kind=intval($_POST['kind']);
-		$row=$DB->getRow("select * from pre_roll where name='$name' and id<>$id limit 1");
+		$row=$DB->getRow("select * from pre_roll where name=:name and id<>:id limit 1", [':name'=>$name, ':id'=>$id]);
 		if($row)
 			exit('{"code":-1,"msg":"轮询组名称重复"}');
-		$sql = "UPDATE pre_roll SET name='{$name}',type='{$type}',kind='{$kind}' WHERE id='$id'";
-		if($DB->exec($sql)!==false)exit('{"code":0,"msg":"修改轮询组成功！"}');
+		if($DB->update('roll', ['name'=>$name, 'type'=>$type, 'kind'=>$kind], ['id'=>$id])!==false)exit('{"code":0,"msg":"修改轮询组成功！"}');
 		else exit('{"code":-1,"msg":"修改轮询组失败['.$DB->error().']"}');
 	}
 break;
 case 'rollInfo':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_roll where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_roll where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前轮询组不存在！"}');
-	$sql = "";
-	if($row['kind'] < 2) $sql = " AND status=1 ";
-	$list=$DB->getAll("select id,name from pre_channel where type='{$row['type']}'{$sql} ORDER BY id ASC");
+	$conditions = "type=:roll_type";
+	$params = [':roll_type'=>$row['type']];
+	if($row['kind'] < 2) {
+		$conditions .= " AND status=1";
+	}
+	$list=$DB->getAll("select id,name from pre_channel where {$conditions} ORDER BY id ASC", $params);
 	if(!$list)exit('{"code":-1,"msg":"没有找到支持该支付方式的通道"}');
 	if(!empty($row['info'])){
 		$arr = explode(',',$row['info']);
@@ -471,7 +470,7 @@ case 'rollInfo':
 break;
 case 'saveRollInfo':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_roll where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_roll where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前轮询组不存在！"}');
 	$list=$_POST['list'];
@@ -479,13 +478,14 @@ case 'saveRollInfo':
 		exit('{"code":-1,"msg":"通道配置不能为空！"}');
 	$info = '';
 	foreach($list as $a){
-		$info .= $row['kind']==1 ? $a['channel'].':'.$a['weight'].',' : $a['channel'].',';
+		if(!preg_match('/^[0-9]+$/', $a['channel']??'')) continue;
+		$info .= $row['kind']==1 ? $a['channel'].':'.intval($a['weight']??1).',' : $a['channel'].',';
 	}
 	$info = trim($info,',');
 	if(empty($info))
 		exit('{"code":-1,"msg":"通道配置不能为空！"}');
-	$sql = "UPDATE pre_roll SET info='{$info}' WHERE id='$id'";
-	if($DB->exec($sql)!==false)exit('{"code":0,"msg":"修改轮询组成功！"}');
+	$sql = "UPDATE pre_roll SET info=:info WHERE id=:id";
+	if($DB->exec($sql, [':info'=>$info, ':id'=>$id])!==false)exit('{"code":0,"msg":"修改轮询组成功！"}');
 	else exit('{"code":-1,"msg":"修改轮询组失败['.$DB->error().']"}');
 break;
 

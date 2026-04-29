@@ -3,6 +3,7 @@ include("../includes/common.php");
 $title='邀请码管理';
 include './head.php';
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
+if($_SERVER['REQUEST_METHOD']==='POST' && (!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token'])) showmsg('CSRF验证失败，请刷新页面后重试',3);
 ?>
 <div class="modal" align="left" id="search" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -13,6 +14,7 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
       </div>
       <div class="modal-body">
       <form action="invitecode.php?my=add" method="POST">
+<input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>">
 <input type="text" class="form-control" name="num" placeholder="生成的个数" required><br/>
 <input type="submit" class="btn btn-primary btn-block" value="生成"></form>
 </div>

@@ -6,6 +6,7 @@ include("../includes/common.php");
 $title='公告设置';
 include './head.php';
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
+if($_SERVER['REQUEST_METHOD']==='POST' && (!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token'])) showmsg('CSRF验证失败，请刷新页面后重试',3);
 ?>
 <link href="<?php echo $cdnpublic?>bootstrap-colorpicker/2.5.3/css/bootstrap-colorpicker.min.css" rel="stylesheet"/>
   <div class="container" style="padding-top:70px;">
@@ -22,6 +23,7 @@ if($my=='edit'){
 <div class="panel-heading"><h3 class="panel-title">修改公告(ID:<?php echo $id?>)</h3></div>
 <div class="panel-body">
 	<form action="./gonggao.php?my=edit_submit&id=<?php echo $id?>" role="form" class="form-horizontal" method="post">
+		<input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>">
 		<div class="list-group-item">
 			<div class="input-group">
 				<div class="input-group-addon">公告内容</div>
@@ -84,6 +86,7 @@ $list = $DB->getAll("SELECT * FROM pre_anounce ORDER BY sort ASC");
 <div class="panel-heading"><h3 class="panel-title">添加公告</h3></div>
 <div class="panel-body">
 	<form action="./gonggao.php?my=add_submit" role="form" class="form-horizontal" method="post">
+		<input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>">
 		<div class="list-group-item">
 			<div class="input-group">
 				<div class="input-group-addon">公告内容</div>
