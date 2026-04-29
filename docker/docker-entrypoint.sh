@@ -233,7 +233,7 @@ else
     if (!\$syskey) {
         \$new_syskey = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 32);
         \$pdo->exec(\"INSERT INTO ${DB_PREFIX}_config VALUES ('syskey', '\$new_syskey')\");
-        echo '[entrypoint] 已补充 SYS_KEY: '.\$new_syskey.PHP_EOL;
+        echo '[entrypoint] 已补充 SYS_KEY' . PHP_EOL;
     }
 
     \$cronkey = \$pdo->query(\"SELECT v FROM ${DB_PREFIX}_config WHERE k='cronkey'\")->fetchColumn();
