@@ -299,8 +299,7 @@ if [ ! -f "/var/www/html/includes/ip2region.xdb" ]; then
     echo "[entrypoint] ip2region.xdb 不存在，正在尝试下载 ..."
     DOWNLOADED=false
     for MIRROR in \
-        "https://cors.488848.xyz/https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.xdb" \
-        "https://raw.gitmirror.com/lionsoul2014/ip2region/master/data/ip2region.xdb" \
+        "https://edgeone.gh-proxy.org/https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.xdb" \
         "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.xdb"; do
         echo "[entrypoint]   尝试: $MIRROR"
         if curl -sL --connect-timeout 10 -o /var/www/html/includes/ip2region.xdb "$MIRROR" 2>/dev/null; then
