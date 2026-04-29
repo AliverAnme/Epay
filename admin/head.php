@@ -147,8 +147,11 @@ var ADMIN_CSRF_TOKEN = '<?php echo $admin_csrf_token?>';
 $(function(){
 	$.ajaxSetup({
 		beforeSend: function(xhr, settings) {
-			if(settings.type && settings.type.toUpperCase() === 'POST' && settings.url.indexOf('?') === -1){
-				settings.data = (settings.data || '') + (settings.data ? '&' : '') + 'csrf_token=' + ADMIN_CSRF_TOKEN;
+			if(settings.type && settings.type.toUpperCase() === 'POST'){
+				var data = settings.data || '';
+				if(typeof data === 'string' && data.indexOf('csrf_token=') === -1){
+					settings.data = data + (data ? '&' : '') + 'csrf_token=' + ADMIN_CSRF_TOKEN;
+				}
 			}
 		}
 	});
