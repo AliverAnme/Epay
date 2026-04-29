@@ -813,6 +813,10 @@ function changeUserMoney($uid, $money, $add=true, $type=null, $orderid=null){
 		$newmoney = round($oldmoney+$money, 2);
 	}else{
 		$action = 2;
+		if($money > $oldmoney) {
+			$DB->rollBack();
+			return false;
+		}
 		$newmoney = round($oldmoney-$money, 2);
 	}
 	$res = $DB->exec("UPDATE pre_user SET money=:money WHERE uid=:uid", [':money'=>$newmoney, ':uid'=>$uid]);

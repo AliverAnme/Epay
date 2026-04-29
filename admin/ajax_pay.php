@@ -10,28 +10,32 @@ if($_SERVER['REQUEST_METHOD']==='POST' && (!isset($_POST['csrf_token']) || $_POS
 
 switch($act){
 case 'channelList':
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
 	if(isset($_POST['id']) && !empty($_POST['id'])) {
-		$id = intval($_POST['id']);
-		$sql.=" AND A.`id`='$id'";
+		$conditions[] = "A.`id`=:f_id";
+		$params[':f_id'] = intval($_POST['id']);
 	}
 	if(isset($_POST['type']) && !empty($_POST['type'])) {
-		$type = intval($_POST['type']);
-		$sql.=" AND A.`type`='$type'";
+		$conditions[] = "A.`type`=:f_type";
+		$params[':f_type'] = intval($_POST['type']);
 	}
 	if(isset($_POST['plugin']) && !empty($_POST['plugin'])) {
-		$plugin = trim($_POST['plugin']);
-		$sql.=" AND A.`plugin`='$plugin'";
+		$conditions[] = "A.`plugin`=:f_plugin";
+		$params[':f_plugin'] = trim($_POST['plugin']);
 	}
 	if(isset($_POST['dstatus']) && $_POST['dstatus']>-1) {
-		$dstatus = intval($_POST['dstatus']);
-		$sql.=" AND A.`status`={$dstatus}";
+		$conditions[] = "A.`status`=:f_dstatus";
+		$params[':f_dstatus'] = intval($_POST['dstatus']);
 	}
 	if(isset($_POST['kw']) && !empty($_POST['kw'])) {
-		$kw = trim(daddslashes($_POST['kw']));
-		$sql.=" AND (A.`id`='{$kw}' OR A.`name` like '%{$kw}%')";
+		$kw = trim($_POST['kw']);
+		$conditions[] = "(A.`id`=:f_kw OR A.`name` like :f_kw_like)";
+		$params[':f_kw'] = $kw;
+		$params[':f_kw_like'] = '%'.$kw.'%';
 	}
-	$list = $DB->getAll("SELECT A.*,B.name typename,B.showname typeshowname FROM pre_channel A LEFT JOIN pre_type B ON A.type=B.id WHERE{$sql} ORDER BY id DESC");
+	$where = implode(' AND ', $conditions);
+	$list = $DB->getAll("SELECT A.*,B.name typename,B.showname typeshowname FROM pre_channel A LEFT JOIN pre_type B ON A.type=B.id WHERE {$where} ORDER BY id DESC", $params);
 	exit(json_encode($list));
 break;
 

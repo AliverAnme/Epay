@@ -802,7 +802,7 @@ case 'printOrder':
 break;
 case 'settle_result':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select result from pre_settle where id='$id' limit 1");
+	$row=$DB->getRow("select result from pre_settle where id=:id and uid=:uid limit 1", [':id'=>$id, ':uid'=>$uid]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前结算记录不存在！"}');
 	$result = ['code'=>0,'msg'=>$row['result']?$row['result']:'未知'];
@@ -1228,11 +1228,15 @@ case 'transfer_result':
 break;
 case 'transfer_query':
 	$biz_no=trim($_GET['biz_no']);
+	$transfer = $DB->find('transfer', '*', ['biz_no'=>$biz_no, 'uid'=>$uid]);
+	if(!$transfer) exit('{"code":-1,"msg":"转账记录不存在"}');
 	$result = \lib\Transfer::status($biz_no);
 	exit(json_encode($result));
 break;
 case 'transfer_proof':
 	$biz_no=trim($_POST['biz_no']);
+	$transfer = $DB->find('transfer', '*', ['biz_no'=>$biz_no, 'uid'=>$uid]);
+	if(!$transfer) exit('{"code":-1,"msg":"转账记录不存在"}');
 	$result = \lib\Transfer::proof($biz_no);
 	exit(json_encode($result));
 break;

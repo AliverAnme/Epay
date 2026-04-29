@@ -67,10 +67,8 @@ class ApiHelper
     static public function api_verify($userrow, $queryArr, $forceRsa = false){
         if($forceRsa && $queryArr['sign_type'] != 'RSA')throw new Exception('该接口只能使用RSA签名类型');
         if($userrow['keytype'] == 1 && $queryArr['sign_type'] != 'RSA')throw new Exception('该商户只能使用RSA签名类型');
-        if(defined('API_INIT') || $forceRsa){
-            if(empty($queryArr['timestamp']))throw new Exception('时间戳(timestamp)字段不能为空');
-            if(abs(time() - $queryArr['timestamp']) > 300)throw new Exception('时间戳字段不正确，请检查服务器时间');
-        }
+        if(empty($queryArr['timestamp']))throw new Exception('时间戳(timestamp)字段不能为空');
+        if(abs(time() - $queryArr['timestamp']) > 300)throw new Exception('时间戳字段不正确，请检查服务器时间');
         $sign_type = $queryArr['sign_type'] ? $queryArr['sign_type'] : 'MD5';
         if(!\lib\Payment::verifySign($queryArr, $userrow['key'], $userrow['publickey']))throw new Exception($sign_type.'签名校验失败');
     }

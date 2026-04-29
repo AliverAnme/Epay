@@ -160,6 +160,7 @@ case 'refundTransfer':
 	$biz_no=$_POST['biz_no'];
 	$order = $DB->find('transfer', '*', ['biz_no' => $biz_no]);
     if(!$order) exit('{"code":-1,"msg":"付款记录不存在！"}');
+	if(!in_array($order['status'], [0, 3])) exit('{"code":-1,"msg":"该转账状态不支持退款"}');
 	if($DB->exec("UPDATE pre_transfer SET status='2' WHERE biz_no='$biz_no'")){
 		if($order['uid'] > 0){
 			changeUserMoney($order['uid'], $order['costmoney'], true, '代付退回', $biz_no);

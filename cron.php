@@ -350,6 +350,8 @@ elseif($_GET['do']=='plugin'){
 elseif($_GET['do']=='transfer'){
 	if(!$conf['auto_settle_money']) exit('未开启自动结算转账功能');
 	if(!$conf['transfer_alipay']) exit('未设置支付宝转账接口通道');
+	$transfer_time=getSetting('transfer_time', true);
+	if(strtotime($transfer_time)>=strtotime(date("Y-m-d").' 00:00:00'))exit('自动结算转账今日已完成');
 	$payee_err_code = [ //收款方原因导致的失败编码
 		'PAYEE_NOT_EXIST','PAYEE_ACCOUNT_STATUS_ERROR','CARD_BIN_ERROR','PAYEE_CARD_INFO_ERROR','PERM_AML_NOT_REALNAME_REV','PAYEE_USER_INFO_ERROR','PAYEE_ACC_OCUPIED','PERMIT_NON_BANK_LIMIT_PAYEE','PAYEE_TRUSTEESHIP_ACC_OVER_LIMIT','PAYEE_ACCOUNT_NOT_EXSIT','PAYEE_USERINFO_STATUS_ERROR','TRUSTEESHIP_RECIEVE_QUOTA_LIMIT','EXCEED_LIMIT_UNRN_DM_AMOUNT','INVALID_CARDNO','RELEASE_USER_FORBBIDEN_RECIEVE','PAYEE_USER_TYPE_ERROR','PAYEE_NOT_RELNAME_CERTIFY','PERMIT_LIMIT_PAYEE',
 
@@ -398,4 +400,5 @@ elseif($_GET['do']=='transfer'){
 		}
 	}
 	echo '成功结算'.$success.'个商户<br/>';
+	saveSetting('transfer_time', $date);
 }

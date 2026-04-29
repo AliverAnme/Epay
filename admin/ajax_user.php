@@ -17,38 +17,52 @@ case 'userList':
 	}
 	unset($rs);
 
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
+	$allowed_columns = ['uid', 'gid', 'upid', 'key', 'account', 'username', 'codename', 'settle_id', 'money', 'email', 'phone', 'qq', 'url', 'cert', 'certtype', 'certmethod', 'certno', 'certname', 'status', 'pay', 'settle', 'mode', 'refund', 'transfer', 'keytype', 'open_code', 'level', 'addtime', 'endtime', 'lasttime'];
+	$allowed_dstatus_columns = ['uid', 'gid', 'upid', 'status', 'pay', 'settle', 'cert', 'mode', 'refund', 'transfer', 'keytype', 'open_code', 'level'];
+	$allowed_order_columns = ['uid', 'gid', 'upid', 'money', 'addtime', 'lasttime', 'endtime', 'status'];
 	if(isset($_POST['dstatus']) && !empty($_POST['dstatus'])) {
-		$dstatus = explode('_',$_POST['dstatus']);
-		$sql.=" AND `{$dstatus[0]}`='{$dstatus[1]}'";
+		$dstatus = explode('_', $_POST['dstatus'], 2);
+		if(in_array($dstatus[0], $allowed_dstatus_columns)) {
+			$conditions[] = "`{$dstatus[0]}`=:f_dstatus";
+			$params[':f_dstatus'] = $dstatus[1];
+		}
 	}
 	if(isset($_POST['gid']) && $_POST['gid']!=='') {
-		$gid = intval($_POST['gid']);
-		$sql.=" AND `gid`='$gid'";
+		$conditions[] = "`gid`=:f_gid";
+		$params[':f_gid'] = intval($_POST['gid']);
 	}
 	if(isset($_POST['upid']) && $_POST['upid']!=='') {
-		$upid = intval($_POST['upid']);
-		$sql.=" AND `upid`='$upid'";
+		$conditions[] = "`upid`=:f_upid";
+		$params[':f_upid'] = intval($_POST['upid']);
 	}
 	if(isset($_POST['value']) && !empty($_POST['value'])) {
-		$sql.=" AND `{$_POST['column']}`='{$_POST['value']}'";
+		if(!in_array($_POST['column'], $allowed_columns)) exit('{"code":-1,"msg":"invalid column"}');
+		$column = $_POST['column'];
+		$conditions[] = "`{$column}`=:f_value";
+		$params[':f_value'] = $_POST['value'];
 	}
 	if(isset($_POST['order_days']) && !empty($_POST['order_days'])) {
 		$order_days = intval($_POST['order_days']);
-		$sql.=" AND uid NOT IN (SELECT DISTINCT uid FROM pre_order WHERE date>=NOW()-INTERVAL {$order_days} DAY)";
+		$conditions[] = "uid NOT IN (SELECT DISTINCT uid FROM pre_order WHERE date>=NOW()-INTERVAL {$order_days} DAY)";
 	}
 	$order = "uid desc";
 	if(isset($_POST['order']) && !empty($_POST['order'])) {
-		$order=str_replace('_', ' ', $_POST['order']);
+		$order_parts = explode('_', $_POST['order']);
+		if(in_array($order_parts[0], $allowed_order_columns) && in_array($order_parts[1]??'desc', ['asc', 'desc'])) {
+			$order = str_replace('_', ' ', $_POST['order']);
+		}
 	}
+	$where = implode(' AND ', $conditions);
 	$offset = intval($_POST['offset']);
 	$limit = intval($_POST['limit']);
-	$total = $DB->getColumn("SELECT count(*) from pre_user WHERE{$sql}");
-	$list = $DB->getAll("SELECT * FROM pre_user WHERE{$sql} order by {$order} limit $offset,$limit");
+	$total = $DB->getColumn("SELECT count(*) from pre_user WHERE {$where}", $params);
+	$list = $DB->getAll("SELECT * FROM pre_user WHERE {$where} order by {$order} limit {$offset},{$limit}", $params);
 	$list2 = [];
 	foreach($list as $row){
 		if($row['endtime']!=null && strtotime($row['endtime'])<time()){
-			$DB->exec("UPDATE pre_user SET gid=0,endtime=NULL WHERE uid='{$row['uid']}'");
+			$DB->exec("UPDATE pre_user SET gid=0,endtime=NULL WHERE uid=:uid", [':uid'=>$row['uid']]);
 			$row['gid']=0;
 		}elseif($row['endtime']!=null){
 			$row['endtime'] = date("Y-m-d", strtotime($row['endtime']));
@@ -61,55 +75,67 @@ case 'userList':
 break;
 
 case 'recordList':
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
+	$allowed_columns = ['id', 'uid', 'action', 'money', 'type', 'trade_no', 'date'];
 	if(isset($_POST['uid']) && !empty($_POST['uid'])) {
-		$uid = intval($_POST['uid']);
-		$sql.=" AND `uid`='$uid'";
+		$conditions[] = "`uid`=:f_uid";
+		$params[':f_uid'] = intval($_POST['uid']);
 	}
 	if(!empty($_POST['starttime']) || !empty($_POST['endtime'])){
 		if(!empty($_POST['starttime'])){
-			$starttime = daddslashes($_POST['starttime']);
-			$sql.=" AND `date`>='{$starttime} 00:00:00'";
+			$conditions[] = "`date`>=:f_starttime";
+			$params[':f_starttime'] = $_POST['starttime'].' 00:00:00';
 		}
 		if(!empty($_POST['endtime'])){
-			$endtime = daddslashes($_POST['endtime']);
-			$sql.=" AND `date`<='{$endtime} 23:59:59'";
+			$conditions[] = "`date`<=:f_endtime";
+			$params[':f_endtime'] = $_POST['endtime'].' 23:59:59';
 		}
 	}
 	if(isset($_POST['value']) && !empty($_POST['value'])) {
-		$sql.=" AND `{$_POST['column']}`='{$_POST['value']}'";
+		if(!in_array($_POST['column'], $allowed_columns)) exit('{"code":-1,"msg":"invalid column"}');
+		$column = $_POST['column'];
+		$conditions[] = "`{$column}`=:f_value";
+		$params[':f_value'] = $_POST['value'];
 	}
+	$where = implode(' AND ', $conditions);
 	$offset = intval($_POST['offset']);
 	$limit = intval($_POST['limit']);
-	$total = $DB->getColumn("SELECT count(*) from pre_record WHERE{$sql}");
-	$list = $DB->getAll("SELECT * FROM pre_record WHERE{$sql} order by id desc limit $offset,$limit");
+	$total = $DB->getColumn("SELECT count(*) from pre_record WHERE {$where}", $params);
+	$list = $DB->getAll("SELECT * FROM pre_record WHERE {$where} order by id desc limit {$offset},{$limit}", $params);
 
 	exit(json_encode(['total'=>$total, 'rows'=>$list]));
 break;
 
 case 'record_stats':
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
+	$allowed_columns = ['id', 'uid', 'action', 'money', 'type', 'trade_no', 'date'];
 	if(isset($_POST['uid']) && !empty($_POST['uid'])) {
-		$uid = intval($_POST['uid']);
-		$sql.=" AND `uid`='$uid'";
+		$conditions[] = "`uid`=:f_uid";
+		$params[':f_uid'] = intval($_POST['uid']);
 	}
 	if(!empty($_POST['starttime']) || !empty($_POST['endtime'])){
 		if(!empty($_POST['starttime'])){
-			$starttime = daddslashes($_POST['starttime']);
-			$sql.=" AND `date`>='{$starttime} 00:00:00'";
+			$conditions[] = "`date`>=:f_starttime";
+			$params[':f_starttime'] = $_POST['starttime'].' 00:00:00';
 		}
 		if(!empty($_POST['endtime'])){
-			$endtime = daddslashes($_POST['endtime']);
-			$sql.=" AND `date`<='{$endtime} 23:59:59'";
+			$conditions[] = "`date`<=:f_endtime";
+			$params[':f_endtime'] = $_POST['endtime'].' 23:59:59';
 		}
 	}
 	if(isset($_POST['value']) && !empty($_POST['value'])) {
-		$sql.=" AND `{$_POST['column']}`='{$_POST['value']}'";
+		if(!in_array($_POST['column'], $allowed_columns)) exit('{"code":-1,"msg":"invalid column"}');
+		$column = $_POST['column'];
+		$conditions[] = "`{$column}`=:f_value";
+		$params[':f_value'] = $_POST['value'];
 	}
+	$where = implode(' AND ', $conditions);
 	$result = $DB->getRow("SELECT 
         SUM(CASE WHEN action = 1 THEN money ELSE 0 END) AS incMoney,
         SUM(CASE WHEN action = 2 THEN money ELSE 0 END) AS decMoney
-        FROM pre_record WHERE {$sql}");
+        FROM pre_record WHERE {$where}", $params);
 	$data = [
         'incMoney' => number_format($result['incMoney'] ?? 0, 2, '.', ''),
         'decMoney' => number_format($result['decMoney'] ?? 0, 2, '.', ''),
@@ -149,9 +175,7 @@ case 'userPayStat':
 	}
 
 	if($type == 4){
-		$startday .= ' 00:00:00';
-		$endday .= ' 23:59:59';
-		$rs=$DB->query("SELECT uid,type,channel,money from pre_transfer where status=1 and paytime>='$startday' and paytime<='$endday'");
+		$rs=$DB->query("SELECT uid,type,channel,money from pre_transfer where status=1 and paytime>=:starttime and paytime<=:endtime", [':starttime'=>$startday.' 00:00:00', ':endtime'=>$endday.' 23:59:59']);
 		while($row = $rs->fetch())
 		{
 			$money = (float)$row['money'];
@@ -169,7 +193,7 @@ case 'userPayStat':
 			}
 		}
 	}else{
-		$rs=$DB->query("SELECT uid,type,channel,money,realmoney,getmoney,profitmoney from pre_order where status=1 and date>='$startday' and date<='$endday'");
+		$rs=$DB->query("SELECT uid,type,channel,money,realmoney,getmoney,profitmoney from pre_order where status=1 and date>=:startdate and date<=:enddate", [':startdate'=>$startday, ':enddate'=>$endday]);
 		while($row = $rs->fetch())
 		{
 			if($type == 3){
@@ -238,7 +262,7 @@ case 'userTransferStat':
 		unset($rs);
 	}
 
-	$rs=$DB->query("SELECT uid,type,channel,money from pre_transfer where status=1 and paytime>='$startday' and paytime<='$endday'");
+	$rs=$DB->query("SELECT uid,type,channel,money from pre_transfer where status=1 and paytime>=:starttime and paytime<=:endtime", [':starttime'=>$startday, ':endtime'=>$endday]);
 	while($row = $rs->fetch())
 	{
 		$money = (float)$row['money'];
@@ -271,75 +295,88 @@ case 'buyerStat':
 	else if($method == '1') $column = 'ip';
 	else $column = 'buyer';
 	if(!$startday || !$endday)exit(json_encode(['code'=>0, 'msg'=>'no day']));
-	$sql = "`date` BETWEEN '{$startday}' AND '{$endday}' AND {$column} is not null AND status>0";
+	$conditions = "`date` BETWEEN :startday AND :endday AND {$column} is not null AND status>0";
+	$params = [':startday'=>$startday, ':endday'=>$endday];
 	if(isset($_POST['type']) && !empty($_POST['type'])) {
-		$type = intval($_POST['type']);
-		$sql.=" AND `type`='$type'";
+		$conditions.=" AND `type`=:f_type";
+		$params[':f_type'] = intval($_POST['type']);
 	}
 	$list = $DB->getAll("SELECT A.*,ISNULL(B.id) is_black
 		FROM (SELECT {$column} `user`,COUNT(*) AS order_count,MAX(trade_no) trade_no
 		FROM pay_order
-		WHERE {$sql}
+		WHERE {$conditions}
 		GROUP BY {$column}
 		ORDER BY order_count DESC) A
-		LEFT JOIN pay_blacklist B ON A.`user`=B.content");
+		LEFT JOIN pay_blacklist B ON A.`user`=B.content", $params);
 	exit(json_encode($list));
 break;
 
 case 'logList':
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
+	$allowed_columns = ['id', 'uid', 'type', 'date', 'ip', 'city'];
 	if(isset($_POST['value']) && $_POST['value']!=='') {
-		$sql.=" AND `{$_POST['column']}`='{$_POST['value']}'";
+		if(!in_array($_POST['column'], $allowed_columns)) exit('{"code":-1,"msg":"invalid column"}');
+		$column = $_POST['column'];
+		$conditions[] = "`{$column}`=:f_value";
+		$params[':f_value'] = $_POST['value'];
 	}
+	$where = implode(' AND ', $conditions);
 	$offset = intval($_POST['offset']);
 	$limit = intval($_POST['limit']);
-	$total = $DB->getColumn("SELECT count(*) from pre_log WHERE{$sql}");
-	$list = $DB->getAll("SELECT * FROM pre_log WHERE{$sql} order by id desc limit $offset,$limit");
+	$total = $DB->getColumn("SELECT count(*) from pre_log WHERE {$where}", $params);
+	$list = $DB->getAll("SELECT * FROM pre_log WHERE {$where} order by id desc limit {$offset},{$limit}", $params);
 
 	exit(json_encode(['total'=>$total, 'rows'=>$list]));
 break;
 
 case 'domainList':
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
 	if(isset($_POST['uid']) && !empty($_POST['uid'])) {
-		$uid = intval($_POST['uid']);
-		$sql.=" AND `uid`='$uid'";
+		$conditions[] = "`uid`=:f_uid";
+		$params[':f_uid'] = intval($_POST['uid']);
 	}
 	if(isset($_POST['kw']) && !empty($_POST['kw'])) {
-		$sql.=" AND `domain`='{$_POST['kw']}'";
+		$conditions[] = "`domain`=:f_kw";
+		$params[':f_kw'] = $_POST['kw'];
 	}
 	if(isset($_POST['dstatus']) && $_POST['dstatus']>-1) {
-		$dstatus = intval($_POST['dstatus']);
-		$sql.=" AND `status`={$dstatus}";
+		$conditions[] = "`status`=:f_dstatus";
+		$params[':f_dstatus'] = intval($_POST['dstatus']);
 	}
+	$where = implode(' AND ', $conditions);
 	$offset = intval($_POST['offset']);
 	$limit = intval($_POST['limit']);
-	$total = $DB->getColumn("SELECT count(*) from pre_domain WHERE{$sql}");
-	$list = $DB->getAll("SELECT * FROM pre_domain WHERE{$sql} order by id desc limit $offset,$limit");
+	$total = $DB->getColumn("SELECT count(*) from pre_domain WHERE {$where}", $params);
+	$list = $DB->getAll("SELECT * FROM pre_domain WHERE {$where} order by id desc limit {$offset},{$limit}", $params);
 
 	exit(json_encode(['total'=>$total, 'rows'=>$list]));
 break;
 
 case 'blackList':
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
 	if(isset($_POST['kw']) && !empty($_POST['kw'])) {
-		$sql.=" AND `content`='{$_POST['kw']}'";
+		$conditions[] = "`content`=:f_kw";
+		$params[':f_kw'] = $_POST['kw'];
 	}
 	if(isset($_POST['type']) && $_POST['type']>-1) {
-		$type = intval($_POST['type']);
-		$sql.=" AND `type`={$type}";
+		$conditions[] = "`type`=:f_type";
+		$params[':f_type'] = intval($_POST['type']);
 	}
+	$where = implode(' AND ', $conditions);
 	$offset = intval($_POST['offset']);
 	$limit = intval($_POST['limit']);
-	$total = $DB->getColumn("SELECT count(*) from pre_blacklist WHERE{$sql}");
-	$list = $DB->getAll("SELECT * FROM pre_blacklist WHERE{$sql} order by id desc limit $offset,$limit");
+	$total = $DB->getColumn("SELECT count(*) from pre_blacklist WHERE {$where}", $params);
+	$list = $DB->getAll("SELECT * FROM pre_blacklist WHERE {$where} order by id desc limit {$offset},{$limit}", $params);
 
 	exit(json_encode(['total'=>$total, 'rows'=>$list]));
 break;
 
 case 'getGroup': //用户组
 	$gid=intval($_GET['gid']);
-	$row=$DB->getRow("select * from pre_group where gid='$gid' limit 1");
+	$row=$DB->getRow("select * from pre_group where gid=:gid limit 1", [':gid'=>$gid]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前用户组不存在！"}');
 	$result = ['code'=>0,'msg'=>'succ','gid'=>$gid,'name'=>$row['name'],'info'=>json_decode($row['info'],true),'config'=>$row['config']?json_decode($row['config'],true):[],'settings'=>$row['settings']];
@@ -347,12 +384,11 @@ case 'getGroup': //用户组
 break;
 case 'delGroup':
 	$gid=intval($_GET['gid']);
-	$row=$DB->getRow("select * from pre_group where gid='$gid' limit 1");
+	$row=$DB->getRow("select * from pre_group where gid=:gid limit 1", [':gid'=>$gid]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前用户组不存在！"}');
-	$sql = "DELETE FROM pre_group WHERE gid='$gid'";
-	if($DB->exec($sql)){
-		$DB->exec("UPDATE pre_user SET gid=0 WHERE gid='$gid'");
+	if($DB->delete('group', ['gid'=>$gid])){
+		$DB->exec("UPDATE pre_user SET gid=0 WHERE gid=:gid", [':gid'=>$gid]);
 		exit('{"code":0,"msg":"删除用户组成功！"}');
 	}
 	else exit('{"code":-1,"msg":"删除用户组失败['.$DB->error().']"}');
@@ -360,7 +396,7 @@ break;
 case 'saveGroup':
 	if($_POST['action'] == 'add'){
 		$name=trim($_POST['name']);
-		$row=$DB->getRow("select * from pre_group where name='$name' limit 1");
+		$row=$DB->getRow("select * from pre_group where name=:name limit 1", [':name'=>$name]);
 		if($row)
 			exit('{"code":-1,"msg":"用户组名称重复"}');
 		$info=json_encode($_POST['info']);
@@ -378,7 +414,7 @@ case 'saveGroup':
 	}else{
 		$gid=intval($_POST['gid']);
 		$name=trim($_POST['name']);
-		$row=$DB->getRow("select * from pre_group where name='$name' and gid<>$gid limit 1");
+		$row=$DB->getRow("select * from pre_group where name=:name and gid<>:gid limit 1", [':name'=>$name, ':gid'=>$gid]);
 		if($row)
 			exit('{"code":-1,"msg":"用户组名称重复"}');
 		$info=json_encode($_POST['info']);
@@ -449,7 +485,7 @@ case 'addUser':
 break;
 case 'editUser':
 	$uid=intval($_GET['uid']);
-	$rows=$DB->getRow("select * from pre_user where uid='$uid' limit 1");
+	$rows=$DB->getRow("select * from pre_user where uid=:uid limit 1", [':uid'=>$uid]);
 	if(!$rows) exit('{"code":-1,"msg":"当前商户不存在！"}');
 	$data = [
 		'gid' => intval($_POST['gid']),
@@ -502,8 +538,7 @@ break;
 case 'resetKey':
 	$uid=intval($_POST['uid']);
 	$key = random(32);
-	$sql = "UPDATE pre_user SET `key`='$key' WHERE uid='$uid'";
-	if($DB->exec($sql)!==false)exit('{"code":0,"msg":"重置密钥成功","key":"'.$key.'"}');
+	if($DB->update('user', ['key'=>$key], ['uid'=>$uid])!==false)exit('{"code":0,"msg":"重置密钥成功","key":"'.$key.'"}');
 	else exit('{"code":-1,"msg":"重置密钥失败['.$DB->error().']"}');
 break;
 case 'createRsaPair':
@@ -514,7 +549,7 @@ case 'createRsaPair':
 break;
 case 'editUserChannelInfo':
 	$uid=intval($_GET['uid']);
-	$rows=$DB->getRow("select * from pre_user where uid='$uid' limit 1");
+	$rows=$DB->getRow("select * from pre_user where uid=:uid limit 1", [':uid'=>$uid]);
 	if(!$rows) exit('{"code":-1,"msg":"当前商户不存在！"}');
 	$setting=$_POST['setting'];
 	$channelinfo = json_encode($setting);
@@ -526,8 +561,8 @@ case 'editUserChannelInfo':
 break;
 case 'delUser':
 	$uid=intval($_GET['uid']);
-	if($DB->exec("DELETE FROM pre_user WHERE uid='$uid'")){
-		$DB->exec("DELETE FROM pre_subchannel WHERE uid='$uid'");
+	if($DB->exec("DELETE FROM pre_user WHERE uid=:uid", [':uid'=>$uid])){
+		$DB->exec("DELETE FROM pre_subchannel WHERE uid=:uid", [':uid'=>$uid]);
 		exit('{"code":0}');
 	}else{
 		exit('{"code":-1,"msg":"删除商户失败！'.$DB->error().'"}');
@@ -537,11 +572,11 @@ case 'setUser':
 	$uid=intval($_POST['uid']);
 	$type=trim($_POST['type']);
 	$status=intval($_POST['status']);
-	if($type=='pay')$sql = "UPDATE pre_user SET pay='$status' WHERE uid='$uid'";
-	elseif($type=='settle')$sql = "UPDATE pre_user SET settle='$status' WHERE uid='$uid'";
-	elseif($type=='group')$sql = "UPDATE pre_user SET gid='$status' WHERE uid='$uid'";
-	else $sql = "UPDATE pre_user SET status='$status' WHERE uid='$uid'";
-	if($DB->exec($sql)!==false)exit('{"code":0,"msg":"修改用户成功！"}');
+	if($type=='pay')$sql = "UPDATE pre_user SET pay=:status WHERE uid=:uid";
+	elseif($type=='settle')$sql = "UPDATE pre_user SET settle=:status WHERE uid=:uid";
+	elseif($type=='group')$sql = "UPDATE pre_user SET gid=:status WHERE uid=:uid";
+	else $sql = "UPDATE pre_user SET status=:status WHERE uid=:uid";
+	if($DB->exec($sql, [':status'=>$status, ':uid'=>$uid])!==false)exit('{"code":0,"msg":"修改用户成功！"}');
 	else exit('{"code":-1,"msg":"修改用户失败['.$DB->error().']"}');
 break;
 case 'setUserGroup':
@@ -554,13 +589,12 @@ break;
 case 'resetUser':
 	$uid=intval($_GET['uid']);
 	$key = random(32);
-	$sql = "UPDATE pre_user SET `key`='$key' WHERE uid='$uid'";
-	if($DB->exec($sql)!==false)exit('{"code":0,"msg":"重置密钥成功","key":"'.$key.'"}');
+	if($DB->update('user', ['key'=>$key], ['uid'=>$uid])!==false)exit('{"code":0,"msg":"重置密钥成功","key":"'.$key.'"}');
 	else exit('{"code":-1,"msg":"重置密钥失败['.$DB->error().']"}');
 break;
 case 'user_settle_info':
 	$uid=intval($_GET['uid']);
-	$rows=$DB->getRow("select * from pre_user where uid='$uid' limit 1");
+	$rows=$DB->getRow("select * from pre_user where uid=:uid limit 1", [':uid'=>$uid]);
 	if(!$rows)
 		exit('{"code":-1,"msg":"当前用户不存在！"}');
 	$data = '<div class="form-group"><div class="input-group"><div class="input-group-addon">结算方式</div><select class="form-control" id="pay_type" default="'.$rows['settle_id'].'">'.($conf['settle_alipay']?'<option value="1">支付宝</option>':null).''.($conf['settle_wxpay']?'<option value="2">微信</option>':null).''.($conf['settle_qqpay']?'<option value="3">QQ钱包</option>':null).''.($conf['settle_bank']?'<option value="4">银行卡</option>':null).'</select></div></div>';
@@ -572,10 +606,10 @@ case 'user_settle_info':
 break;
 case 'user_settle_save':
 	$uid=intval($_POST['uid']);
-	$pay_type=trim(daddslashes($_POST['pay_type']));
-	$pay_account=trim(daddslashes($_POST['pay_account']));
-	$pay_name=trim(daddslashes($_POST['pay_name']));
-	$sds=$DB->exec("update `pre_user` set `settle_id`='$pay_type',`account`='$pay_account',`username`='$pay_name' where `uid`='$uid'");
+	$pay_type=trim($_POST['pay_type']);
+	$pay_account=trim($_POST['pay_account']);
+	$pay_name=trim($_POST['pay_name']);
+	$sds=$DB->exec("update `pre_user` set `settle_id`=:pay_type,`account`=:pay_account,`username`=:pay_name where `uid`=:uid", [':pay_type'=>$pay_type, ':pay_account'=>$pay_account, ':pay_name'=>$pay_name, ':uid'=>$uid]);
 	if($sds!==false)
 		exit('{"code":0,"msg":"修改记录成功！"}');
 	else
@@ -583,7 +617,7 @@ case 'user_settle_save':
 break;
 case 'user_cert':
 	$uid=intval($_GET['uid']);
-	$rows=$DB->getRow("select cert,certtype,certmethod,certno,certname,certcorpno,certcorpname,certtime from pre_user where uid='$uid' limit 1");
+	$rows=$DB->getRow("select cert,certtype,certmethod,certno,certname,certcorpno,certcorpname,certtime from pre_user where uid=:uid limit 1", [':uid'=>$uid]);
 	if(!$rows)
 		exit('{"code":-1,"msg":"当前用户不存在！"}');
 	$rows['certmethodname'] = show_cert_method($rows['certmethod']);
@@ -594,7 +628,7 @@ case 'recharge':
 	$uid=intval($_POST['uid']);
 	$do=$_POST['actdo'];
 	$rmb=floatval($_POST['rmb']);
-	$row=$DB->getRow("select uid,money from pre_user where uid='$uid' limit 1");
+	$row=$DB->getRow("select uid,money from pre_user where uid=:uid limit 1", [':uid'=>$uid]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前用户不存在！"}');
 	if($do==1 && $rmb>$row['money'])$rmb=$row['money'];
@@ -608,10 +642,10 @@ break;
 
 case 'addDomain':
 	$uid=intval($_POST['uid']);
-	$domain = trim(daddslashes($_POST['domain']));
+	$domain = trim($_POST['domain']);
 	if(empty($domain))exit('{"code":-1,"msg":"域名不能为空"}');
 	if(!checkDomain($domain))exit('{"code":-1,"msg":"域名格式不正确"}');
-	$row=$DB->getRow("select uid from pre_user where uid='$uid' limit 1");
+	$row=$DB->getRow("select uid from pre_user where uid=:uid limit 1", [':uid'=>$uid]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前用户不存在！"}');
 	if($DB->getRow("select * from pre_domain where uid=:uid and domain=:domain limit 1", [':uid'=>$uid, ':domain'=>$domain]))
@@ -622,12 +656,12 @@ break;
 case 'setDomainStatus':
 	$id=intval($_POST['id']);
 	$status=intval($_POST['status']);
-	if($DB->exec("UPDATE pre_domain SET status='$status',endtime=NOW() WHERE id='$id'")!==false)exit('{"code":0,"msg":"succ"}');
+	if($DB->exec("UPDATE pre_domain SET status=:status,endtime=NOW() WHERE id=:id", [':status'=>$status, ':id'=>$id])!==false)exit('{"code":0,"msg":"succ"}');
 	else exit('{"code":-1,"msg":"修改失败['.$DB->error().']"}');
 break;
 case 'delDomain':
 	$id=intval($_POST['id']);
-	if($DB->exec("DELETE FROM pre_domain WHERE id='$id'")!==false)exit('{"code":0,"msg":"succ"}');
+	if($DB->exec("DELETE FROM pre_domain WHERE id=:id", [':id'=>$id])!==false)exit('{"code":0,"msg":"succ"}');
 	else exit('{"code":-1,"msg":"删除失败['.$DB->error().']"}');
 break;
 case 'domain_operation':
@@ -635,8 +669,8 @@ case 'domain_operation':
 	$checkbox=$_POST['checkbox'];
 	$i=0;
 	foreach($checkbox as $id){
-		if($status==3)$DB->exec("DELETE FROM pre_domain WHERE id='$id'");
-		else $DB->exec("UPDATE pre_domain SET status='$status',endtime=NOW() WHERE id='$id'");
+		if($status==3)$DB->exec("DELETE FROM pre_domain WHERE id=:id", [':id'=>$id]);
+		else $DB->exec("UPDATE pre_domain SET status=:status,endtime=NOW() WHERE id=:id", [':status'=>$status, ':id'=>$id]);
 		$i++;
 	}
 	exit('{"code":0,"msg":"成功改变'.$i.'个记录状态"}');
@@ -644,10 +678,10 @@ break;
 
 case 'getChannels':
 	$typeid = intval($_GET['typeid']);
-	$type=$DB->getColumn("SELECT name FROM pre_type WHERE id='$typeid'");
+	$type=$DB->getColumn("SELECT name FROM pre_type WHERE id=:typeid", [':typeid'=>$typeid]);
 	if(!$type)
 		exit('{"code":-1,"msg":"当前支付方式不存在！"}');
-	$list=$DB->getAll("SELECT id,name FROM pre_channel WHERE `type`='$typeid' AND status=1 ORDER BY id ASC");
+	$list=$DB->getAll("SELECT id,name FROM pre_channel WHERE `type`=:typeid AND status=1 ORDER BY id ASC", [':typeid'=>$typeid]);
 	if($list){
 		$result = ['code'=>0,'msg'=>'succ','data'=>$list];
 		exit(json_encode($result));
@@ -656,7 +690,7 @@ case 'getChannels':
 break;
 case 'getSubChannel':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("SELECT A.*,B.type FROM pre_subchannel A LEFT JOIN pre_channel B ON A.channel=B.id WHERE A.id='$id'");
+	$row=$DB->getRow("SELECT A.*,B.type FROM pre_subchannel A LEFT JOIN pre_channel B ON A.channel=B.id WHERE A.id=:id", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前子通道不存在！"}');
 	$result = ['code'=>0,'msg'=>'succ','data'=>$row];
@@ -665,20 +699,18 @@ break;
 case 'setSubChannel':
 	$id=intval($_GET['id']);
 	$status=intval($_GET['status']);
-	$row=$DB->getRow("SELECT * FROM pre_subchannel WHERE id='$id'");
+	$row=$DB->getRow("SELECT * FROM pre_subchannel WHERE id=:id", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前子通道不存在！"}');
-	$sql = "UPDATE pre_subchannel SET status='$status' WHERE id='$id'";
-	if($DB->exec($sql))exit('{"code":0,"msg":"修改子通道成功！"}');
+	if($DB->exec("UPDATE pre_subchannel SET status=:status WHERE id=:id", [':status'=>$status, ':id'=>$id]))exit('{"code":0,"msg":"修改子通道成功！"}');
 	else exit('{"code":-1,"msg":"修改子通道失败['.$DB->error().']"}');
 break;
 case 'delSubChannel':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("SELECT * FROM pre_subchannel WHERE id='$id'");
+	$row=$DB->getRow("SELECT * FROM pre_subchannel WHERE id=:id", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前子通道不存在！"}');
-	$sql = "DELETE FROM pre_subchannel WHERE id='$id'";
-	if($DB->exec($sql))exit('{"code":0,"msg":"删除子通道成功！"}');
+	if($DB->delete('subchannel', ['id'=>$id]))exit('{"code":0,"msg":"删除子通道成功！"}');
 	else exit('{"code":-1,"msg":"删除子通道失败['.$DB->error().']"}');
 break;
 case 'saveSubChannel':
@@ -687,7 +719,7 @@ case 'saveSubChannel':
 		$name=trim($_POST['name']);
 		$type=intval($_POST['type']);
 		$channel=intval($_POST['channel']);
-		$row=$DB->getRow("SELECT * FROM pre_subchannel WHERE name='$name' AND uid='$uid' LIMIT 1");
+		$row=$DB->getRow("SELECT * FROM pre_subchannel WHERE name=:name AND uid=:uid LIMIT 1", [':name'=>$name, ':uid'=>$uid]);
 		if($row)
 			exit('{"code":-1,"msg":"子通道备注重复"}');
 		$data = ['channel'=>$channel, 'uid'=>$uid, 'name'=>$name, 'addtime'=>'NOW()', 'usetime'=>'NOW()'];
@@ -695,13 +727,13 @@ case 'saveSubChannel':
 		else exit('{"code":-1,"msg":"新增子通道失败['.$DB->error().']"}');
 	}else{
 		$id=intval($_POST['id']);
-		$row=$DB->getRow("SELECT * FROM pre_subchannel WHERE id='$id'");
+		$row=$DB->getRow("SELECT * FROM pre_subchannel WHERE id=:id", [':id'=>$id]);
 		if(!$row) exit('{"code":-1,"msg":"当前子通道不存在！"}');
 		$uid=intval($_POST['uid']);
 		$name=trim($_POST['name']);
 		$type=intval($_POST['type']);
 		$channel=intval($_POST['channel']);
-		$nrow=$DB->getRow("SELECT * FROM pre_subchannel WHERE name='$name' AND uid='$uid' AND id<>$id LIMIT 1");
+		$nrow=$DB->getRow("SELECT * FROM pre_subchannel WHERE name=:name AND uid=:uid AND id<>:id LIMIT 1", [':name'=>$name, ':uid'=>$uid, ':id'=>$id]);
 		if($nrow)
 			exit('{"code":-1,"msg":"子通道名称重复"}');
 		$data = ['channel'=>$channel, 'name'=>$name];
@@ -712,13 +744,13 @@ case 'saveSubChannel':
 break;
 case 'subChannelInfo':
 	$id=intval($_GET['id']);
-	$subrow=$DB->getRow("SELECT * FROM pre_subchannel WHERE id='$id'");
+	$subrow=$DB->getRow("SELECT * FROM pre_subchannel WHERE id=:id", [':id'=>$id]);
 	if(!$subrow)
 		exit('{"code":-1,"msg":"当前子通道不存在！"}');
-	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='{$subrow['channel']}'");
+	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id=:channel_id", [':channel_id'=>$subrow['channel']]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前子通道对应支付通道不存在！"}');
-	$typename = $DB->getColumn("SELECT name FROM pre_type WHERE id='{$row['type']}'");
+	$typename = $DB->getColumn("SELECT name FROM pre_type WHERE id=:type_id", [':type_id'=>$row['type']]);
 	$plugin = \lib\Plugin::getConfig($row['plugin']);
 	if(!$plugin)
 		exit('{"code":-1,"msg":"当前支付插件不存在！"}');
@@ -770,27 +802,34 @@ case 'addBlack':
 break;
 case 'delBlack':
 	$id=intval($_POST['id']);
-	if($DB->exec("DELETE FROM pre_blacklist WHERE id='$id'")!==false)exit('{"code":0,"msg":"succ"}');
+	if($DB->exec("DELETE FROM pre_blacklist WHERE id=:id", [':id'=>$id])!==false)exit('{"code":0,"msg":"succ"}');
 	else exit('{"code":-1,"msg":"删除失败['.$DB->error().']"}');
 break;
 case 'batchdelBlack':
 	$checkbox=$_POST['checkbox'];
 	$i = 0;
 	if(!empty($checkbox)){
-		$i = $DB->exec("DELETE FROM pre_blacklist WHERE id IN (".implode(',',$checkbox).")");
+		$checkbox = array_map('intval', $checkbox);
+		$placeholders = [];
+		$params = [];
+		foreach($checkbox as $k=>$v){
+			$placeholders[] = ":id_{$k}";
+			$params[":id_{$k}"] = $v;
+		}
+		$i = $DB->exec("DELETE FROM pre_blacklist WHERE id IN (".implode(',', $placeholders).")", $params);
 	}
 	exit('{"code":0,"msg":"成功删除了'.$i.'个黑名单"}');
 break;
 
 case 'delRecord':
 	$id=intval($_GET['id']);
-	if($DB->exec("DELETE FROM pre_record WHERE id='$id'")!==false)exit('{"code":0,"msg":"succ"}');
+	if($DB->exec("DELETE FROM pre_record WHERE id=:id", [':id'=>$id])!==false)exit('{"code":0,"msg":"succ"}');
 	else exit('{"code":-1,"msg":"删除失败['.$DB->error().']"}');
 break;
 
 case 'checkuid':
 	$uid=intval($_GET['uid']);
-	$row=$DB->getRow("select * from pre_user where uid='$uid' limit 1");
+	$row=$DB->getRow("select * from pre_user where uid=:uid limit 1", [':uid'=>$uid]);
 	if($row)
 		exit('{"code":0,"msg":"succ"}');
 	else

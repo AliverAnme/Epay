@@ -350,7 +350,7 @@ class Payment {
     // 订单回调处理
     static public function processOrder($isnotify, $order, $api_trade_no, $buyer = null, $bill_trade_no = null, $bill_mch_trade_no = null, $end_time = null){
         global $DB,$conf,$siteurl;
-        if($order['status']==0 || $order['status']==4){
+        if($order['status']==0){
             if($DB->exec("UPDATE `pre_order` SET `status`=1 WHERE `trade_no`=:trade_no", [':trade_no'=>$order['trade_no']])){
 
                 $data = ['endtime'=>'NOW()', 'date'=>'CURDATE()'];
