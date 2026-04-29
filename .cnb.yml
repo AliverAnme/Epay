@@ -1,5 +1,5 @@
 # 矩阵构建: AMD64 + ARM64 分别构建，合并为多架构镜像
-# 触发方式: 手动触发 (Web UI)，输入版本号
+# 触发方式: 手动触发 (Web UI)，输入版本号 (默认 latest)
 # 产物: :latest + :v版本号 两个多架构标签
 
 "**":
@@ -10,18 +10,17 @@
       services:
         - docker
       env:
-        IMAGE_VER: ${VERSION:-latest}
-        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${VERSION:-latest}-linux-amd64
+        TAG_VER: ${VERSION}
         IMAGE_LATEST: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest-linux-amd64
       stages:
         - name: docker login
           script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
         - name: docker build (AMD64)
           script: |
+            VER="${TAG_VER:-latest}"
             docker buildx build --platform linux/amd64 --provenance=false \
-              --tag ${IMAGE_TAG} --tag ${IMAGE_LATEST} .
-        - name: docker push
-          script: docker push ${IMAGE_TAG} && docker push ${IMAGE_LATEST}
+              --tag "${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${VER}-linux-amd64" \
+              --tag ${IMAGE_LATEST} --push .
         - name: resolve
           type: cnb:resolve
           options:
@@ -33,31 +32,32 @@
       services:
         - docker
       env:
-        IMAGE_VER: ${VERSION:-latest}
-        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${VERSION:-latest}-linux-arm64
+        TAG_VER: ${VERSION}
         IMAGE_LATEST: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest-linux-arm64
       stages:
+        - name: set version default
+          script: |
+            if [ -z "$TAG_VER" ]; then export TAG_VER=latest; fi
         - name: docker login
           script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
         - name: docker build (ARM64)
           script: |
+            VER="${TAG_VER:-latest}"
             docker buildx build --platform linux/arm64 --provenance=false \
-              --tag ${IMAGE_TAG} --tag ${IMAGE_LATEST} .
-        - name: docker push
-          script: docker push ${IMAGE_TAG} && docker push ${IMAGE_LATEST}
+              --tag "${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${VER}-linux-arm64" \
+              --tag ${IMAGE_LATEST} --push .
         - name: resolve
           type: cnb:resolve
           options:
             key: build-arm64
 
-    # 创建多架构 latest 镜像
+    # 创建多架构镜像 + 清理中间产物
     - services:
         - docker
       env:
-        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
-        IMAGE_VER: ${VERSION:-latest}
         REGISTRY: ${CNB_DOCKER_REGISTRY}
         REPO: ${CNB_REPO_SLUG_LOWERCASE}
+        TAG_VER: ${VERSION}
       stages:
         - name: await the amd64
           type: cnb:await
@@ -72,8 +72,8 @@
           settings:
             username: $CNB_TOKEN_USER_NAME
             password: $CNB_TOKEN
-            target: ${IMAGE_TAG}
-            template: ${IMAGE_TAG}-OS-ARCH
+            target: ${REGISTRY}/${REPO}:latest
+            template: ${REGISTRY}/${REPO}:latest-OS-ARCH
             platforms:
               - linux/amd64
               - linux/arm64
@@ -82,14 +82,15 @@
           settings:
             username: $CNB_TOKEN_USER_NAME
             password: $CNB_TOKEN
-            target: ${REGISTRY}/${REPO}:${IMAGE_VER}
-            template: ${REGISTRY}/${REPO}:${IMAGE_VER}-OS-ARCH
+            target: ${REGISTRY}/${REPO}:${TAG_VER}
+            template: ${REGISTRY}/${REPO}:${TAG_VER}-OS-ARCH
             platforms:
               - linux/amd64
               - linux/arm64
         - name: cleanup intermediate tags
           script: |
-            for TAG in latest-linux-amd64 latest-linux-arm64 ${IMAGE_VER}-linux-amd64 ${IMAGE_VER}-linux-arm64; do
+            VER="${TAG_VER:-latest}"
+            for TAG in latest-linux-amd64 latest-linux-arm64 ${VER}-linux-amd64 ${VER}-linux-arm64; do
               DIGEST=$(curl -s -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
                 -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
                 "https://${REGISTRY}/v2/${REPO}/manifests/${TAG}" \
