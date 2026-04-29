@@ -354,37 +354,38 @@ function showOrder(trade_no) {
 			layer.close(ii);
 			if(data.code == 0){
 				var data = data.data;
+				var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
 				var item = '<table class="table table-condensed table-hover" id="orderItem">';
 				item += '<tr><td colspan="6" style="text-align:center" class="orderTitle"><b>订单信息</b></td></tr>';
-				item += '<tr class="orderTitle"><td class="info" class="orderTitle">系统订单号</td><td colspan="5" class="orderContent">'+data.trade_no+'</td></tr>';
-				item += '<tr><td class="info" class="orderTitle">商户订单号</td><td colspan="5" class="orderContent">'+data.out_trade_no+'</td></tr>';
-				item += '<tr><td class="info" class="orderTitle">接口订单号</td><td colspan="5" class="orderContent">'+data.api_trade_no+'</td></tr>';
+				item += '<tr class="orderTitle"><td class="info" class="orderTitle">系统订单号</td><td colspan="5" class="orderContent">'+esc(data.trade_no)+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">商户订单号</td><td colspan="5" class="orderContent">'+esc(data.out_trade_no)+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">接口订单号</td><td colspan="5" class="orderContent">'+esc(data.api_trade_no)+'</td></tr>';
 				if(data.bill_mch_trade_no){
-					item += '<tr><td class="info" class="orderTitle">渠道交易单号</td><td colspan="5" class="orderContent">'+data.bill_mch_trade_no+'</td></tr>';
+					item += '<tr><td class="info" class="orderTitle">渠道交易单号</td><td colspan="5" class="orderContent">'+esc(data.bill_mch_trade_no)+'</td></tr>';
 				}
 				if(data.bill_trade_no){
-					item += '<tr><td class="info" class="orderTitle">用户交易单号</td><td colspan="5" class="orderContent">'+data.bill_trade_no+'</td></tr>';
+					item += '<tr><td class="info" class="orderTitle">用户交易单号</td><td colspan="5" class="orderContent">'+esc(data.bill_trade_no)+'</td></tr>';
 				}
-				item += '<tr><td class="info" class="orderTitle">支付方式</td><td colspan="5" class="orderContent">'+data.typename+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">支付方式</td><td colspan="5" class="orderContent">'+esc(data.typename)+'</td></tr>';
 				if(data.subchannel > 0){
-					item += '<tr><td class="info" class="orderTitle">自定义子通道</td><td colspan="5" class="orderContent">'+data.subchannelname+'</td></tr>';
+					item += '<tr><td class="info" class="orderTitle">自定义子通道</td><td colspan="5" class="orderContent">'+esc(data.subchannelname)+'</td></tr>';
 				}
-				item += '<tr><td class="info" class="orderTitle">商品名称</td><td colspan="5" class="orderContent">'+data.name+'</td></tr>';
-				item += '<tr><td class="info" class="orderTitle">订单金额</td><td colspan="5" class="orderContent">'+data.money+'</td></tr>';
-				item += '<tr><td class="info" class="orderTitle">实际支付金额</td><td colspan="5" class="orderContent">'+data.realmoney+'</td></tr>';
-				item += '<tr><td class="info" class="orderTitle">商户分成金额</td><td colspan="5" class="orderContent">'+data.getmoney+'</td></tr>';
-				item += '<tr><td class="info" class="orderTitle">创建时间</td><td colspan="5" class="orderContent">'+data.addtime+'</td></tr>';
-				item += '<tr><td class="info" class="orderTitle">完成时间</td><td colspan="5" class="orderContent">'+data.endtime+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">商品名称</td><td colspan="5" class="orderContent">'+esc(data.name)+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">订单金额</td><td colspan="5" class="orderContent">'+esc(data.money)+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">实际支付金额</td><td colspan="5" class="orderContent">'+esc(data.realmoney)+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">商户分成金额</td><td colspan="5" class="orderContent">'+esc(data.getmoney)+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">创建时间</td><td colspan="5" class="orderContent">'+esc(data.addtime)+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">完成时间</td><td colspan="5" class="orderContent">'+esc(data.endtime)+'</td></tr>';
 				if(data.status==2){
-					item += '<tr><td class="info" class="orderTitle">退款时间</td><td colspan="5" class="orderContent">'+data.refundtime+'</td></tr>';
+					item += '<tr><td class="info" class="orderTitle">退款时间</td><td colspan="5" class="orderContent">'+esc(data.refundtime)+'</td></tr>';
 				}
-				item += '<tr><td class="info" class="orderTitle" title="只有在官方通道支付完成后才能显示">支付账号</td><td colspan="5" class="orderContent">'+data.buyer+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle" title="只有在官方通道支付完成后才能显示">支付账号</td><td colspan="5" class="orderContent">'+esc(data.buyer)+'</td></tr>';
 				if(data.mobile){
-					item += '<tr><td class="info" class="orderTitle">手机号码</td><td colspan="5" class="orderContent">'+data.mobile+'</td></tr>';
+					item += '<tr><td class="info" class="orderTitle">手机号码</td><td colspan="5" class="orderContent">'+esc(data.mobile)+'</td></tr>';
 				}
-				item += '<tr><td class="info" class="orderTitle">网站域名</td><td colspan="5" class="orderContent"><a href="http://'+data.domain+'" target="_blank" rel="noreferrer">'+data.domain+'</a></td></tr>';
-				item += '<tr><td class="info" class="orderTitle">支付IP</td><td colspan="5" class="orderContent"><a href="https://m.ip138.com/iplookup.asp?ip='+data.ip+'" target="_blank" rel="noreferrer">'+data.ip+'</a></td></tr>';
-				item += '<tr><td class="info" class="orderTitle">扩展参数</td><td colspan="5" class="orderContent">'+data.param+'</td></tr>';
+				item += '<tr><td class="info" class="orderTitle">网站域名</td><td colspan="5" class="orderContent"><a href="http://'+esc(data.domain)+'" target="_blank" rel="noreferrer">'+esc(data.domain)+'</a></td></tr>';
+				item += '<tr><td class="info" class="orderTitle">支付IP</td><td colspan="5" class="orderContent"><a href="https://m.ip138.com/iplookup.asp?ip='+esc(data.ip)+'" target="_blank" rel="noreferrer">'+esc(data.ip)+'</a></td></tr>';
+				item += '<tr><td class="info" class="orderTitle">扩展参数</td><td colspan="5" class="orderContent">'+esc(data.param)+'</td></tr>';
 				item += '<tr><td class="info" class="orderTitle">订单状态</td><td colspan="5" class="orderContent">'+status[data.status]+'</td></tr>';
 				if(data.status>0){
 					item += '<tr><td class="info" class="orderTitle">通知状态</td><td colspan="5" class="orderContent">'+(data.notify==0?'<span class="label label-success">通知成功</span>':'<span class="label label-danger">通知失败</span>（已通知'+data.notify+'次）')+'</td></tr>';
