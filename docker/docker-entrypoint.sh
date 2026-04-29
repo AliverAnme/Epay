@@ -8,7 +8,7 @@ set -e
 
 CONFIG_FILE="/var/www/html/config.php"
 INSTALL_LOCK="/var/www/html/install/install.lock"
-ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin123}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin123456}"
 
 echo "============================================"
 echo "  彩虹易支付系统 - Docker 启动中..."

@@ -48,7 +48,7 @@ services:
       DB_NAME: ${DB_NAME:-epay}
       DB_PREFIX: ${DB_PREFIX:-pay}
       # 管理员初始密码（首次安装时设置，建议安装后修改）
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123456}
       # 站点域名
       SITE_URL: ${SITE_URL:-http://localhost}
     volumes:
