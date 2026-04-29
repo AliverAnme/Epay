@@ -380,6 +380,9 @@ echo '</div>
 	exit;
 }
 function sysmsg($msg = '未知的异常',$title = '站点提示信息') {
+    if(empty($msg) || strlen(trim($msg)) == 0){
+        $msg = '系统错误，请稍后重试';
+    }
     ?>  
     <!DOCTYPE html>
     <html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">

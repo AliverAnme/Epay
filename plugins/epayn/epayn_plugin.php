@@ -275,7 +275,7 @@ class epayn_plugin
 			$api_trade_no = $_GET['api_trade_no'];
 
 			if ($_GET['trade_status'] == 'TRADE_SUCCESS') {
-				if($out_trade_no == TRADE_NO && round($money,2)==round($order['realmoney'],2)){
+				if($out_trade_no == TRADE_NO && round($money,2)==round($order['money'],2)){
 					processNotify($order, $trade_no, $buyer, $api_trade_no);
 				}
 			}

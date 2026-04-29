@@ -665,7 +665,7 @@ class alipay_plugin
 				//退款日期超过可退款期限后（如三个月可退款），支付宝系统发送该交易状态通知
 			}
 			else if ($_POST['trade_status'] == 'TRADE_SUCCESS') {
-				if($out_trade_no == TRADE_NO && round($total_amount,2)==round($order['realmoney'],2)){
+				if($out_trade_no == TRADE_NO && round($total_amount,2)==round($order['money'],2)){
 					processNotify($order, $trade_no, $buyer_id);
 				}
 			}

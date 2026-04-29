@@ -3,8 +3,8 @@ include("../includes/common.php");
 
 function showerror($msg){
 	global $cdnpublic;
-	// 生产环境脱敏异常信息，仅记录日志
-	if(strlen($msg) > 200 || strpos($msg, 'Stack trace') !== false || strpos($msg, 'on line') !== false){
+	// 空消息时使用默认提示
+	if(empty($msg) || strlen(trim($msg)) == 0){
 		$msg = '系统错误，请稍后重试';
 	}
 	include ROOT.'paypage/error.php';
