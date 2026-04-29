@@ -11,19 +11,26 @@ if($_SERVER['REQUEST_METHOD']==='POST' && (!isset($_POST['csrf_token']) || $_POS
 switch($act){
 
 case 'receiverList':
-	$sql = " 1=1";
+	$conditions = ["1=1"];
+	$params = [];
+	$allowed_columns = ['id', 'channel', 'subchannel', 'uid', 'account', 'type', 'status', 'info', 'apply_id'];
 	if(isset($_POST['value']) && !empty($_POST['value'])) {
-		$value=daddslashes($_POST['value']);
-		if($_POST['column'] == 'info'){
-			$sql .= " AND (A.`info` LIKE '%{$value}%' OR A.`account` LIKE '%{$value}%')";
+		if(!in_array($_POST['column'], $allowed_columns)) exit('{"code":-1,"msg":"invalid column"}');
+		$column = $_POST['column'];
+		if($column == 'info'){
+			$conditions[] = "(A.`info` LIKE :value1 OR A.`account` LIKE :value2)";
+			$params[':value1'] = '%'.$_POST['value'].'%';
+			$params[':value2'] = '%'.$_POST['value'].'%';
 		}else{
-			$sql .= " AND A.`{$_POST['column']}`='{$value}'";
+			$conditions[] = "A.`{$column}`=:value";
+			$params[':value'] = $_POST['value'];
 		}
 	}
+	$where = implode(' AND ', $conditions);
 	$offset = intval($_POST['offset']);
 	$limit = intval($_POST['limit']);
-	$total = $DB->getColumn("SELECT count(*) from pre_psreceiver A WHERE{$sql}");
-	$list = $DB->getAll("SELECT A.*,B.name channelname,C.name subchannelname,C.apply_id FROM pre_psreceiver A LEFT JOIN pre_channel B ON A.channel=B.id LEFT JOIN pre_subchannel C ON A.subchannel=C.id WHERE{$sql} order by A.id desc limit $offset,$limit");
+	$total = $DB->getColumn("SELECT count(*) from pre_psreceiver A WHERE {$where}", $params);
+	$list = $DB->getAll("SELECT A.*,B.name channelname,C.name subchannelname,C.apply_id FROM pre_psreceiver A LEFT JOIN pre_channel B ON A.channel=B.id LEFT JOIN pre_subchannel C ON A.subchannel=C.id WHERE {$where} order by A.id desc limit $offset,$limit", $params);
 	exit(json_encode(['total'=>$total, 'rows'=>$list]));
 break;
 case 'orderList':
@@ -36,32 +43,37 @@ case 'orderList':
 	}
 	unset($rs);
 
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
+	$allowed_columns2 = ['id', 'rid', 'channel', 'subchannel', 'uid', 'trade_no', 'status', 'money', 'type'];
 	if(isset($_POST['rid']) && !empty($_POST['rid'])) {
-		$rid = intval($_POST['rid']);
-		$sql.=" AND A.`rid`='$rid'";
+		$conditions[] = "A.`rid`=:rid";
+		$params[':rid'] = intval($_POST['rid']);
 	}
 	if(isset($_POST['dstatus']) && $_POST['dstatus']>-1) {
-		$dstatus = intval($_POST['dstatus']);
-		$sql.=" AND A.`status`={$dstatus}";
+		$conditions[] = "A.`status`=:dstatus";
+		$params[':dstatus'] = intval($_POST['dstatus']);
 	}
 	if(!empty($_POST['starttime']) || !empty($_POST['endtime'])){
 		if(!empty($_POST['starttime'])){
-			$starttime = daddslashes($_POST['starttime']);
-			$sql.=" AND A.addtime>='{$starttime} 00:00:00'";
+			$conditions[] = "A.addtime>=:starttime";
+			$params[':starttime'] = $_POST['starttime'].' 00:00:00';
 		}
 		if(!empty($_POST['endtime'])){
-			$endtime = daddslashes($_POST['endtime']);
-			$sql.=" AND A.addtime<='{$endtime} 23:59:59'";
+			$conditions[] = "A.addtime<=:endtime";
+			$params[':endtime'] = $_POST['endtime'].' 23:59:59';
 		}
 	}
 	if(isset($_POST['value']) && !empty($_POST['value'])) {
-		$sql.=" AND A.`{$_POST['column']}`='{$_POST['value']}'";
+		if(!in_array($_POST['column'], $allowed_columns2)) exit('{"code":-1,"msg":"invalid column"}');
+		$conditions[] = "A.`{$_POST['column']}`=:value";
+		$params[':value'] = $_POST['value'];
 	}
+	$where = implode(' AND ', $conditions);
 	$offset = intval($_POST['offset']);
 	$limit = intval($_POST['limit']);
-	$total = $DB->getColumn("SELECT count(*) from pre_psorder A LEFT JOIN pre_psreceiver B ON A.rid=B.id LEFT JOIN pre_channel C ON B.channel=C.id WHERE{$sql}");
-	$list = $DB->getAll("SELECT A.*,C.id channelid,C.name channelname,C.type,D.realmoney ordermoney FROM pre_psorder A LEFT JOIN pre_psreceiver B ON A.rid=B.id LEFT JOIN pre_channel C ON B.channel=C.id LEFT JOIN pre_order D ON D.trade_no=A.trade_no WHERE{$sql} order by A.id desc limit $offset,$limit");
+	$total = $DB->getColumn("SELECT count(*) from pre_psorder A LEFT JOIN pre_psreceiver B ON A.rid=B.id LEFT JOIN pre_channel C ON B.channel=C.id WHERE {$where}", $params);
+	$list = $DB->getAll("SELECT A.*,C.id channelid,C.name channelname,C.type,D.realmoney ordermoney FROM pre_psorder A LEFT JOIN pre_psreceiver B ON A.rid=B.id LEFT JOIN pre_channel C ON B.channel=C.id LEFT JOIN pre_order D ON D.trade_no=A.trade_no WHERE {$where} order by A.id desc limit $offset,$limit", $params);
 	$list2 = [];
 	foreach($list as $row){
 		$row['typename'] = $paytypes[$row['type']];
@@ -318,33 +330,33 @@ case 'operation': //批量操作订单
 break;
 
 case 'statistics':
-    $sql = " 1=1";
+    $conditions = ["1=1"];
+    $params = [];
+    $allowed_stats_columns = ['money', 'type', 'status', 'trade_no', 'oid'];
     if(isset($_POST['rid']) && !empty($_POST['rid'])) {
-        $rid = intval($_POST['rid']);
-        $sql .= " AND rid='$rid'";
+        $conditions[] = "rid=:rid";
+        $params[':rid'] = intval($_POST['rid']);
     }
     if(isset($_POST['dstatus']) && $_POST['dstatus']>-1) {
-        $dstatus = intval($_POST['dstatus']);
-        $sql .= " AND status={$dstatus}";
+        $conditions[] = "status=:dstatus";
+        $params[':dstatus'] = intval($_POST['dstatus']);
     }
     if(!empty($_POST['starttime']) || !empty($_POST['endtime'])){
         if(!empty($_POST['starttime'])){
-            $starttime = daddslashes($_POST['starttime']);
-            $sql .= " AND addtime>='{$starttime} 00:00:00'";
+            $conditions[] = "addtime>=:starttime";
+            $params[':starttime'] = $_POST['starttime'].' 00:00:00';
         }
         if(!empty($_POST['endtime'])){
-            $endtime = daddslashes($_POST['endtime']);
-            $sql .= " AND addtime<='{$endtime} 23:59:59'";
+            $conditions[] = "addtime<=:endtime";
+            $params[':endtime'] = $_POST['endtime'].' 23:59:59';
         }
     }
     if(isset($_POST['value']) && !empty($_POST['value'])) {
-        $column = daddslashes($_POST['column']);
-        if($column == 'money'){
-            $sql .= " AND {$column}='".floatval($_POST['value'])."'";
-        }else{
-            $sql .= " AND {$column}='".daddslashes($_POST['value'])."'";
-        }
+        if(!in_array($_POST['column'], $allowed_stats_columns)) exit('{"code":-1,"msg":"invalid column"}');
+        $conditions[] = "`{$_POST['column']}`=:value";
+        $params[':value'] = $_POST['value'];
     }
+    $where = implode(' AND ', $conditions);
 
     $result = $DB->getRow("SELECT 
         SUM(money) AS totalMoney,
@@ -353,7 +365,7 @@ case 'statistics':
         COUNT(*) AS totalCount,
         SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) AS successCount,
         SUM(CASE WHEN status = 3 THEN 1 ELSE 0 END) AS failCount
-        FROM pre_psorder WHERE {$sql}");
+        FROM pre_psorder WHERE {$where}", $params);
 
     $successRate = $result['totalCount'] > 0 ? round(($result['successCount'] / $result['totalCount']) * 100, 2) : 0;
 

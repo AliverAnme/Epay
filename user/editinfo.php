@@ -1,6 +1,9 @@
 <?php
 include("../includes/common.php");
 if($islogin2==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
+$csrf_token = md5(mt_rand(0,999).time());
+$_SESSION['csrf_token'] = $csrf_token;
+echo '<script>var user_csrf_token = "'.$csrf_token.'";</script>';
 $title='个人资料';
 include './head.php';
 ?>
@@ -145,6 +148,7 @@ if(strlen($userrow['phone'])==11){
 	<div class="tab-content">
 		<div class="tab-pane ng-scope active">
 			<form class="form-horizontal devform">
+				<input type="hidden" id="csrf_token" value="<?php echo $csrf_token?>">
 				<div class="form-group"><div class="col-sm-offset-2 col-sm-4"><h4>收款账号设置：</h4></div></div>
 				<div class="form-group">
 					<label class="col-sm-2 control-label">结算方式</label>
