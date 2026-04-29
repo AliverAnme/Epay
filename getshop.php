@@ -22,7 +22,7 @@ break;
 default:
 	$trade_no=isset($_GET['trade_no'])?daddslashes($_GET['trade_no']):exit('{"code":-2,"msg":"No trade_no!"}');
 
-	$row=$DB->getRow("SELECT * FROM pre_order WHERE trade_no='{$trade_no}' limit 1");
+	$row=$DB->getRow("SELECT * FROM pre_order WHERE trade_no=:trade_no limit 1", [':trade_no'=>$trade_no]);
 	if($row['status']>=1){
 		// 支付完成5分钟后禁止跳转回网站
 		if(!empty($row['endtime']) && time() - strtotime($row['endtime']) > 300){

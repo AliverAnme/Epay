@@ -8,7 +8,7 @@ $submit2=true;
 
 $typeid=intval($_GET['typeid']);
 $trade_no=daddslashes($_GET['trade_no']);
-$order=$DB->getRow("SELECT * FROM pre_order WHERE trade_no='{$trade_no}' LIMIT 1");
+$order=$DB->getRow("SELECT * FROM pre_order WHERE trade_no=:trade_no LIMIT 1", [':trade_no'=>$trade_no]);
 if(!$order)sysmsg('该订单号不存在，请返回来源地重新发起请求！');
 if($order['status']>0){
 	sysmsg('该订单('.$order['out_trade_no'].')已完成支付，请勿重复发起支付');
@@ -23,7 +23,7 @@ if($order['type'] > 0 && $order['channel'] > 0 && $order['realmoney'] > 0 && $or
 }
 
 // 获取订单支付方式ID、支付插件、支付通道、支付费率
-$userrow = $DB->getRow("SELECT `uid`,`gid`,`money`,`mode`,`channelinfo`,`ordername` FROM `pre_user` WHERE `uid`='{$order['uid']}' LIMIT 1");
+$userrow = $DB->getRow("SELECT `uid`,`gid`,`money`,`mode`,`channelinfo`,`ordername` FROM `pre_user` WHERE `uid`=:uid LIMIT 1", [':uid'=>$order['uid']]);
 $groupconfig = getGroupConfig($userrow['gid']);
 $conf = array_merge($conf, $groupconfig);
 
@@ -55,7 +55,7 @@ if($firstGetChannel){
 	}
 }else{
 	$submitData = \lib\Channel::info($order['channel']);
-	$submitData['typename'] = $DB->getColumn("SELECT name FROM pre_type WHERE id='{$typeid}' LIMIT 1");
+	$submitData['typename'] = $DB->getColumn("SELECT name FROM pre_type WHERE id=:id LIMIT 1", [':id'=>$typeid]);
 	$submitData['subchannel'] = $order['subchannel'];
 	$realmoney = $order['realmoney'];
 	$getmoney = $order['getmoney'];
