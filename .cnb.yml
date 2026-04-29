@@ -56,6 +56,8 @@
       env:
         IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
         IMAGE_VER: ${VERSION:-latest}
+        REGISTRY: ${CNB_DOCKER_REGISTRY}
+        REPO: ${CNB_REPO_SLUG_LOWERCASE}
       stages:
         - name: await the amd64
           type: cnb:await
@@ -80,8 +82,19 @@
           settings:
             username: $CNB_TOKEN_USER_NAME
             password: $CNB_TOKEN
-            target: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${IMAGE_VER}
-            template: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${IMAGE_VER}-OS-ARCH
+            target: ${REGISTRY}/${REPO}:${IMAGE_VER}
+            template: ${REGISTRY}/${REPO}:${IMAGE_VER}-OS-ARCH
             platforms:
               - linux/amd64
               - linux/arm64
+        - name: cleanup intermediate tags
+          script: |
+            for TAG in latest-linux-amd64 latest-linux-arm64 ${IMAGE_VER}-linux-amd64 ${IMAGE_VER}-linux-arm64; do
+              DIGEST=$(curl -s -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
+                -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+                "https://${REGISTRY}/v2/${REPO}/manifests/${TAG}" \
+                -o /dev/null -w "%header{docker-content-digest}" 2>/dev/null)
+              [ -n "$DIGEST" ] && curl -s -u "${CNB_TOKEN_USER_NAME}:${CNB_TOKEN}" \
+                -X DELETE "https://${REGISTRY}/v2/${REPO}/manifests/${DIGEST}" > /dev/null 2>&1
+              echo "  cleaned: ${TAG}"
+            done
