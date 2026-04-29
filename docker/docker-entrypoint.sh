@@ -154,13 +154,13 @@ if [ "$TABLE_EXISTS" = "0" ]; then
     }
 
     // 插入动态配置
-    \$pdo->exec(\"INSERT INTO \\\`${DB_PREFIX}_config\\\` VALUES ('syskey', '${SYSKEY}')\");
-    \$pdo->exec(\"INSERT INTO \\\`${DB_PREFIX}_config\\\` VALUES ('build', '${BUILD_DATE}')\");
-    \$pdo->exec(\"INSERT INTO \\\`${DB_PREFIX}_config\\\` VALUES ('cronkey', '${CRONKEY}')\");
+    \$pdo->exec(\"INSERT INTO \`${DB_PREFIX}_config\` VALUES ('syskey', '${SYSKEY}')\");
+    \$pdo->exec(\"INSERT INTO \`${DB_PREFIX}_config\` VALUES ('build', '${BUILD_DATE}')\");
+    \$pdo->exec(\"INSERT INTO \`${DB_PREFIX}_config\` VALUES ('cronkey', '${CRONKEY}')\");
 
     // 修改默认管理员密码
-    \$pdo->exec(\"UPDATE \\\`${DB_PREFIX}_config\\\` SET v='${ADMIN_PASSWORD}' WHERE k='admin_pwd'\");
-    \$pdo->exec(\"UPDATE \\\`${DB_PREFIX}_config\\\` SET v='${ADMIN_PASSWORD}' WHERE k='admin_paypwd'\");
+    \$pdo->exec(\"UPDATE \`${DB_PREFIX}_config\` SET v='${ADMIN_PASSWORD}' WHERE k='admin_pwd'\");
+    \$pdo->exec(\"UPDATE \`${DB_PREFIX}_config\` SET v='${ADMIN_PASSWORD}' WHERE k='admin_paypwd'\");
 
     echo '[entrypoint] 安装完成! 成功: '.\$success.' 条, 失败: '.\$error.' 条' . PHP_EOL;
     echo '[entrypoint] 系统密钥/定时任务密钥已生成，可通过以下方式获取定时任务密钥：' . PHP_EOL;
@@ -216,8 +216,8 @@ else
             }
         }
 
-        \$pdo->exec(\"UPDATE \\\`${DB_PREFIX}_config\\\` SET v='${CURRENT_VERSION}' WHERE k='version'\");
-        \$pdo->exec(\"UPDATE \\\`${DB_PREFIX}_cache\\\` SET v='' WHERE k='config'\");
+        \$pdo->exec(\"UPDATE \`${DB_PREFIX}_config\` SET v='${CURRENT_VERSION}' WHERE k='version'\");
+        \$pdo->exec(\"UPDATE \`${DB_PREFIX}_cache\` SET v='' WHERE k='config'\");
         echo '[entrypoint] 数据库升级完成' . PHP_EOL;
         "
     else
