@@ -7,8 +7,8 @@ PRIMARY KEY  (`k`)
 
 INSERT INTO `pre_config` VALUES ('version', '2054');
 INSERT INTO `pre_config` VALUES ('admin_user', 'admin');
-INSERT INTO `pre_config` VALUES ('admin_pwd', '123456');
-INSERT INTO `pre_config` VALUES ('admin_paypwd', '123456');
+INSERT INTO `pre_config` VALUES ('admin_pwd', 'admin123456');
+INSERT INTO `pre_config` VALUES ('admin_paypwd', 'admin123456');
 INSERT INTO `pre_config` VALUES ('homepage', '0');
 INSERT INTO `pre_config` VALUES ('sitename', '聚合支付平台');
 INSERT INTO `pre_config` VALUES ('title', '聚合支付 - 行业领先的免签约支付平台');

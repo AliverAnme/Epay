@@ -82,6 +82,10 @@ class Payment {
                 echo json_encode($result['data']);
                 break;
             case 'page': //显示指定页面
+                $allowed_pages = ['alipay_qrcode', 'alipay_wap', 'alipay_h5', 'alipay_jspay', 'wxpay_qrcode', 'wxpay_wap', 'wxpay_jspay', 'wxpay_h5', 'qqpay_qrcode', 'qqpay_wap', 'bank_qrcode', 'bank_h5', 'verify_jump', 'douyinpay_jspay', 'openid', 'wxtrans_confirm'];
+                if(!in_array($result['page'], $allowed_pages)) {
+                    showerror('invalid page');
+                }
                 include_once SYSTEM_ROOT.'txprotect.php';
                 if(isset($result['data'])) extract($result['data']);
                 if($conf['pageordername']==1)$order['name']=$ordername?$ordername:'onlinepay';
@@ -133,6 +137,9 @@ class Payment {
                         include PAYPAGE_ROOT.'wxpay_h5.php';
                         break;
                     }
+                }
+                if(!in_array($result['page'], $allowed_pages)) {
+                    showerror('invalid page');
                 }
                 include PAYPAGE_ROOT.$result['page'].'.php';
                 break;

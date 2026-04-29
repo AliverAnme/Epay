@@ -113,8 +113,8 @@ foreach($channels as $row){
 <form onsubmit="return searchSubmit()" method="GET" class="form-inline" id="searchToolbar">
   <div class="form-group">
     <label><b>搜索</b></label>
-	<select name="column" class="form-control" default="<?php echo @$_GET['column']?>"><option value="channel">通道ID</option><option value="uid">商户ID</option><option value="info">接收方</option><option value="id">ID</option></select>
-    <input type="text" class="form-control" name="value" placeholder="输入搜索内容" value="<?php echo @$_GET['value']?>">
+	<select name="column" class="form-control" default="<?php echo htmlspecialchars(@$_GET['column'])?>"><option value="channel">通道ID</option><option value="uid">商户ID</option><option value="info">接收方</option><option value="id">ID</option></select>
+    <input type="text" class="form-control" name="value" placeholder="输入搜索内容" value="<?php echo htmlspecialchars(@$_GET['value'])?>">
 	<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;搜索</button>&nbsp;
 	<a href="javascript:addframe()" class="btn btn-success"><i class="fa fa-plus"></i>&nbsp;新增</a>&nbsp;
 	<a href="javascript:searchClear()" class="btn btn-default" title="刷新列表"><i class="fa fa-refresh"></i></a>

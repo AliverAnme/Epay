@@ -1,6 +1,12 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
 
+// CSRF 防护令牌
+if(!isset($_SESSION['admin_csrf_token'])) {
+	$_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
+}
+$admin_csrf_token = $_SESSION['admin_csrf_token'];
+
 $admin_cdnpublic = 0;
 if($admin_cdnpublic==1){
 	$cdnpublic = '//lib.baomitu.com/';
@@ -136,3 +142,15 @@ if($admin_cdnpublic==1){
     </div><!-- /.container -->
   </nav><!-- /.navbar -->
 <?php }?>
+<script>
+var ADMIN_CSRF_TOKEN = '<?php echo $admin_csrf_token?>';
+$(function(){
+	$.ajaxSetup({
+		beforeSend: function(xhr, settings) {
+			if(settings.type && settings.type.toUpperCase() === 'POST' && settings.url.indexOf('?') === -1){
+				settings.data = (settings.data || '') + (settings.data ? '&' : '') + 'csrf_token=' + ADMIN_CSRF_TOKEN;
+			}
+		}
+	});
+});
+</script>

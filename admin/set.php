@@ -1941,8 +1941,14 @@ echo '<div class="panel panel-primary">
 <div class="panel-heading"><h3 class="panel-title">更改首页LOGO</h3></div>
 <div class="panel-body">';
 if($_POST['s']==1){
-if(!checkRefererHost())exit;
-if(copy($_FILES['file']['tmp_name'], ROOT.'assets/img/logo.png')){
+	if(!checkRefererHost())exit;
+	if(!is_uploaded_file($_FILES['file']['tmp_name'])) exit('非法文件上传');
+	$allowed_types = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+	$finfo = finfo_open(FILEINFO_MIME_TYPE);
+	$mime = finfo_file($finfo, $_FILES['file']['tmp_name']);
+	finfo_close($finfo);
+	if(!in_array($mime, $allowed_types)) exit('不允许的文件类型');
+	if(move_uploaded_file($_FILES['file']['tmp_name'], ROOT.'assets/img/logo.png')){
 	echo "成功上传文件!<br>（可能需要清空浏览器缓存才能看到效果，按Ctrl+F5即可一键刷新缓存）";
 }else{
 	echo "上传失败，可能没有文件写入权限";

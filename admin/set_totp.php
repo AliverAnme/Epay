@@ -31,6 +31,10 @@ if(isset($_POST['action'])){
 		$CACHE->clear();
 		echojson(['code' => 0, 'msg' => 'TOTP绑定成功']);
 	}elseif($_POST['action'] == 'close'){
+		$password = trim($_POST['password']);
+		if(empty($password) || $password !== $conf['admin_pwd']){
+			echojsonmsg('当前管理员密码错误');
+		}
 		saveSetting('totp_open', 0);
 		saveSetting('totp_secret', '');
 		$CACHE->clear();
@@ -160,11 +164,10 @@ function bind_totp(){
 	return false;
 }
 function close_totp(){
-	layer.confirm('确定要关闭TOTP二次验证吗？', {
-		btn: ['确定','取消']
-	}, function(){
+	layer.prompt({title: '输入管理员密码以确认关闭', formType: 1}, function(pass, index){
+		layer.close(index);
 		var ii = layer.load(2, {shade:[0.1,'#fff']});
-		$.post('?', {action: 'close'}, function(res){
+		$.post('?', {action: 'close', password: pass}, function(res){
 			layer.close(ii);
 			if(res.code == 0){
 				layer.alert('TOTP已关闭', {icon: 1}, function(){

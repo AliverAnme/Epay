@@ -44,17 +44,17 @@ $_SESSION['csrf_token'] = $csrf_token;
 </div>
 <?php if(!$conf['close_keylogin']){?>
 <ul class="nav nav-tabs">
-    <li style="width: 50%;" align="center" class="<?php echo $_GET['m']!='key'?'active':null;?>">
+    <li style="width: 50%;" align="center" class="<?php echo htmlspecialchars($_GET['m'])!='key'?'active':null;?>">
   <a href="./login.php">密码登录(New)</a>
 </li>
-    <li style="width: 50%;" align="center" class="<?php echo $_GET['m']=='key'?'active':null;?>">
+    <li style="width: 50%;" align="center" class="<?php echo htmlspecialchars($_GET['m'])=='key'?'active':null;?>">
   <a href="./login.php?m=key">密钥登录</a>
 </li>
 </ul><?php }?>
 <div class="tab-content">
 <div class="tab-pane active">
 <div class="list-group list-group-sm swaplogin">
-<?php if($_GET['m']=='key'){?>
+<?php if(htmlspecialchars($_GET['m'])=='key'){?>
 <input type="hidden" name="type" value="0"/>
 <div class="list-group-item">
 <input type="text" name="user" placeholder="商户ID" value="" class="form-control no-border" onkeydown="if(event.keyCode==13){$('#submit').click()}">

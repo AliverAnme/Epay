@@ -48,7 +48,9 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
 		$session=md5($username.$password.$password_hash);
 		$expiretime=time() + 2592000;
 		$token=authcode("{$username}\t{$session}\t{$expiretime}", 'ENCODE', SYS_KEY);
-		setcookie("admin_token", $token, $expiretime, null, null, null, true);
+		$secure = is_https();
+		setcookie("admin_token", $token, $expiretime, '/', '', $secure, true);
+		session_regenerate_id(true);
     unset($_SESSION['vc_code']);
     exit(json_encode(['code'=>0]));
   }else{
@@ -61,7 +63,7 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
       file_put_contents($login_limit_file, '1');
       exit(json_encode(['code'=>-1,'msg'=>'多次登录失败，暂时禁止登录。可删除@login.lock文件解除限制','vcode'=>1]));
     }else{
-      exit(json_encode(['code'=>-1,'msg'=>'用户名或密码错误，你还可以尝试'.$retry_times.'次','vcode'=>1]));
+      exit(json_encode(['code'=>-1,'msg'=>'用户名或密码错误','vcode'=>1]));
     }
   }
 }elseif(isset($_GET['act']) && $_GET['act']=='totp'){

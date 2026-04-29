@@ -162,10 +162,8 @@ if [ "$TABLE_EXISTS" = "0" ]; then
     \$pdo->exec(\"UPDATE \\\`${DB_PREFIX}_config\\\` SET v='${ADMIN_PASSWORD}' WHERE k='admin_pwd'\");
     \$pdo->exec(\"UPDATE \\\`${DB_PREFIX}_config\\\` SET v='${ADMIN_PASSWORD}' WHERE k='admin_paypwd'\");
 
-    echo '[entrypoint] 安装完成! 成功: '.\$success.' 条, 失败: '.\$error.' 条' . PHP_EOL;
-    echo '[entrypoint] SYS_KEY: ${SYSKEY}' . PHP_EOL;
-    echo '[entrypoint] CRON_KEY: ${CRONKEY}' . PHP_EOL;
-    echo '[entrypoint] 管理员密码: ${ADMIN_PASSWORD}' . PHP_EOL;
+    echo '[entrypoint] 安装完成! 成功: '.$success.' 条, 失败: '.$error.' 条' . PHP_EOL;
+    echo '[entrypoint] 系统密钥/定时任务密钥已生成，管理员密码可通过环境变量 ADMIN_PASSWORD 自定义' . PHP_EOL;
     echo '[entrypoint] 请保存以上信息，并尽快修改管理员密码！' . PHP_EOL;
     "
 

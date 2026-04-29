@@ -1,6 +1,8 @@
 <?php
 //error_reporting(0);
 error_reporting(E_ERROR | E_PARSE | E_COMPILE_ERROR);
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
 if(defined('IN_CRONLITE'))return;
 define('VERSION', '3097');
 define('DB_VERSION', '2054');

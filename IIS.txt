@@ -1,3 +1,7 @@
+	<rule name="block_sensitive" stopProcessing="true">
+		<match url="^(install|\.git|\.env|config\.php)"/>
+		<action type="CustomResponse" statusCode="403" statusReason="Forbidden" statusDescription="Access Denied"/>
+	</rule>
 	<rule name="payrule1_rewrite" stopProcessing="true">
 		<match url="^(.[a-zA-Z0-9-_]+).html"/>
 		<conditions logicalGrouping="MatchAll">

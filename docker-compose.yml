@@ -80,8 +80,8 @@ services:
       - --default-authentication-plugin=mysql_native_password
     volumes:
       - mysql_data:/var/lib/mysql
-    ports:
-      - "${DB_EXPOSE_PORT:-33060}:3306"
+    # ports:
+      # - "${DB_EXPOSE_PORT:-33060}:3306"  # 调试用，生产环境默认关闭
     networks:
       - epay-network
 

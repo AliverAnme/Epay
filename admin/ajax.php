@@ -4,6 +4,7 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
 $act=isset($_GET['act'])?daddslashes($_GET['act']):null;
 
 if(!checkRefererHost())exit('{"code":403}');
+if($_SERVER['REQUEST_METHOD']==='POST' && (!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token'])) exit('{"code":403,"msg":"CSRF验证失败"}');
 
 @header('Content-Type: application/json; charset=UTF-8');
 
@@ -167,7 +168,7 @@ case 'article_upload':
 	}
 	$filename = md5_file($tmp_name).'.'.$file_ext;
 	$fileurl = '/assets/img/article/'.$filename;
-	if(copy($tmp_name, ROOT.'assets/img/article/'.$filename)){
+	if(move_uploaded_file($tmp_name, ROOT.'assets/img/article/'.$filename)){
 		exit('{"error":0,"url":"'.$fileurl.'"}');
 	}else{
 		exit('{"error":1,"message":"上传失败，请确保有本地写入权限"}');

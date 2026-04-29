@@ -49,7 +49,7 @@ case 'login':
 	$pass=trim($_POST['pass']);
 	$enc_type = isset($_POST['enc']) ? $_POST['enc'] : '0';
 	if(empty($user) || empty($pass))exit('{"code":-1,"msg":"请确保各项不能为空"}');
-	//if(!$_POST['csrf_token'] || $_POST['csrf_token']!=$_SESSION['csrf_token'])exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
+	if(!$_POST['csrf_token'] || $_POST['csrf_token']!=$_SESSION['csrf_token'])exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
 
 	if($conf['captcha_open_login']==1){
 		if(!isset($_SESSION['gtserver']))exit('{"code":-1,"msg":"验证加载失败"}');
@@ -101,8 +101,10 @@ case 'login':
 		$session=md5($uid.$userrow['key'].$password_hash);
 		$expiretime=time()+604800;
 		$token=authcode("{$uid}\t{$session}\t{$expiretime}", 'ENCODE', SYS_KEY);
+		$secure = is_https();
 		ob_clean();
-		setcookie("user_token", $token, time() + 2592000);
+		setcookie("user_token", $token, time() + 2592000, '/', '', $secure, true);
+		session_regenerate_id(true);
 		$DB->exec("update `pre_user` set `lasttime`=NOW() where `uid`='$uid'");
 		if(empty($userrow['account']) || empty($userrow['username'])){
 			$result=array("code"=>0,"user_token"=>$token,"msg"=>"登录成功！正在跳转到收款账号设置","url"=>"./editinfo.php?start=1");

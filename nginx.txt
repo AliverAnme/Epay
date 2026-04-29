@@ -1,3 +1,11 @@
+# ==========================================
+# 安全响应头
+# ==========================================
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
 location / {
  if (!-e $request_filename) {
    rewrite ^/(.[a-zA-Z0-9\-\_]+).html$ /index.php?mod=$1 last;
@@ -6,9 +14,19 @@ location / {
  rewrite ^/api/(.*)$ /api.php?s=$1 last;
  rewrite ^/doc/(.[a-zA-Z0-9\-\_]+).html$ /index.php?doc=$1 last;
 }
+
+# ==========================================
+# 敏感路径拦截
+# ==========================================
+location ^~ /install {
+  deny all;
+}
 location ^~ /plugins {
   deny all;
 }
 location ^~ /includes {
+  deny all;
+}
+location ~* /(\.git|\.env|config\.php) {
   deny all;
 }

@@ -20,7 +20,7 @@ class PdoHelper
 		try {
 			$this->db = new \PDO("mysql:host={$dbconfig['host']};dbname={$dbconfig['dbname']};port={$dbconfig['port']}",$dbconfig['user'],$dbconfig['pwd']);
 		} catch (\Exception $e) {
-			exit('链接数据库失败:' . $e->getMessage());
+			exit('链接数据库失败，请检查数据库配置');
 		}
 		$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_SILENT);
 		$this->db->exec("set sql_mode = ''");

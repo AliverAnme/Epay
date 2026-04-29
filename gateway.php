@@ -75,7 +75,7 @@ if($arr['cmd'] == 'heartbeat'){
     try{
         $res = \lib\Plugin::loadForSubmit($submitData['plugin'], $trade_no, true);
     }catch(Exception $e){
-        voicemsg($e->getMessage());
+        voicemsg('系统错误，请稍后重试');
     }
     if($res['type'] == 'error') voicemsg(preg_replace('/\[[^\]]*\]/', '', $res['msg']));
     if($res['type'] != 'scan') voicemsg('当前支付插件不支持付款码支付');
