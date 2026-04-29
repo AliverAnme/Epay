@@ -678,7 +678,7 @@ function processOrder(&$srow,$notify=true){
 				if(!empty($info['email'])){
 					$sub = $conf['sitename'].' - 注册成功通知';
 					$host = htmlspecialchars($_SERVER['HTTP_HOST']);
-				$msg = '<h2>商户注册成功通知</h2>感谢您注册'.$conf['sitename'].'！<br/>您的登录账号：'.$info['email'].'<br/>您的商户ID：'.$uid.'<br/>您的商户秘钥：'.$key.'<br/>'.$conf['sitename'].'官网：<a href="http://'.$host.'/" target="_blank">'.$host.'</a><br/>【<a href="http://'.$host.'/user/" target="_blank">商户管理后台</a>】';
+				$msg = '<h2>商户注册成功通知</h2>感谢您注册'.$conf['sitename'].'！<br/>您的登录账号：'.$info['email'].'<br/>您的商户ID：'.$uid.'<br/>您的商户秘钥：'.$key.'<br/>'.$conf['sitename'].'官网：<a href="https://'.$host.'/" target="_blank">'.$host.'</a><br/>【<a href="https://'.$host.'/user/" target="_blank">商户管理后台</a>】';
 					send_mail($info['email'], $sub, $msg);
 				}
 				if(isset($info['invitecodeid']) && $info['invitecodeid']>0){
