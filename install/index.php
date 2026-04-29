@@ -56,15 +56,21 @@ if($step==3){
             'dbname' => $database,
             'dbqz' => $dbqz
         );
+        $host_esc = addcslashes($host, "'\\");
+        $port_esc = intval($port);
+        $user_esc = addcslashes($user, "'\\");
+        $pwd_esc = addcslashes($pwd, "'\\");
+        $database_esc = addcslashes($database, "'\\");
+        $dbqz_esc = addcslashes($dbqz, "'\\");
         $config="<?php
     /*数据库配置*/
     \$dbconfig=array(
-        'host' => '{$host}', //数据库服务器
-        'port' => {$port}, //数据库端口
-        'user' => '{$user}', //数据库用户名
-        'pwd' => '{$pwd}', //数据库密码
-        'dbname' => '{$database}', //数据库名
-        'dbqz' => '{$dbqz}' //数据表前缀
+        'host' => '{$host_esc}', //数据库服务器
+        'port' => {$port_esc}, //数据库端口
+        'user' => '{$user_esc}', //数据库用户名
+        'pwd' => '{$pwd_esc}', //数据库密码
+        'dbname' => '{$database_esc}', //数据库名
+        'dbqz' => '{$dbqz_esc}' //数据表前缀
     );
     ";
     }

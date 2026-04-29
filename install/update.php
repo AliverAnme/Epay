@@ -1,7 +1,16 @@
 <?php
 error_reporting(0);
-define('DB_VERSION', '2054');
+if(!file_exists('install.lock')) exit('网站未安装，请先安装');
+
 require '../config.php';
+$allowed_ips = ['127.0.0.1', '::1'];
+$client_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+if(!in_array($client_ip, $allowed_ips) && !isset($_SERVER['HTTP_X_CRON_SECRET'])) {
+    http_response_code(403);
+    exit('Access Denied');
+}
+
+define('DB_VERSION', '2054');
 
 @header('Content-Type: text/html; charset=UTF-8');
 

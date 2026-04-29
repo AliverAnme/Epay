@@ -63,6 +63,7 @@ elseif(strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger')!==false){
 
 $redirect_url = isset($_GET['url'])?$_GET['url']:null;
 if($islogin2==1 && !isset($_GET['bind']) && !isset($_GET['code'])){
+	if($redirect_url && !preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $redirect_url)) $redirect_url = '';
 	exit("<script language='javascript'>window.location.href='./{$redirect_url}';</script>");
 }
 
