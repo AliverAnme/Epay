@@ -660,8 +660,9 @@ class hnapay_plugin
 		try{
 			$client = new HnaPayApi($channel['appid'], $channel['appkey'], $channel['appsecret'], 2);
 			$result = $client->transferProof($bizParam['orderid']);
-			file_put_contents(ROOT.'assets/uploads/'.$bizParam['orderid'].'.png', base64_decode($result['payCertificate']));
-			$image = '/assets/uploads/'.$bizParam['orderid'].'.png';
+		$filename = basename($bizParam['orderid']).'.png';
+		file_put_contents(ROOT.'assets/uploads/'.$filename, base64_decode($result['payCertificate']));
+		$image = '/assets/uploads/'.$filename;
 			return ['code'=>0, 'msg'=>'电子回单生成成功！', 'download_url'=>$image];
 		}catch(Exception $ex){
 			return ['code'=>-1, 'msg'=>$ex->getMessage()];

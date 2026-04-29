@@ -146,7 +146,7 @@ class alipayrp_plugin
 					$order_id = $bizContent['order_id']; //支付宝转账单据号
 					$trans_amount = $bizContent['trans_amount']; //转账金额
 	
-					$order = $DB->getRow("SELECT * FROM pre_order WHERE trade_no='$out_trade_no' limit 1");
+					$order = $DB->getRow("SELECT * FROM pre_order WHERE trade_no=:trade_no limit 1", [':trade_no'=>$out_trade_no]);
 					if($order && $bizContent['status'] == 'SUCCESS'){
 						if($order['settle']<=1){
 							usleep(300000);

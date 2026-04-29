@@ -215,7 +215,7 @@ class stripe_plugin
 			http_response_code(400);
 			return ['type'=>'html','data'=>'no order_id'];
 		}
-		$order = $DB->getRow("SELECT * FROM pre_order WHERE trade_no='$out_trade_no' limit 1");
+		$order = $DB->getRow("SELECT * FROM pre_order WHERE trade_no=:trade_no limit 1", [':trade_no'=>$out_trade_no]);
 		if(!$order){
 			http_response_code(400);
 			return ['type'=>'html','data'=>'no order'];
