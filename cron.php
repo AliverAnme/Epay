@@ -56,8 +56,8 @@ if($_GET['do']=='settle'){
 			$realmoney=$row['money'];
 		}
 		$data = ['uid'=>$row['uid'], 'type'=>$row['settle_id'], 'account'=>$row['account'], 'username'=>$row['username'], 'money'=>$row['money'], 'realmoney'=>$realmoney, 'addtime'=>'NOW()', 'status'=>0];
-		if($DB->insert('settle', $data)){
-			changeUserMoney($row['uid'], $row['money'], false, '自动结算');
+		if(changeUserMoney($row['uid'], $row['money'], false, '自动结算')){
+			$DB->insert('settle', $data);
 			$allmoney+=$realmoney;
 		}
 	}
@@ -382,12 +382,12 @@ elseif($_GET['do']=='transfer'){
 		$result = transfer_do('alipay', $channel, $out_biz_no, $row['account'], $row['username'], $realmoney);
 		if($result['code']==0){
 			$data = ['uid'=>$row['uid'], 'type'=>$row['settle_id'], 'account'=>$row['account'], 'username'=>$row['username'], 'money'=>$row['money'], 'realmoney'=>$realmoney, 'addtime'=>'NOW()', 'endtime'=>'NOW()', 'status'=>1, 'transfer_no'=>$out_biz_no, 'transfer_channel'=>$conf['transfer_alipay'], 'transfer_status'=>1, 'transfer_result'=>$result["orderid"], 'transfer_date'=>$result["paydate"]];
-			if($DB->insert('settle', $data)){
+			if(changeUserMoney($row['uid'], $row['money'], false, '自动结算')){
+				$DB->insert('settle', $data);
 				$success++;
-				changeUserMoney($row['uid'], $row['money'], false, '自动结算');
 				echo '商户'.$row['uid'].'成功结算'.$realmoney.'元，交易号：'.$result["orderid"].'<br/>';
 			}else{
-				echo '商户'.$row['uid'].'成功结算'.$realmoney.'元，但记录插入失败<br/>';
+				echo '商户'.$row['uid'].'成功结算'.$realmoney.'元，但余额不足<br/>';
 			}
 		}else{
 			echo '商户'.$row['uid'].'结算'.$realmoney.'元失败：'.$result['msg'].'<br/>';
