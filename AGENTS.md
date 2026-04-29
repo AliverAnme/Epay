@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-04-29
-**Commit:** acd41de
+**Generated:** 2026-04-30
+**Commit:** 82e27a4
 **Branch:** main
 
 ## OVERVIEW
@@ -159,3 +159,79 @@ docker compose -f docker-compose.prod.yml pull  # Update pre-built image
 - Set `$is_defend=true` to enable WAF (`txprotect.php`) before including `common.php`.
 - All frontend vendor libs (three.js, moment.js, flot, bootstrap, etc.) frozen at current versions. Upgrade by replacing entire directory.
 - Docker: entrypoint auto-installs DB on first run, upgrades schema on version change. config.php regenerated if host is `localhost`.
+
+## SECURITY HARDENING (2026-04-30 audit)
+
+### Authentication & Sessions
+- **Session regeneration**: `session_regenerate_id(true)` on ALL login paths (admin, user, OAuth, WeChat, QQ, Alipay)
+- **Cookie flags**: All `setcookie("user_token")` and `setcookie("admin_token")` use httponly=true, secure=dynamic (is_https()), path='/'
+- **CSRF tokens**: 
+  - Admin panel: `$_SESSION['admin_csrf_token']` auto-injected via `$.ajaxSetup` in `admin/head.php`, validated in all 7 admin AJAX handlers + 8 direct-POST form pages
+  - User panel: per-page `$_SESSION['csrf_token']` on login, register, password reset, settlement, transfers
+  - Payment page: per-session CSRF token in `paypage/index.php`
+- **TOTP 2FA**: Closing TOTP now requires admin password verification (was no-check)
+- **Password hashing**: `hashPassword()`/`verifyPassword()` using bcrypt (cost=12) with transparent MD5→bcrypt upgrade on login. Old `getMd5Pwd()` retained for backward compatibility
+- **Brute force**: Login retry counter messages removed (no leak of remaining attempts)
+- **SSO auditing**: Admin user impersonation now logged to `pre_log` table
+
+### API Security
+- **Replay protection**: Timestamp validation (300s window) now enforced on ALL API endpoints (was gated behind `defined('API_INIT')` — now always checked)
+- **PID scoping**: `api.php` SYS_KEY-based endpoints (`act=order` with sign, `act=refundapi`) now require PID in signature calculation to prevent cross-merchant access
+- **Parameterized queries**: `api.php` all queries converted to `:named` parameterized form
+
+### SQL Injection Prevention
+- **Core API**: `api.php` fully parameterized (14 `:uid` bindings)
+- **Admin AJAX**: `ajax_order.php`, `ajax_user.php`, `ajax_pay.php`, `ajax_settle.php` fully parameterized with column whitelists for dynamic column names
+- **User panel**: `user/download.php` fully parameterized (40 `:kw` bindings)
+- **Plugin callbacks**: `stripe_plugin.php`, `alipayrp_plugin.php` notify queries parameterized
+- **daddslashes() removal**: Removed from SQL contexts; replaced with PDO prepared statements
+
+### XSS Prevention
+- **Centralized escaping**: `h()` function added to `includes/functions.php` — `htmlspecialchars($str, ENT_QUOTES, 'UTF-8')`
+- **Template**: `$_SERVER['HTTP_HOST']` echoed with `htmlspecialchars()` in all template files
+- **Admin forms**: `admin/ps_receiver.php`, `admin/gonggao.php`, `admin/pay_plugin.php` output escaped
+- **User panel**: `user/index.php`, `user/groupbuy.php`, `user/domain.php` output escaped with `h()`
+- **Payment page**: `paypage/error.php` `$msg` escaped with `h()`
+- **Email**: Registration email `HTTP_HOST` escaped
+
+### File & Upload Security
+- **Logo upload**: `admin/set.php` now uses `move_uploaded_file()` + MIME type validation (was `copy()` with no validation)
+- **Article upload**: `admin/ajax.php` now uses `move_uploaded_file()` (was `copy()`)
+- **Dynamic includes**: `includes/lib/Payment.php` page name whitelist added; rejected pages throw error
+- **Path traversal**: `plugins/hnapay/hnapay_plugin.php` file write now uses `basename()` sanitization
+
+### Infrastructure
+- **nginx**: Blocks `.git`, `.env`, `config.php`, `/install`; security headers added (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
+- **IIS**: Blocks `.git`, `.env`, `config.php`, `/install`
+- **.htaccess**: Apache 2.4 compatible (`Require all denied` added alongside `deny from all`)
+- **Docker**: `disable_functions` now blocks exec/passthru/shell_exec/system/proc_open/popen; `allow_url_fopen=Off`; CRON_KEY uses `random_bytes(16)` (was `rand(100000,999999)`); DB_EXPOSE_PORT default disabled; credentials redacted from Docker logs
+- **SQL errors**: `PdoHelper` connection failure now shows generic message; `display_errors=Off` enforced in `common.php`
+- **Exception handling**: `paypage/inc.php` `showerror()` strips >200 char messages and stack traces
+
+### Business Logic
+- **Negative balance guard**: `changeUserMoney()` now checks `$money > $oldmoney` and rolls back (was NO check)
+- **Cron dedup**: `do=transfer` now has daily dedup check (`transfer_time` setting) preventing double-settlement
+- **Admin refund guard**: `admin/ajax_transfer.php` `refundTransfer` now checks transfer status (was unconditional)
+- **Install RCE prevention**: `install/index.php` config.php generation now escapes user input with `addcslashes()`
+- **Install auth**: `install/update.php` now requires `install.lock` + IP access control
+- **SSRF protection**: `is_public_url()` function added to `includes/functions.php` — blocks private/internal IPs in `do_notify()` callback URLs
+- **Open redirect**: `user/wxlogin.php` validates `redirect_url` with regex; `user/douyinoauth.php` validates state parameter
+- **Order re-payment**: Status 4 (undocumented) removed from re-payment path in `Payment::processOrder()`
+
+### Configuration & Secrets
+- **Dead code removed**: `includes/authcode.php` (hardcoded constant `96973df55c788a72ac6ba29689531b08`, never referenced)
+- **Default password**: `install/install.sql` default admin password changed from `123456` to `admin123456`
+- **Docker defaults**: `.env.example` weak password placeholders replaced with guidance text
+- **fubei plugin**: Hardcoded WeChat AppIDs moved to `plugins/fubei/inc/config.php`
+
+### HTTPS Upgrades (12 endpoints)
+- SendCloud mail API, AliCloud verification, 360 CDN, SMSBao, Geetest captcha (demo→production), admin URL default, 6 plugin author links
+
+### Remaining Known Gaps (documented, not yet fixed)
+- ~350 admin panel internal SQL queries still use interpolation (low risk: authenticated admin only)
+- ~300 template file `$conf[...]` echoes not wrapped with `h()` (medium risk: admin-controlled DB values)
+- `$conf['footer']` intentionally allows raw HTML (by design — admin formatting)
+- Payment gateway HTTP endpoints (helipay, umfpay, haipay, fuiou2) — requires provider confirmation of HTTPS support
+- `iot.solomo-info.com:9306` voice notification on custom port (no HTTPS available)
+- `sms.php.gs` default SMS provider (no known HTTPS endpoint)
+- Plugin `CURLOPT_SSL_VERIFYPEER=false` in 23 plugins — Chinese payment ecosystem convention, requires per-gateway testing
