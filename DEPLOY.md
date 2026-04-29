@@ -350,6 +350,36 @@ chmod -R 755 assets/uploads plugins install admin
 chown -R www-data:www-data assets/uploads
 ```
 
+**安全响应头配置**：在 nginx `server` 块中添加以下头部，防止点击劫持、MIME嗅探等攻击：
+
+```nginx
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+```
+
+**敏感路径拦截**：确保以下路径不可通过 Web 访问：
+
+```nginx
+location ^~ /install { deny all; }
+location ^~ /includes { deny all; }
+location ^~ /plugins { deny all; }
+location ~* /(\.git|\.env|config\.php) { deny all; }
+```
+
+**PHP 安全配置**（Docker 已默认配置，直接部署需手动设置 `php.ini`）：
+
+```ini
+display_errors = Off
+expose_php = Off
+allow_url_fopen = Off
+allow_url_include = Off
+disable_functions = exec,passthru,shell_exec,system,proc_open,popen
+```
+
+**强制 HTTPS**：建议在反向代理层（Nginx/Caddy）配置 HTTP→HTTPS 重定向，确保所有通信加密。
+
 ---
 
 ## 场景四：1Panel 反向代理 + Docker
@@ -549,6 +579,8 @@ SET GLOBAL sql_mode='';
 
 访问 `https://your-domain.com/admin/`，用账号 `admin` 和初始密码（`.env` 中 `ADMIN_PASSWORD` 或安装时设置的密码）登录，进入 **系统设置 → 修改密码**。
 
+> ⚠️ **首次安装后必须立即修改管理员密码**。默认安装密码为 `admin123456`（手动安装）或 `.env` 中设置的值（Docker 安装）。
+
 ### 配置站点信息
 
 **系统设置 → 站点配置**：
@@ -556,8 +588,10 @@ SET GLOBAL sql_mode='';
 | 配置项 | 说明 | 示例 |
 |--------|------|------|
 | 站点名称 | 前台显示的网站名 | 某某支付平台 |
-| 站点域名 | 填写实际 HTTPS 域名 | `https://pay.your-domain.com` |
+| 站点域名 | 填写 **HTTPS** 实际域名 | `https://pay.your-domain.com` |
 | CDN 加速 | 无外网选本地 | 本地源 |
+
+> ⚠️ **站点域名必须使用 HTTPS**。系统会自动检测协议，HTTP 访问会导致支付回调、API 签名等使用明文传输。
 
 ### 配置支付渠道
 
@@ -757,6 +791,11 @@ server {
 ### 1Panel 伪静态完整配置
 
 ```nginx
+# 安全响应头
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
 # URL 重写
 location / {
     if (!-e $request_filename) {
@@ -773,7 +812,7 @@ location ^~ /plugins { deny all; return 403; }
 location ^~ /install { deny all; return 403; }
 
 # 保护敏感文件
-location ~* /(config\.php|\.htaccess|\.git) {
+location ~* /(config\.php|\.htaccess|\.git|\.env) {
     deny all;
     return 403;
 }
