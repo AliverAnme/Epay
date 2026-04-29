@@ -696,7 +696,7 @@ class alipay_plugin
 			//交易金额
 			$total_amount = $_GET['total_amount'];
 
-			if($out_trade_no == TRADE_NO && round($total_amount,2)==round($order['realmoney'],2)){
+			if($out_trade_no == TRADE_NO && round($total_amount,2)==round($order['money'],2)){
 				processReturn($order, $trade_no);
 			}else{
 				return ['type'=>'error','msg'=>'订单信息校验失败'];
