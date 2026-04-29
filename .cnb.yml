@@ -13,8 +13,8 @@
       stages:
         - name: docker login
           script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
-        - name: docker build
-          script: docker build -t ${IMAGE_TAG} .
+        - name: docker build (AMD64)
+          script: docker build --platform linux/amd64 -t ${IMAGE_TAG} .
         - name: docker push
           script: docker push ${IMAGE_TAG}
         - name: resolve
@@ -32,8 +32,8 @@
       stages:
         - name: docker login
           script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
-        - name: docker build
-          script: docker build -t ${IMAGE_TAG} .
+        - name: docker build (ARM64)
+          script: docker build --platform linux/arm64 -t ${IMAGE_TAG} .
         - name: docker push
           script: docker push ${IMAGE_TAG}
         - name: resolve
