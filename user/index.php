@@ -75,7 +75,7 @@ $list = $DB->getAll("SELECT * FROM pre_anounce WHERE status=1 ORDER BY sort ASC"
 						<h4 class="modal-title">欢迎回来</h4>
 					</div>
 					<div class="modal-body">
-<?php echo $conf['modal']?>
+<?php echo h($conf['modal'])?>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>

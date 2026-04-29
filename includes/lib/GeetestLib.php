@@ -33,7 +33,7 @@ class GeetestLib
             'json_format' => self::JSON_FORMAT
         ];
         $params = array_merge($params, $public_params);
-        $url = 'http://api.geetest.com/register.php?' . http_build_query($params);
+        $url = 'https://api.geetest.com/register.php?' . http_build_query($params);
         $res = get_curl($url);
         $arr = json_decode($res, true);
         if($arr && isset($arr['challenge'])){
@@ -98,7 +98,7 @@ class GeetestLib
             'json_format' => self::JSON_FORMAT
         ];
         $params = array_merge($params, $public_params);
-        $url = 'http://api.geetest.com/validate.php';
+        $url = 'https://api.geetest.com/validate.php';
         $res = get_curl($url, http_build_query($params));
         $arr = json_decode($res, true);
         if($arr && isset($arr['seccode'])){
@@ -153,7 +153,7 @@ class GeetestLib
     }
 
     private function gt4_validate_api($captcha_id, $lot_number, $pass_token, $gen_time, $captcha_output){
-        $url = 'http://gcaptcha4.geetest.com/validate?captcha_id='.$captcha_id;
+        $url = 'https://gcaptcha4.geetest.com/validate?captcha_id='.$captcha_id;
         $param = [
             'lot_number' => $lot_number,
             'pass_token' => $pass_token,
@@ -173,7 +173,7 @@ class GeetestLib
 
     private function gt4_validate_demo($captcha_id, $lot_number, $pass_token, $gen_time, $captcha_output){
         global $clientip;
-        $url = 'http://gt4.geetest.com/demov4/demo/login';
+        $url = 'https://gt4.geetest.com/demov4/demo/login';
         $param = [
             'captcha_id' => $captcha_id,
             'lot_number' => $lot_number,
@@ -181,7 +181,7 @@ class GeetestLib
             'gen_time' => $gen_time,
             'captcha_output' => $captcha_output
         ];
-        $referer = 'http://gt4.geetest.com/demov4/invisible-bind-zh.html';
+        $referer = 'https://gt4.geetest.com/demov4/invisible-bind-zh.html';
         $httpheader[] = "X-Real-IP: ".$clientip;
         $httpheader[] = "X-Forwarded-For: ".$clientip;
         $data = get_curl($url.'?'.http_build_query($param),0,$referer,0,0,0,0,$httpheader);
