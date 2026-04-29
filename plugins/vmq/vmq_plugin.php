@@ -87,7 +87,7 @@ class vmq_plugin
 		if ($_sign !== $sign)return ['type'=>'html','data'=>'error_sign'];
 
 		$out_trade_no = daddslashes($payId);
-		if($out_trade_no == TRADE_NO && round($price,2)==round($order['realmoney'],2)){
+		if($out_trade_no == TRADE_NO && round($price,2)==round($order['money'],2)){
 			processNotify($order, $out_trade_no);
 		}
 		return ['type'=>'html','data'=>'success'];
@@ -109,7 +109,7 @@ class vmq_plugin
 		if ($_sign !== $sign)return ['type'=>'error','data'=>'签名校验失败'];
 
 		$out_trade_no = daddslashes($payId);
-		if($out_trade_no == TRADE_NO && round($price,2)==round($order['realmoney'],2)){
+		if($out_trade_no == TRADE_NO && round($price,2)==round($order['money'],2)){
 			processReturn($order, $out_trade_no);
 		}else{
 			return ['type'=>'error','msg'=>'订单信息校验失败'];

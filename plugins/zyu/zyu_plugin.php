@@ -166,7 +166,7 @@ class zyu_plugin
 				//付款完成后，支付宝系统发送该交易状态通知
 				$out_trade_no = daddslashes($data['orderid']);
 				$trade_no = daddslashes($data['transaction_id']);
-				if($out_trade_no == TRADE_NO && round($data["amount"],2)==round($order['realmoney'],2)){
+				if($out_trade_no == TRADE_NO && round($data["amount"],2)==round($order['money'],2)){
 					processNotify($order, $trade_no);
 				}
 			}
@@ -204,7 +204,7 @@ class zyu_plugin
 				//付款完成后，支付宝系统发送该交易状态通知
 				$out_trade_no = daddslashes($data['orderid']);
 				$trade_no = daddslashes($data['transaction_id']);
-				if($out_trade_no == TRADE_NO && round($data["amount"],2)==round($order['realmoney'],2)){
+				if($out_trade_no == TRADE_NO && round($data["amount"],2)==round($order['money'],2)){
 					processReturn($order, $trade_no);
 				}else{
 					return ['type'=>'error','msg'=>'订单信息校验失败'];

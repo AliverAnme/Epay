@@ -378,7 +378,7 @@ class fubei_plugin
 				$bill_trade_no = $data['channel_order_sn'];
 				$bill_mch_trade_no = $data['ins_order_sn'];
 
-				if ($out_trade_no == TRADE_NO && round($money,2)==round($order['realmoney'],2)) {
+				if ($out_trade_no == TRADE_NO && round($money,2)==round($order['money'],2)) {
 					processNotify($order, $api_trade_no, $buyer, $bill_trade_no, $bill_mch_trade_no);
 				}
 				return ['type'=>'html','data'=>'success'];

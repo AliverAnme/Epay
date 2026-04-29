@@ -272,7 +272,7 @@ class zhangyishou_plugin
 		if($sign === $data['Signature']){
 			if($data['OrderState'] == 1){
 				$trade_no = $data['OrderNo'];
-				if($data['DownstreamOrderNo'] == TRADE_NO && round($data['OrderMoney'],2)==round($order['realmoney'],2)){
+				if($data['DownstreamOrderNo'] == TRADE_NO && round($data['OrderMoney'],2)==round($order['money'],2)){
 					processNotify($order, $trade_no);
 				}
 				return ['type'=>'html','data'=>'OK'];

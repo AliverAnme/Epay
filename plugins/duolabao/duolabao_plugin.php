@@ -431,7 +431,7 @@ class duolabao_plugin
 			$bill_mch_trade_no = $arr['bankRequestNum'];
 			$buyer = $arr['subOpenId'];
 			if ($arr['status'] == 'SUCCESS') {
-				if ($trade_no == TRADE_NO && round($order['realmoney'],2) == round($orderAmount,2)) {
+				if ($trade_no == TRADE_NO && round($order['money'],2) == round($orderAmount,2)) {
 					processNotify($order, $api_trade_no, $buyer, $bill_trade_no, $bill_mch_trade_no);
 				}
 				return ['type'=>'html','data'=>'success'];

@@ -476,7 +476,7 @@ class dinpay_plugin
 				$buyer = $data['subOpenId'];
 				$bill_trade_no = $data['outTransactionOrderId'];
 				if($order['type'] == 1 && substr($bill_trade_no, 0, 4) != date('Y') && substr($bill_trade_no, 2, 4) == date('Y')) $bill_trade_no = substr($bill_trade_no, 2);
-				if($out_trade_no == TRADE_NO && round($money,2)==round($order['realmoney'],2)){
+				if($out_trade_no == TRADE_NO && round($money,2)==round($order['money'],2)){
 					processNotify($order, $api_trade_no, $buyer, $bill_trade_no);
 				}
 			}

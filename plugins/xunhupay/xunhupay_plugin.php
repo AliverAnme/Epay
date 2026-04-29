@@ -130,7 +130,7 @@ class xunhupay_plugin
 			$out_trade_no = $_POST['trade_order_id'];
 			$order_id = $_POST['open_order_id'];
 			$total_fee = $_POST['total_fee'];
-			if($out_trade_no == TRADE_NO && round($total_fee,2)==round($order['realmoney'],2)){
+			if($out_trade_no == TRADE_NO && round($total_fee,2)==round($order['money'],2)){
 				processNotify($order, $order_id);
 			}
 			return ['type'=>'html','data'=>'success'];

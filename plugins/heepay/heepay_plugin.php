@@ -344,7 +344,7 @@ class heepay_plugin
 				$api_trade_no = $_GET['jnet_bill_no'];
 				$money = $_GET['pay_amt'];
 
-				if ($out_trade_no == TRADE_NO && round($money,2)==round($order['realmoney'],2)) {
+				if ($out_trade_no == TRADE_NO && round($money,2)==round($order['money'],2)) {
 					processNotify($order, $api_trade_no, $_GET['pay_user'], $_GET['trade_bill_no']);
 				}
 				return ['type'=>'html','data'=>'ok'];
@@ -369,7 +369,7 @@ class heepay_plugin
 				$api_trade_no = $_GET['jnet_bill_no'];
 				$money = $_GET['pay_amt'];
 
-				if ($out_trade_no == TRADE_NO && round($money,2)==round($order['realmoney'],2)) {
+				if ($out_trade_no == TRADE_NO && round($money,2)==round($order['money'],2)) {
 					processReturn($order, $api_trade_no, $_GET['pay_user']);
 				}else{
 					return ['type'=>'error','msg'=>'订单信息校验失败'];
@@ -388,7 +388,7 @@ class heepay_plugin
 		if(empty($order))exit();
 
 		$apiurl = 'https://pay.heepay.com/API/Payment/PaymentRefund.aspx';
-		if(round($order['refundmoney'],2) == round($order['realmoney'],2)){
+		if(round($order['refundmoney'],2) == round($order['money'],2)){
 			$param = [
 				'version' => '1',
 				'agent_id' => $channel['appid'],

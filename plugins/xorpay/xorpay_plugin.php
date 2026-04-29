@@ -165,7 +165,7 @@ class xorpay_plugin
 			$data = json_decode($_POST['detail'], true);
 			$buyer = $data['buyer'];
 
-			if ($out_trade_no == TRADE_NO && round($money,2)==round($order['realmoney'],2)) {
+			if ($out_trade_no == TRADE_NO && round($money,2)==round($order['money'],2)) {
 				processNotify($order, $api_trade_no, $buyer);
 			}
 			return ['type'=>'html','data'=>'success'];
