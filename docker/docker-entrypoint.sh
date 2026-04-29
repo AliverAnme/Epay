@@ -29,6 +29,7 @@ if [ -d "/var/www/html-staging" ]; then
         --exclude='install/install.lock' \
         --exclude='assets/uploads/' \
         --exclude='cache/' \
+        --exclude='ip2region.xdb' \
         /var/www/html-staging/ /var/www/html/
     echo "[entrypoint] 代码同步完成"
 fi
@@ -295,8 +296,15 @@ fi
 # 5. 检查 ip2region.xdb
 # ============================================
 if [ ! -f "/var/www/html/includes/ip2region.xdb" ]; then
-    echo "[entrypoint] 提示: ip2region.xdb 不存在，IP 归属地功能将不可用"
-    echo "[entrypoint] 下载: https://github.com/lionsoul2014/ip2region"
+    echo "[entrypoint] ip2region.xdb 不存在，正在自动下载 ..."
+    if curl -sL -o /var/www/html/includes/ip2region.xdb \
+        "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.xdb"; then
+        chown www-data:www-data /var/www/html/includes/ip2region.xdb
+        echo "[entrypoint] ip2region.xdb 下载完成，IP 归属地功能可用"
+    else
+        echo "[entrypoint] 提示: ip2region.xdb 下载失败，IP 归属地功能将不可用"
+        echo "[entrypoint] 手动下载: https://github.com/lionsoul2014/ip2region"
+    fi
 fi
 
 echo "============================================"
