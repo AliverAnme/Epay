@@ -86,7 +86,7 @@ $paytype = $DB->getAll("SELECT * FROM pre_type WHERE status=1 ORDER BY id ASC");
   <thead><tr><th>字段名</th><th>变量名</th><th>必填</th><th>类型</th><th>示例值</th><th>描述</th></tr></thead>
   <tbody>
   <tr><td>商户ID</td><td>pid</td><td>是</td><td>Int</td><td>1001</td><td></td></tr>
-  <tr><td>易支付订单号</td><td>trade_no</td><td>是</td><td>String</td><td>20160806151343349021</td><td><?php echo $conf['sitename']?>订单号</td></tr>
+  <tr><td>易支付订单号</td><td>trade_no</td><td>是</td><td>String</td><td>20160806151343349021</td><td><?php echo h($conf['sitename'])?>订单号</td></tr>
   <tr><td>商户订单号</td><td>out_trade_no</td><td>是</td><td>String</td><td>20160806151343349</td><td>商户系统内部的订单号</td></tr>
   <tr><td>支付方式</td><td>type</td><td>是</td><td>String</td><td>alipay</td><td><a href="#pay4" style="color:#4585d2">支付方式列表</a></td></tr>
   <tr><td>商品名称</td><td>name</td><td>是</td><td>String</td><td>VIP会员</td><td></td></tr>
@@ -220,7 +220,7 @@ foreach($paytype as $row){
   <tbody>
   <tr><td>返回状态码</td><td>code</td><td>Int</td><td>1</td><td>1为成功，其它值为失败</td></tr>
   <tr><td>返回信息</td><td>msg</td><td>String</td><td>查询订单号成功！</td><td></td></tr>
-  <tr><td>易支付订单号</td><td>trade_no</td><td>String</td><td>2016080622555342651</td><td><?php echo $conf['sitename']?>订单号</td></tr>
+  <tr><td>易支付订单号</td><td>trade_no</td><td>String</td><td>2016080622555342651</td><td><?php echo h($conf['sitename'])?>订单号</td></tr>
   <tr><td>商户订单号</td><td>out_trade_no</td><td>String</td><td>20160806151343349</td><td>商户系统内部的订单号</td></tr>
   <tr><td>第三方订单号</td><td>api_trade_no</td><td>String</td><td>20160806151343349</td><td>支付宝微信等接口方订单号</td></tr>
   <tr><td>支付方式</td><td>type</td><td>String</td><td>alipay</td><td><a href="#pay4" style="color:#4585d2">支付方式列表</a></td></tr>

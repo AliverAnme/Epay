@@ -10,9 +10,9 @@ if(!defined('IN_CRONLITE'))exit();
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
-	<title><?php echo $conf['title']?></title>
-  	<meta name="keywords" content="<?php echo $conf['keywords']?>">
-	<meta name="description" content="<?php echo $conf['description']?>">	
+	<title><?php echo h($conf['title'])?></title>
+  	<meta name="keywords" content="<?php echo h($conf['keywords'])?>">
+	<meta name="description" content="<?php echo h($conf['description'])?>">	
 	<!-- ================== BEGIN BASE CSS STYLE ================== -->
 	<link href="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet" />
 	<link href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
@@ -39,7 +39,7 @@ if(!defined('IN_CRONLITE'))exit();
                     <a href="index.html" class="navbar-brand">
                         <span class="brand-logo"></span>
                         <span class="brand-text">
-                            <span class="text-theme"><?php echo $conf['sitename']?></span>
+                            <span class="text-theme"><?php echo h($conf['sitename'])?></span>
                         </span>
                     </a>
                 </div>
@@ -71,8 +71,8 @@ if(!defined('IN_CRONLITE'))exit();
             <!-- end content-bg -->
             <!-- begin container -->
             <div class="container home-content">
-                <h1>欢迎来到 <a href="JavaScript:;"><?php echo $conf['sitename']?></a></h1>
-                <h3>免签约支付平台 结算费率低至<?php echo $conf['settle_rate']; ?>%！</h3>
+                <h1>欢迎来到 <a href="JavaScript:;"><?php echo h($conf['sitename'])?></a></h1>
+                <h3>免签约支付平台 结算费率低至<?php echo h($conf['settle_rate']); ?>%！</h3>
                 <h4>
                     支持多种支付方式：支付宝、QQ钱包、微信、财付通支付，可根据开发文档快速接入自己网站！<br />
                     <a href="JavaScript:;">稳定、安全、值得信赖</a>
@@ -89,7 +89,7 @@ if(!defined('IN_CRONLITE'))exit();
             <div class="container">
                 <h2 class="content-title">为什么选择我们？</h2>
                 <p class="content-desc">
-                    <?php echo $conf['sitename']?>免去个人站长无法签约支付接口以及企业申请签约支付接口麻烦的问题，免签约也能享受及时到账的乐趣，系统优势如下：
+                    <?php echo h($conf['sitename'])?>免去个人站长无法签约支付接口以及企业申请签约支付接口麻烦的问题，免签约也能享受及时到账的乐趣，系统优势如下：
                 </p>
                 <!-- begin row -->
                 <div class="row">
@@ -110,7 +110,7 @@ if(!defined('IN_CRONLITE'))exit();
                             <div class="icon bg-theme" data-animation="true" data-animation-type="bounceIn"><i class="fa fa-paint-brush"></i></div>
                             <div class="info">
                                 <h4 class="title">低手续费</h4>
-                                <p class="desc">结算费率低至<?php echo $conf['settle_rate']*100; ?>%，每日满<?php echo $conf['settle_money']; ?>元自动结算，上不封顶，提现手续费最低<?php echo $conf['settle_fee_min']; ?>元，最高<?php echo $conf['settle_fee_max']; ?>元。</p>
+                                <p class="desc">结算费率低至<?php echo h($conf['settle_rate']*100; ?>%，每日满<?php echo h($conf['settle_money']); ?>元自动结算，上不封顶，提现手续费最低<?php echo h($conf['settle_fee_min']); ?>元，最高<?php echo h($conf['settle_fee_max']); ?>元。</p>
                             </div>
                         </div>
                     </div>
@@ -121,7 +121,7 @@ if(!defined('IN_CRONLITE'))exit();
                             <div class="icon bg-theme" data-animation="true" data-animation-type="bounceIn"><i class="fa fa-file"></i></div>
                             <div class="info">
                                 <h4 class="title">智能提醒</h4>
-                                <p class="desc"><?php echo $conf['sitename']?>提供商户APP、QQ机器人、邮箱等多种提醒方式可选，让您随时获知自己的收入动态。</p>
+                                <p class="desc"><?php echo h($conf['sitename'])?>提供商户APP、QQ机器人、邮箱等多种提醒方式可选，让您随时获知自己的收入动态。</p>
                             </div>
                         </div>
                     </div>
@@ -147,7 +147,7 @@ if(!defined('IN_CRONLITE'))exit();
                             <div class="icon bg-theme" data-animation="true" data-animation-type="bounceIn"><i class="fa fa-shopping-cart"></i></div>
                             <div class="info">
                                 <h4 class="title">自动结算</h4>
-                                <p class="desc">采取T+1结算方式，交易金额满<?php echo $conf['settle_money']; ?>元，系统会于次日零点开始自动结算，不满10元亦可申请手动结算。</p>
+                                <p class="desc">采取T+1结算方式，交易金额满<?php echo h($conf['settle_money']); ?>元，系统会于次日零点开始自动结算，不满10元亦可申请手动结算。</p>
                             </div>
                         </div>
                     </div>
@@ -227,14 +227,14 @@ if(!defined('IN_CRONLITE'))exit();
                         <!-- begin team -->
                         <div class="team">             
                             <div class="image" data-animation="true" data-animation-type="flipInX">
-                                <img src="//q1.qlogo.cn/g?b=qq&nk=<?php echo $conf['kfqq']?>&s=640" alt="Mia Donovan" />
+                                <img src="//q1.qlogo.cn/g?b=qq&nk=<?php echo h($conf['kfqq'])?>&s=640" alt="Mia Donovan" />
                             </div>
                             <div class="info">
                                 <h3 class="name">客服</h3>
                                 <div class="title text-theme">客服</div>
                                 <p>业务售后综合客服 </p>
                                 <div class="social">
-                                    <a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&site=pay&menu=yes" title="点击联系客服QQ" target="_blank"><i class="fa fa-qq fa-lg fa-fw"></i></a>
+                                    <a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&site=pay&menu=yes" title="点击联系客服QQ" target="_blank"><i class="fa fa-qq fa-lg fa-fw"></i></a>
                                     <a href="JavaScript:;"><i class="fa fa-weibo fa-lg fa-fw"></i></a>
                                     <a href="JavaScript:;"><i class="fa fa-home fa-lg fa-fw"></i></a>
                                 </div>
@@ -255,7 +255,7 @@ if(!defined('IN_CRONLITE'))exit();
             <div class="container">
                 <div class="footer-brand">
                     <div class="footer-brand-logo"></div>
-                    <?php echo $conf['sitename']?>
+                    <?php echo h($conf['sitename'])?>
                 </div>
                 <p>
                     Copyright&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.<br/><?php echo $conf['footer']?>

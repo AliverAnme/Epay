@@ -7,9 +7,9 @@ if(!defined('IN_CRONLITE'))exit();
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
-<title><?php echo $conf['title']?></title>
-<meta name="keywords" content="<?php echo $conf['keywords']?>">
-<meta name="description" content="<?php echo $conf['description']?>">
+<title><?php echo h($conf['title'])?></title>
+<meta name="keywords" content="<?php echo h($conf['keywords'])?>">
+<meta name="description" content="<?php echo h($conf['description'])?>">
 <link href="<?php echo STATIC_ROOT?>css/style.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo STATIC_ROOT?>css/index1200.css" rel="stylesheet" type="text/css" />
 <link href="<?php echo STATIC_ROOT?>css/index960.css" rel="stylesheet" type="text/css" />
@@ -59,8 +59,8 @@ if(!defined('IN_CRONLITE'))exit();
         <div class="HelpD">
             <div class="HelpN">
                 <div class="HelpNs">
-                    <div class="HelpQ"><i class="backB1">Q</i>怎么入驻淘<?php echo $conf['sitename']?>,成为商户?</div>
-                    <div class="HelpA"><i>A</i>通过平台的账户注册功能，即可免费入驻<?php echo $conf['sitename']?>，快速实现支付接入<a href="/user/">点此进入 </a></div>
+                    <div class="HelpQ"><i class="backB1">Q</i>怎么入驻淘<?php echo h($conf['sitename'])?>,成为商户?</div>
+                    <div class="HelpA"><i>A</i>通过平台的账户注册功能，即可免费入驻<?php echo h($conf['sitename'])?>，快速实现支付接入<a href="/user/">点此进入 </a></div>
                 </div>
             </div>
             <div class="HelpN">
@@ -83,8 +83,8 @@ if(!defined('IN_CRONLITE'))exit();
             </div>
             <div class="HelpN">
                 <div class="HelpNs">
-                    <div class="HelpQ"><i class="backB1">Q</i><?php echo $conf['sitename']?>安全吗？</div>
-                    <div class="HelpA"><i>A</i>非常安全，<?php echo $conf['sitename']?>运用先进的安全技术保护用户在平台账户中存储的个人信息、账户信息以及交易记录的安全。<?php echo $conf['sitename']?>拥有完善的全监测系统，可以及时发现网站的非正常访问并做相应的安全响应。</div>
+                    <div class="HelpQ"><i class="backB1">Q</i><?php echo h($conf['sitename'])?>安全吗？</div>
+                    <div class="HelpA"><i>A</i>非常安全，<?php echo h($conf['sitename'])?>运用先进的安全技术保护用户在平台账户中存储的个人信息、账户信息以及交易记录的安全。<?php echo h($conf['sitename'])?>拥有完善的全监测系统，可以及时发现网站的非正常访问并做相应的安全响应。</div>
                 </div>
             </div>
             <div class="HelpN">
@@ -102,13 +102,13 @@ if(!defined('IN_CRONLITE'))exit();
             <div class="HelpN">
                 <div class="HelpNs">
                     <div class="HelpQ"><i class="backB1">Q</i>不会接入？商业合作？</div>
-                    <div class="HelpA"><i>A</i>请联系平台客服,<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank">点击查看联系方式 </a></div>
+                    <div class="HelpA"><i>A</i>请联系平台客服,<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank">点击查看联系方式 </a></div>
                 </div>
             </div>
             <div class="HelpN">
                 <div class="HelpNs">
                     <div class="HelpQ"><i class="backB1">Q</i>我的账户资金安全吗？</div>
-                    <div class="HelpA"><i>A</i><?php echo $conf['sitename']?>严格遵守国家相关的法律法规，对用户的隐私信息进行保护。未经您的同意，<?php echo $conf['sitename']?>不会向任何第三方公司、组织和个人披露您的个人信息、账户信息以及交易信息（法律法规另有规定的除外）</div>
+                    <div class="HelpA"><i>A</i><?php echo h($conf['sitename'])?>严格遵守国家相关的法律法规，对用户的隐私信息进行保护。未经您的同意，<?php echo h($conf['sitename'])?>不会向任何第三方公司、组织和个人披露您的个人信息、账户信息以及交易信息（法律法规另有规定的除外）</div>
                 </div>
             </div>
         </div>
@@ -118,7 +118,7 @@ if(!defined('IN_CRONLITE'))exit();
 <div class="bannerK">
     <div class="banner">
     	<div class="banNr" data-aos="fade-right" aos-delay="50">
-        	<div class="banNrT"><?php echo $conf['sitename']?></div>
+        	<div class="banNrT"><?php echo h($conf['sitename'])?></div>
             <p>致力于帮助企业快速和高质量地建立支付模块，<br />聚合主流通道，为您提供全方位支付体验，告别繁琐的接入流程</p>
             <a href="/user/" class="ButAN backB1">立即体验</a>
         </div>
@@ -258,8 +258,8 @@ if(!defined('IN_CRONLITE'))exit();
     <div class="footN">
         <div class="footF fl">
         	<div class="footFk"><i class="footF1 fl"></i>0746-123456789</div>
-            <div class="footFk"><i class="footF2 fl"></i><a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank"><?php echo $conf['kfqq']?></a></div>
-            <div class="footFm"><i class="footF3 fl"></i><a href="mailto:<?php echo $conf['email']?>"><?php echo $conf['email']?></a></div>
+            <div class="footFk"><i class="footF2 fl"></i><a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank"><?php echo h($conf['kfqq'])?></a></div>
+            <div class="footFm"><i class="footF3 fl"></i><a href="mailto:<?php echo h($conf['email'])?>"><?php echo h($conf['email'])?></a></div>
         </div>
         <div class="footR fl">
             <div class="footRT">快速通道</div>
@@ -280,7 +280,7 @@ if(!defined('IN_CRONLITE'))exit();
     </div>
     <div class="footC">
     	<p><?php echo $conf['footer']?></p>
-        <p><?php echo $conf['sitename']?>&nbsp;&nbsp;&copy;<?php echo date("Y")?>&nbsp;All Rights Reserved.</p>
+        <p><?php echo h($conf['sitename'])?>&nbsp;&nbsp;&copy;<?php echo date("Y")?>&nbsp;All Rights Reserved.</p>
 	</div>
 </div> 
 <!--尾-结束-->

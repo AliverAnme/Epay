@@ -14,18 +14,18 @@ if(!defined('IN_CRONLITE'))exit();
 </ul>
 <ul class="price">
 <h4>关于我们</h4>
-<li><?php echo $conf['sitename']?>是<?php echo $conf['orgname']?>旗下的免签约支付产品</li>
+<li><?php echo h($conf['sitename'])?>是<?php echo h($conf['orgname'])?>旗下的免签约支付产品</li>
 </ul>
 <ul class="about"style="width: 40%;padding-left: 22px;">
 <h4>联系我们</h4>
-<li><strong>QQ:</strong><a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank"><?php echo $conf['kfqq']?></a></li>
-<li><strong>Email:</strong><a href="mailto:<?php echo $conf['email']?>"><?php echo $conf['email']?></a></li>
+<li><strong>QQ:</strong><a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank"><?php echo h($conf['kfqq'])?></a></li>
+<li><strong>Email:</strong><a href="mailto:<?php echo h($conf['email'])?>"><?php echo h($conf['email'])?></a></li>
 </ul>
 </div>
 
 </div>
 <div class="xinxi">
-<p><?php echo $conf['sitename']?>&nbsp;&nbsp;&copy;<?php echo date("Y")?>&nbsp;All Rights Reserved.&nbsp;&nbsp;<?php echo $conf['footer']?></p>
+<p><?php echo h($conf['sitename'])?>&nbsp;&nbsp;&copy;<?php echo date("Y")?>&nbsp;All Rights Reserved.&nbsp;&nbsp;<?php echo $conf['footer']?></p>
 </div>
 <script type="text/javascript">
         if('ontouchend' in document.body && $(window).width() < 996){

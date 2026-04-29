@@ -7,7 +7,7 @@ $paytype = $DB->getAll("SELECT * FROM pre_type WHERE status=1 ORDER BY id ASC");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>开发文档 - <?php echo $conf['sitename']?></title>
+        <title>开发文档 - <?php echo h($conf['sitename'])?></title>
     <!-- jQuery-->
     <script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
     <!-- layui -->
@@ -143,7 +143,7 @@ $paytype = $DB->getAll("SELECT * FROM pre_type WHERE status=1 ORDER BY id ASC");
                     </div>
                 </div>
             </div>
-            <div class="copyright noScroll"><?php echo $conf['sitename']?></div>
+            <div class="copyright noScroll"><?php echo h($conf['sitename'])?></div>
         </div>
     </div>
     <script id="searchListTemplate" type="text/html">

@@ -8,9 +8,9 @@ if(!defined('IN_CRONLITE'))exit();
 <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="format-detection" content="telephone=yes">
-<title><?php echo $conf['title']?></title>
-<meta name="keywords" content="<?php echo $conf['keywords']?>">
-<meta name="description" content="<?php echo $conf['description']?>">
+<title><?php echo h($conf['title'])?></title>
+<meta name="keywords" content="<?php echo h($conf['keywords'])?>">
+<meta name="description" content="<?php echo h($conf['description'])?>">
   <meta name="renderer" content="webkit">
   <link rel="stylesheet" type="text/css" href="<?php echo STATIC_ROOT?>css/bootstrap_1107.css">
   <link rel="stylesheet" type="text/css" href="<?php echo STATIC_ROOT?>css/common_1107.css">
@@ -41,7 +41,7 @@ if(!defined('IN_CRONLITE'))exit();
   <div class="container">
     <h1 class="pull-left">
       <a class="header-logo" href="/">
-        <img class="header-logo-img" src="assets/img/logo.png" alt="<?php echo $conf['sitename']?>" />
+        <img class="header-logo-img" src="assets/img/logo.png" alt="<?php echo h($conf['sitename'])?>" />
       </a>
     </h1>
     <nav class="nav pull-right">
@@ -81,13 +81,13 @@ if(!defined('IN_CRONLITE'))exit();
       <div class="inner">
       <div class="banwuleft">
         <span class="ani" swiper-animate-effect="zoomIn" swiper-animate-duration="0.5s" swiper-animate-delay="0.5s">用数据赋能你我<br/>让生意简单好做</span>
-        <a class="ani" swiper-animate-effect="bounceInLeft" swiper-animate-duration="0.8s" swiper-animate-delay="0.5s" href="/user/reg.php">成为 <?php echo $conf['sitename']?> 商户 >></a><!--登陆地址-->
+        <a class="ani" swiper-animate-effect="bounceInLeft" swiper-animate-duration="0.8s" swiper-animate-delay="0.5s" href="/user/reg.php">成为 <?php echo h($conf['sitename'])?> 商户 >></a><!--登陆地址-->
       </div>
       <div class="banwuright ani" swiper-animate-effect="bounceInRight" swiper-animate-duration="0.4s" swiper-animate-delay="0.3s">
-        <h6 class="ani" swiper-animate-effect="fadeInDown" swiper-animate-duration="0.5s" swiper-animate-delay="0.5s"><?php echo $conf['sitename']?> 伙伴计划</h6>
+        <h6 class="ani" swiper-animate-effect="fadeInDown" swiper-animate-duration="0.5s" swiper-animate-delay="0.5s"><?php echo h($conf['sitename'])?> 伙伴计划</h6>
         <span class="ani" swiper-animate-effect="fadeInUp" swiper-animate-duration="0.5s" swiper-animate-delay="0.5s">共建 · 共享 · 开放</span>
         <p class="ani" swiper-animate-effect="fadeInUp" swiper-animate-duration="0.5s" swiper-animate-delay="0.5s">无论您是传统产业、创业者或者互联网企业，诚邀您共建支付服务新生态。</p>
-        <a class="ani" swiper-animate-effect="bounceInRight" swiper-animate-duration="0.5s" swiper-animate-delay="0.5s" href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank">成为 <?php echo $conf['sitename']?> 合作伙伴 >></a>
+        <a class="ani" swiper-animate-effect="bounceInRight" swiper-animate-duration="0.5s" swiper-animate-delay="0.5s" href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank">成为 <?php echo h($conf['sitename'])?> 合作伙伴 >></a>
       </div>
       </div>
     </div>
@@ -256,7 +256,7 @@ if(!defined('IN_CRONLITE'))exit();
               <div class="productmsg-sitem flap" data-ani="fadeInRight" data-delay="0.1s">
                 <h6>聚合主流通道，为您提供全方位支付体验</h6>
                 <span>彻底告别繁琐的支付接入流程，7行代码、半小时搞定！</span>
-                <p><?php echo $conf['sitename']?>为每一个需要支付服务的企业提供服务和技术支持，帮助企业快速的搭建自己的支付系统。</p>
+                <p><?php echo h($conf['sitename'])?>为每一个需要支付服务的企业提供服务和技术支持，帮助企业快速的搭建自己的支付系统。</p>
                 <p>现在如今，支付是商业变现必不可少的环节。我们聚合所有主流支付渠道，给你更简单、快捷的接入体验，同时提供简单易用的管理平台，让你可以集中进行跨渠道的交易管理和财务管理。</p>
                 <p>我们致力于帮助企业快速和高质量地建立支付模块，满足企业任何支付场景的需求！</p>
               </div>
@@ -318,9 +318,9 @@ if(!defined('IN_CRONLITE'))exit();
     </section>
     <section class="box nop-box">
     <div class="guangdiv">
-      <h6 class="flap" data-ani="fadeInDown" data-delay="0.1s"><b><?php echo $conf['sitename']?></b>，做您身边的支付服务商</h6>
+      <h6 class="flap" data-ani="fadeInDown" data-delay="0.1s"><b><?php echo h($conf['sitename'])?></b>，做您身边的支付服务商</h6>
       <span class="flap" data-ani="fadeInDown" data-delay="0.3s">选择对的服务商能让您更快更好的迈进互联网金融时代</span>
-      <a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank" class="flap" data-ani="fadeInUp" data-delay="0.5s">点击咨询</a>
+      <a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank" class="flap" data-ani="fadeInUp" data-delay="0.5s">点击咨询</a>
     </div>
   </section>
   <section class="box case-box">
@@ -378,7 +378,7 @@ if(!defined('IN_CRONLITE'))exit();
             <div class="row txfwitem">
                 <div class="col-lg-6 col-sm-12 flap" data-ani="fadeInLeft" data-delay="0.1s">
                     <h6>一站式的平台管理系统</h6>
-                    <p><?php echo $conf['sitename']?>开放平台——渠道分层管理系统。</p>
+                    <p><?php echo h($conf['sitename'])?>开放平台——渠道分层管理系统。</p>
                     <p>无论是平台自营或是代理，均能进行层级管理，全局把控交易和财务，实现自由灵活的商户交易管理，并能与合作伙伴便捷分享利益。</p>
                 </div>
                 <div class="col-lg-6 col-sm-12 flap" data-ani="fadeInRight" data-delay="0.1s">
@@ -391,7 +391,7 @@ if(!defined('IN_CRONLITE'))exit();
                 </div>
                 <div class="col-lg-6 col-sm-12 flap" data-ani="fadeInRight" data-delay="0.1s">
                     <h6>便捷的商户管理平台</h6>
-                    <p><?php echo $conf['sitename']?>开放平台——商户支付管理系统。</p>
+                    <p><?php echo h($conf['sitename'])?>开放平台——商户支付管理系统。</p>
                     <p>它能够满足企业集中式管理支付应用，进行快速的财务对账，便捷的交易与结算查询，更有商业智能BI帮助企业分析经营。</p>
                 </div>
             </div>
@@ -430,17 +430,17 @@ if(!defined('IN_CRONLITE'))exit();
               <a href="/user/" target="_blank">用户中心</a>
              <dd class="ksdhdd flap" data-ani="fadeInUp" data-delay="0.3s">
               <b>举报邮箱：</b>
-              <a class="dwCommonFooter__txt"><?php echo $conf['email']?></a>
+              <a class="dwCommonFooter__txt"><?php echo h($conf['email'])?></a>
              </dd>
             </dd>
         </div>
           <div class="col-lg-4 col-xs-12">
             <dd class="lxfsdd flap" data-ani="fadeInRight" data-delay="0.5s">
               <b>联系方式：</b><br/>
-              <b><?php echo $conf['orgname']?></b>
-              <p>ＱＱ：<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank"><?php echo $conf['kfqq']?></a></p>
+              <b><?php echo h($conf['orgname'])?></b>
+              <p>ＱＱ：<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank"><?php echo h($conf['kfqq'])?></a></p>
               <p>网址：<?php echo h($siteurl)?></p>
-              <p>邮箱：<a href="mailto:<?php echo $conf['email']?>"><?php echo $conf['email']?></a></p>
+              <p>邮箱：<a href="mailto:<?php echo h($conf['email'])?>"><?php echo h($conf['email'])?></a></p>
             </dd>
           </div>
         </div>
@@ -454,7 +454,7 @@ if(!defined('IN_CRONLITE'))exit();
                                   </div>
             </div>
             <div class="pull-left flap" data-ani="fadeInUp" data-delay="0.5s" style="height: 80px;width:auto">
-                <p><?php echo $conf['footer']?></p><p><?php echo $conf['sitename']?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.</p>
+                <p><?php echo $conf['footer']?></p><p><?php echo h($conf['sitename'])?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.</p>
             </div>
         </div>
     </div>

@@ -7,9 +7,9 @@ if(!defined('IN_CRONLITE'))exit();
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="viewport" content="width=device-width, maximum-scale=1, initial-scale=1, user-scalable=yes">
-		<title><?php echo $conf['title']?></title>
-		<meta name="keywords" content="<?php echo $conf['keywords']?>">
-		<meta name="description" content="<?php echo $conf['description']?>">
+		<title><?php echo h($conf['title'])?></title>
+		<meta name="keywords" content="<?php echo h($conf['keywords'])?>">
+		<meta name="description" content="<?php echo h($conf['description'])?>">
 		<link rel="stylesheet" href="<?php echo STATIC_ROOT?>css/qietu.css">
 		<link rel="stylesheet" href="<?php echo STATIC_ROOT?>css/iconfont.css">
 		<link rel="stylesheet" href="<?php echo $cdnpublic?>animate.css/3.7.2/animate.min.css">
@@ -21,7 +21,7 @@ if(!defined('IN_CRONLITE'))exit();
 			<div class="wrapper">
 				<div class="logo">
 					<a href="./">
-						<?php echo $conf['sitename']?>
+						<?php echo h($conf['sitename'])?>
 					</a>
 				</div>
 				<div class="nav-wrap">
@@ -70,7 +70,7 @@ if(!defined('IN_CRONLITE'))exit();
 			<div class="wrapper">
 				<div class="wow fadeInLeft hbanner-txt g-txt">
 					<h2>
-						<?php echo $conf['sitename']?>/Payment
+						<?php echo h($conf['sitename'])?>/Payment
 						<br>
 						<font>
 							让支付接入前所未有的简单
@@ -615,7 +615,7 @@ if(!defined('IN_CRONLITE'))exit();
 						立即开启支付新时代！
 					</h2>
 					<p>
-						<?php echo $conf['sitename']?>，支付技术服务商，让支付简单、专业、快捷！
+						<?php echo h($conf['sitename'])?>，支付技术服务商，让支付简单、专业、快捷！
 					</p>
 				</div>
 				<div class="wow fadeInRight hstart-btn ">
@@ -632,10 +632,10 @@ if(!defined('IN_CRONLITE'))exit();
 					<dd>
 						联系方式
 						<p> 商务合作QQ:
-							<?php echo $conf['kfqq']?>
+							<?php echo h($conf['kfqq'])?>
 						</p>
-						<p> Email:<a href="mailto:<?php echo $conf['email']?>">
-								<?php echo $conf['email']?></a></p>
+						<p> Email:<a href="mailto:<?php echo h($conf['email'])?>">
+								<?php echo h($conf['email'])?></a></p>
 					</dd>
 					<dd>
 
@@ -660,12 +660,12 @@ if(!defined('IN_CRONLITE'))exit();
 						关于我们
 					</dt>
 					<dd>
-						<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&site=pay&menu=yes">
+						<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&site=pay&menu=yes">
 							接口合作
 						</a>
 					</dd>
 					<dd>
-						<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&site=pay&menu=yes">
+						<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&site=pay&menu=yes">
 							流量合作
 						</a>
 					</dd>
@@ -694,7 +694,7 @@ if(!defined('IN_CRONLITE'))exit();
 					</dt>
 					<dd>
 						<a href="./" target="_blank">
-						<?php echo $conf['sitename']?>
+						<?php echo h($conf['sitename'])?>
 						</a>
 					</dd>
 					<dd>
@@ -707,7 +707,7 @@ if(!defined('IN_CRONLITE'))exit();
 		</div>
 		<div class="copyright">
 			<div class="wrapper">
-				<?php echo $conf['sitename']?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.&nbsp;<?php echo $conf['footer']?>
+				<?php echo h($conf['sitename'])?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.&nbsp;<?php echo $conf['footer']?>
 			</div>
 		</div>
 		<div class="sidebar">

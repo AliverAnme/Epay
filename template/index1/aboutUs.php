@@ -10,7 +10,7 @@ require INDEX_ROOT.'head.php';
 <div class="block_text history">
 	<div class="about_info">
 		<p>
-			<?php echo $conf['orgname']?><br /> 成立于2016年10月，公司业务面向企业SAAS服务， <br /> 主要核心产品是支付清结算云服务：云支付、云结算、云钱包、云电商、大数据； <br /> 在此核心产品基础上为企业提供全面整套的互联网+解决方案，与企业开放、合作、共赢！ <br /> 我们为企业提供网上支付SAAS系统方案，企业只需要在平台注册商务服务账号， <br /> 通过SAAS前台服务填写对应的参数，签订好相关的法律协议即可使用， <br /> 无需企业再次开发相应支付系统，根据使用接口的情况收取服务费用， <br /> <?php echo $conf['sitename']?>仅收取相应套餐费用和套餐内增值业务费用。
+			<?php echo h($conf['orgname'])?><br /> 成立于2016年10月，公司业务面向企业SAAS服务， <br /> 主要核心产品是支付清结算云服务：云支付、云结算、云钱包、云电商、大数据； <br /> 在此核心产品基础上为企业提供全面整套的互联网+解决方案，与企业开放、合作、共赢！ <br /> 我们为企业提供网上支付SAAS系统方案，企业只需要在平台注册商务服务账号， <br /> 通过SAAS前台服务填写对应的参数，签订好相关的法律协议即可使用， <br /> 无需企业再次开发相应支付系统，根据使用接口的情况收取服务费用， <br /> <?php echo h($conf['sitename'])?>仅收取相应套餐费用和套餐内增值业务费用。
 		</p>
 	</div>
 </div>
@@ -37,7 +37,7 @@ require INDEX_ROOT.'head.php';
 							</p>
 							<div class="company_info">
 								<p>
-									2016年10月，<?php echo $conf['orgname']?>在中国注册成立。
+									2016年10月，<?php echo h($conf['orgname'])?>在中国注册成立。
 								</p>
 							</div>
 						</div>
@@ -50,7 +50,7 @@ require INDEX_ROOT.'head.php';
 						</p>
 						<div class="round_div">
 							<p class="intro">
-								开始制作我们的产品——<?php echo $conf['sitename']?>！
+								开始制作我们的产品——<?php echo h($conf['sitename'])?>！
 							</p>
 							<div class="company_info">
 								<p>
@@ -74,7 +74,7 @@ require INDEX_ROOT.'head.php';
 						</p>
 						<div class="round_div">
 							<p class="intro">
-								<?php echo $conf['sitename']?> 上线了！
+								<?php echo h($conf['sitename'])?> 上线了！
 							</p>
 							<div class="company_info">
 								<p>
@@ -91,7 +91,7 @@ require INDEX_ROOT.'head.php';
 						</p>
 						<div class="round_div">
 							<p class="intro">
-								<?php echo $conf['sitename']?> 进行系统升级！
+								<?php echo h($conf['sitename'])?> 进行系统升级！
 							</p>
 							<div class="company_info">
 								<p>
@@ -108,7 +108,7 @@ require INDEX_ROOT.'head.php';
 						</p>
 						<div class="round_div">
 							<p class="intro">
-								<?php echo $conf['sitename']?> V2.0上线了！
+								<?php echo h($conf['sitename'])?> V2.0上线了！
 							</p>
 							<div class="company_info">
 								<p>
@@ -158,10 +158,10 @@ require INDEX_ROOT.'head.php';
 						联系方式
 					</h3>
 					<p>
-						QQ：<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank"><?php echo $conf['kfqq']?></a>
+						QQ：<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank"><?php echo h($conf['kfqq'])?></a>
 					</p>
 					<p>
-						邮箱：<a href="mailto:<?php echo $conf['email']?>"><?php echo $conf['email']?></a>
+						邮箱：<a href="mailto:<?php echo h($conf['email'])?>"><?php echo h($conf['email'])?></a>
 					</p>
 					<p class="button_box">
 					</p>
@@ -190,7 +190,7 @@ require INDEX_ROOT.'head.php';
 	<div class="about_info">
 		<p>
 			如果你有兴趣成为我们的团队的一部分,请把你的简历和求职信至
-			<a href="mailto:<?php echo $conf['email']?>"><?php echo $conf['email']?></a>,<br /> 我们将很快与您联系。
+			<a href="mailto:<?php echo h($conf['email'])?>"><?php echo h($conf['email'])?></a>,<br /> 我们将很快与您联系。
 		</p>
 	</div>
 </div>

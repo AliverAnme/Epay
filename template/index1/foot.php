@@ -46,20 +46,20 @@ if(!defined('IN_CRONLITE'))exit();
 			</div>
 			<div class="2u 4u(mobile)">
 				<div class="footer_link"> <img src="assets/img/weixin.jpg" />
-					<p>关注<?php echo $conf['sitename']?></p>
+					<p>关注<?php echo h($conf['sitename'])?></p>
 				</div>
 			</div>
 			<div class="4u 8u(mobile)">
 				<div class="footer_link">
 					<h5>联系我们</h5>
-					<p><i class="icon fa-qq"></i> QQ：<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank"><?php echo $conf['kfqq']?></a></p>
-					<p><i class="icon fa-envelope"></i> 邮箱：<a href="mailto:<?php echo $conf['email']?>"><?php echo $conf['email']?></a></p>
+					<p><i class="icon fa-qq"></i> QQ：<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank"><?php echo h($conf['kfqq'])?></a></p>
+					<p><i class="icon fa-envelope"></i> 邮箱：<a href="mailto:<?php echo h($conf['email'])?>"><?php echo h($conf['email'])?></a></p>
 					<p><i class="icon fa-map-marker"></i> 地址：深圳市龙岗区龙岗街道龙岗大道4005号和创大厦306</p>
 				</div>
 			</div>
 		</div> <br />
 		<div class="align-center">
-			<p><?php echo $conf['sitename']?>&nbsp;&nbsp;&copy;<?php echo date("Y")?>&nbsp;All Rights Reserved.&nbsp;&nbsp;<?php echo $conf['footer']?></p>
+			<p><?php echo h($conf['sitename'])?>&nbsp;&nbsp;&copy;<?php echo date("Y")?>&nbsp;All Rights Reserved.&nbsp;&nbsp;<?php echo $conf['footer']?></p>
 		</div>
 	</div>
 </footer>

@@ -9,9 +9,9 @@ if(!defined('IN_CRONLITE'))exit();
 <!--<![endif]-->
 <head>
     <meta charset="utf-8">
-    <title><?php echo $conf['title']?></title>
-	<meta name="keywords" content="<?php echo $conf['keywords']?>">
-	<meta name="description" content="<?php echo $conf['description']?>">
+    <title><?php echo h($conf['title'])?></title>
+	<meta name="keywords" content="<?php echo h($conf['keywords'])?>">
+	<meta name="description" content="<?php echo h($conf['description'])?>">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
     <link rel="stylesheet" type="text/css" href="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="<?php echo $cdnpublic?>OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
@@ -72,7 +72,7 @@ if(!defined('IN_CRONLITE'))exit();
         <div class="item">
             <img src="<?php echo STATIC_ROOT?>picture/bg-test.png" alt=""">
             <div class="inside">
-                <h2><?php echo $conf['sitename']?> - 为创业者而生</h2>
+                <h2><?php echo h($conf['sitename'])?> - 为创业者而生</h2>
                 <p>专注于提供安全、高效、严谨、便捷的订单数据服务！</p>
                 <a href="/user/login.php" class="custom-btn">立即登录</a>
             </div>
@@ -131,7 +131,7 @@ if(!defined('IN_CRONLITE'))exit();
     <footer>
         <div class="container">
             <div class="copyright text-center">
-			<p style="font-style:oblique;font-size:14px;color:#FFF"><?php echo $conf['sitename']?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.<br/><?php echo $conf['footer']?></p>
+			<p style="font-style:oblique;font-size:14px;color:#FFF"><?php echo h($conf['sitename'])?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.<br/><?php echo $conf['footer']?></p>
             </div>
         </div>
     </footer>

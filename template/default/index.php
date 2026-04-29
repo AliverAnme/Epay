@@ -19,7 +19,7 @@ require INDEX_ROOT.'head.php';
 <div class="col-xs-12 col-sm-6 col-md-6">
 <div class="ban2_text">
 <div class="ban2_status docker">
-<div class="ban2_middle">欢迎使用<?php echo $conf['sitename']?></div>
+<div class="ban2_middle">欢迎使用<?php echo h($conf['sitename'])?></div>
 <div class="ban2_content">提供免签约支付宝、QQ钱包、微信支付</div>
                       
                         <div class="ban2_experience">
@@ -46,7 +46,7 @@ require INDEX_ROOT.'head.php';
 <div class="container">
 <div class="row">
 <div class="col-xs-12 cloud_server">
-<div class="h3"><?php echo $conf['sitename']?>®免签约支付产品</div>
+<div class="h3"><?php echo h($conf['sitename'])?>®免签约支付产品</div>
 </div>
 <div class="col-xs-6 col-sm-4 col-md-4">
 <div id="container_server">

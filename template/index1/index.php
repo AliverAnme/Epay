@@ -16,7 +16,7 @@ require INDEX_ROOT.'head.php';
 							<li class="weixin_img">
 								<img src="assets/img/weixin.jpg" />
 								<p>
-									扫一扫关注<?php echo $conf['sitename']?>
+									扫一扫关注<?php echo h($conf['sitename'])?>
 								</p>
 							</li>
 						</ul>
@@ -61,7 +61,7 @@ require INDEX_ROOT.'head.php';
 			云钱包
 		</h2>
 		<p>
-			企业通过<?php echo $conf['sitename']?>为用户提供统一虚拟账户，提升用户支付体验，为拓展增值服务提供基础
+			企业通过<?php echo h($conf['sitename'])?>为用户提供统一虚拟账户，提升用户支付体验，为拓展增值服务提供基础
 		</p>
 		<div class="image align-center">
 			<img src="<?php echo STATIC_ROOT?>picture/use02.png" alt="" />
@@ -127,7 +127,7 @@ require INDEX_ROOT.'head.php';
 					</h4>
 					<div class="content">
 						<p>
-							让企业更加自主的使用<?php echo $conf['sitename']?>相关服务
+							让企业更加自主的使用<?php echo h($conf['sitename'])?>相关服务
 						</p>
 					</div>
 				</div>
@@ -178,7 +178,7 @@ require INDEX_ROOT.'head.php';
 					</a>
 				</div>
 				<div class="4u 12u(mobile)">
-					<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&Site=pay&Menu=yes" target="_blank" class="know_more icon fa-users">
+					<a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&Site=pay&Menu=yes" target="_blank" class="know_more icon fa-users">
 						<h4>
 						商务合作
 					</h4>

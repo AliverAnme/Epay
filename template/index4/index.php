@@ -7,9 +7,9 @@ if(!defined('IN_CRONLITE'))exit();
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title><?php echo $conf['title']?></title>
-  <meta name="keywords" content="<?php echo $conf['keywords']?>">
-  <meta name="description" content="<?php echo $conf['description']?>">
+  <title><?php echo h($conf['title'])?></title>
+  <meta name="keywords" content="<?php echo h($conf['keywords'])?>">
+  <meta name="description" content="<?php echo h($conf['description'])?>">
   <link rel="stylesheet" href="<?php echo STATIC_ROOT?>css/nucleo.css" type="text/css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
   <link rel="stylesheet" href="<?php echo STATIC_ROOT?>css/app.min.css" type="text/css">
@@ -18,7 +18,7 @@ if(!defined('IN_CRONLITE'))exit();
 <body>
   <nav id="navbar-main" class="navbar navbar-horizontal navbar-transparent navbar-main navbar-expand-lg navbar-light">
     <div class="container">
-      <a class="navbar-brand" href="./"><?php echo $conf['sitename']?></a>
+      <a class="navbar-brand" href="./"><?php echo h($conf['sitename'])?></a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -26,7 +26,7 @@ if(!defined('IN_CRONLITE'))exit();
         <div class="navbar-collapse-header">
           <div class="row">
             <div class="col-6 collapse-brand">
-              <a href="./"><?php echo $conf['sitename']; ?></a>
+              <a href="./"><?php echo h($conf['sitename']); ?></a>
             </div>
             <div class="col-6 collapse-close">
               <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@ if(!defined('IN_CRONLITE'))exit();
             </a>
           </li>
           <li class="nav-item">
-            <a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']; ?>&site=pay&menu=yes" class="nav-link" target="_blank">
+            <a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq']); ?>&site=pay&menu=yes" class="nav-link" target="_blank">
               <span class="nav-link-inner--text">联系客服</span>
             </a>
           </li>
@@ -81,9 +81,9 @@ if(!defined('IN_CRONLITE'))exit();
           <div class="row align-items-center">
             <div class="col-lg-6">
               <div class="pr-5">
-                <h1 class="display-2 text-white font-weight-bold mb-0"><?php echo $conf['sitename']?></h1>
+                <h1 class="display-2 text-white font-weight-bold mb-0"><?php echo h($conf['sitename'])?></h1>
                 <h2 class="display-4 text-white font-weight-light"><font style="text-transform: uppercase;"><?php echo htmlspecialchars($_SERVER['HTTP_HOST'])?></font>-我们专注的每一面，都是为了给你更好的体验</h2>
-                <p class="text-white mt-4"><?php echo $conf['sitename']?>平台,以信誉求市场,以稳定求发展，行业内最安全，简单易用，专业的技术团队，最放心的免签约支付平台。</p>
+                <p class="text-white mt-4"><?php echo h($conf['sitename'])?>平台,以信誉求市场,以稳定求发展，行业内最安全，简单易用，专业的技术团队，最放心的免签约支付平台。</p>
                 <div class="mt-5">
                   <a href="/user/" class="btn btn-neutral my-2">商户中心</a>
                   <a href="/doc.html" class="btn btn-default my-2">开发文档</a>
@@ -181,7 +181,7 @@ if(!defined('IN_CRONLITE'))exit();
                       <i class="ni ni-istanbul"></i>
                     </div>
                     <h4 class="h3 text-success text-uppercase">云钱包</h4>
-                    <p class="description mt-3">您的企业网站可以通过<?php echo $conf['sitename']?>为用户提供统一虚拟账户，提升用户支付体验，为拓展增值服务提供基础。</p>
+                    <p class="description mt-3">您的企业网站可以通过<?php echo h($conf['sitename'])?>为用户提供统一虚拟账户，提升用户支付体验，为拓展增值服务提供基础。</p>
                     <div>
                       <span class="badge badge-pill badge-success">资金统计</span>
                       <span class="badge badge-pill badge-success">订单明细</span>
@@ -197,7 +197,7 @@ if(!defined('IN_CRONLITE'))exit();
                       <i class="ni ni-planet"></i>
                     </div>
                     <h4 class="h3 text-warning text-uppercase">云结算</h4>
-                    <p class="description mt-3"><?php echo $conf['sitename']?>通过简单的页面配置，可以替代复杂繁琐的人工资金结算业务，提高业务实时性，降低错误。</p>
+                    <p class="description mt-3"><?php echo h($conf['sitename'])?>通过简单的页面配置，可以替代复杂繁琐的人工资金结算业务，提高业务实时性，降低错误。</p>
                     <div>
                       <span class="badge badge-pill badge-warning">支付宝</span>
                       <span class="badge badge-pill badge-warning">微信支付</span>
@@ -220,7 +220,7 @@ if(!defined('IN_CRONLITE'))exit();
           <div class="col-md-6 order-md-1">
             <div class="pr-md-5">
               <h1>聚合钱包，融合支付</h1>
-              <p><?php echo $conf['sitename']?>通过简单的页面配置，可以替代复杂繁琐的人工资金结算业务，提高业务实时性，降低错误。</p>
+              <p><?php echo h($conf['sitename'])?>通过简单的页面配置，可以替代复杂繁琐的人工资金结算业务，提高业务实时性，降低错误。</p>
               <ul class="list-unstyled mt-5">
                 <li class="py-2">
                   <div class="d-flex align-items-center">
@@ -274,7 +274,7 @@ if(!defined('IN_CRONLITE'))exit();
             <div class="pr-md-5">
               <h1>高效技术服务</h1>
               <p>我们提供7X24小时在线服务，对日交易高额用户提供贵宾服务！用最具影响力品牌协助，并全力协助新兴品牌，我们以设计助力众多品牌走向行业领先地位，鼎力相助每一个梦想。</p>
-              <a onclick="return confirm('请直奔主题,不要问在不在,节省彼此的时间,懂?')" href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']; ?>&site=qq&menu=yes" class="font-weight-bold text-warning mt-5" target="_blank">联系客服</a>
+              <a onclick="return confirm('请直奔主题,不要问在不在,节省彼此的时间,懂?')" href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq']); ?>&site=qq&menu=yes" class="font-weight-bold text-warning mt-5" target="_blank">联系客服</a>
             </div>
           </div>
         </div>
@@ -344,7 +344,7 @@ if(!defined('IN_CRONLITE'))exit();
       <div class="row align-items-center justify-content-xl-between">
         <div class="col-xl-6">
           <div class="copyright text-center text-xl-left text-muted">
-            <?php echo $conf['sitename']?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.
+            <?php echo h($conf['sitename'])?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.
           </div>
         </div>
         <div class="col-xl-6">

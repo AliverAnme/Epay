@@ -6,9 +6,9 @@ if(!defined('IN_CRONLITE'))exit();
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title><?php echo $conf['title']?></title>
-  	<meta name="keywords" content="<?php echo $conf['keywords']?>">
-	<meta name="description" content="<?php echo $conf['description']?>">	
+    <title><?php echo h($conf['title'])?></title>
+  	<meta name="keywords" content="<?php echo h($conf['keywords'])?>">
+	<meta name="description" content="<?php echo h($conf['description'])?>">	
     <link href="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo STATIC_ROOT?>css/style.css" rel="stylesheet">
     <style>
@@ -80,7 +80,7 @@ if(!defined('IN_CRONLITE'))exit();
                 <a href="#" class="register" target="_blank">首页</a>
                 <?php if($conf['test_open']){?><a href="/user/test.php" class="register contrast">支付演示</a><?php }?>
                 <a href="/doc.html" class="register">开放文档</a>
-                <a onclick="return confirm('有事直奔主题，谢谢合作！')" href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&site=pay&menu=yes" target="_blank" class="register" style="margin-right:20px;">联系我们</a>
+                <a onclick="return confirm('有事直奔主题，谢谢合作！')" href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo h($conf['kfqq'])?>&site=pay&menu=yes" target="_blank" class="register" style="margin-right:20px;">联系我们</a>
                 <a href="/user/" class="login" style="float: right;">开始使用</a>
             </div>
         </div>
@@ -93,7 +93,7 @@ if(!defined('IN_CRONLITE'))exit();
             <div class="col-xs-12 col-sm-10 col-md-6 col-md-offset-0 col-lg-6" style="margin-top:40px;">
                 <h1 style="line-height:40px;color:white;margin:40px 0;font-size:24px;color:#06a2fe;">每个梦想，都值得灌溉</h1>
                 <p style="color:#FFFFFF;opacity: 0.7;font-size:14px;line-height: 2;">
-				<?php echo $conf['sitename']?>旨在解决需要使用交易数据流的企业发卡、个人发卡、主机IDC等网站支付需求，提供的一个正规、安全、稳定、可靠、丰富的支付接口 API，
+				<?php echo h($conf['sitename'])?>旨在解决需要使用交易数据流的企业发卡、个人发卡、主机IDC等网站支付需求，提供的一个正规、安全、稳定、可靠、丰富的支付接口 API，
                     帮助开发者等个人主体快速使想法转变为产品原型。让创造价值的人体现价值。</p>
                 <div class="spacer5"></div>
                 <p style="color:#FFFFFF;opacity: 0.7;font-size:14px;">帮助开发者快速将支付（支付宝，钱包，微信）集成到自己相应产品，效率高，见效快，费率低</p>
@@ -212,7 +212,7 @@ if(!defined('IN_CRONLITE'))exit();
                             <div class="col-xs-12">
                                 <p class="plan-title">一次性注册费用</p>
                                 <img src="<?php echo STATIC_ROOT?>picture/shop2.svg" class="plan-icon" style="width: 120px;">
-                                <h2 class="plan-pricing"><?php echo $conf['reg_pay_price']?>元<span>由<?php echo $conf['sitename']?>收取注册费用</span></h2>
+                                <h2 class="plan-pricing"><?php echo h($conf['reg_pay_price'])?>元<span>由<?php echo h($conf['sitename'])?>收取注册费用</span></h2>
                             </div>
                         </div>
                     </div>
@@ -223,7 +223,7 @@ if(!defined('IN_CRONLITE'))exit();
                             <div class="col-xs-12">
                                 <p class="plan-title">三网支付订单费率</p>
                                 <img src="<?php echo STATIC_ROOT?>picture/money.svg" class="plan-icon" alt="">
-                                <h2 class="plan-pricing">3%<span>由<?php echo $conf['sitename']?>官方收取</span></h2>
+                                <h2 class="plan-pricing">3%<span>由<?php echo h($conf['sitename'])?>官方收取</span></h2>
                                 <div style="font-size:12px;color:gray;"></div>
                             </div>
                         </div>
@@ -289,7 +289,7 @@ if(!defined('IN_CRONLITE'))exit();
             <div class="row">
                 <div class="col-xs-12 text-center">
                     <img src="<?php echo STATIC_ROOT?>picture/logo1.ico" style="width:30px;margin-bottom: 20px; opacity: 0.7;">
-                    <address><?php echo $conf['sitename']?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.&nbsp;<?php echo $conf['footer']?></address>
+                    <address><?php echo h($conf['sitename'])?>&nbsp;&nbsp;&copy;&nbsp;<?php echo date("Y")?>&nbsp;All Rights Reserved.&nbsp;<?php echo $conf['footer']?></address>
                 </div>
             </div>
         </div>

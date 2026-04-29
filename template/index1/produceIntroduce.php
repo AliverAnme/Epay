@@ -46,28 +46,28 @@ require INDEX_ROOT.'head.php';
 				PC网页支付
 			</h4>
 			<p>
-				<?php echo $conf['sitename']?>,PC网页支付支持支付宝网页支付、支付宝扫码支付、 微信扫码支付、银联网页支付、百度钱包等。
+				<?php echo h($conf['sitename'])?>,PC网页支付支持支付宝网页支付、支付宝扫码支付、 微信扫码支付、银联网页支付、百度钱包等。
 			</p>
 			<img src="<?php echo STATIC_ROOT?>picture/yuke02.png" />
 			<h4>
 				扫码支付
 			</h4>
 			<p>
-				<?php echo $conf['sitename']?>,支持统一扫码支付,渠道扫码支付,包括支付宝扫码支付、 微信扫码支付等。
+				<?php echo h($conf['sitename'])?>,支持统一扫码支付,渠道扫码支付,包括支付宝扫码支付、 微信扫码支付等。
 			</p>
 			<img src="<?php echo STATIC_ROOT?>picture/yuke04.png" />
 			<h4>
 				微信公众号支付
 			</h4>
 			<p>
-				<?php echo $conf['sitename']?>,为微信公众号提供全套支付解决方案： 用户可在你的微信服务号内进行微信 支付，简单便捷！
+				<?php echo h($conf['sitename'])?>,为微信公众号提供全套支付解决方案： 用户可在你的微信服务号内进行微信 支付，简单便捷！
 			</p>
 			<img src="<?php echo STATIC_ROOT?>picture/yuke03.png" />
 			<h4>
 				手机APP支付
 			</h4>
 			<p>
-				<?php echo $conf['sitename']?>,为iOS/Android原生/H5 App提供支付解决方案:支持微信支付、支付宝支付、银联手机支付、百度钱包等。
+				<?php echo h($conf['sitename'])?>,为iOS/Android原生/H5 App提供支付解决方案:支持微信支付、支付宝支付、银联手机支付、百度钱包等。
 			</p>
 		</div>
 		<div id="kfzxId" class="api_block">

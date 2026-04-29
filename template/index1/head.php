@@ -9,15 +9,15 @@ if(!defined('IN_CRONLITE'))exit();
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="blank" />
 		<meta name="format-detection" content="telephone=no" />
-		<meta name="keywords" content="<?php echo $conf['keywords']?>" />
-		<meta name="description" content="<?php echo $conf['description']?>" />
+		<meta name="keywords" content="<?php echo h($conf['keywords'])?>" />
+		<meta name="description" content="<?php echo h($conf['description'])?>" />
 		<link rel="stylesheet" href="<?php echo STATIC_ROOT?>css/main.css" />
 		<link rel="stylesheet" href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css" />
 		<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
 		<script src="<?php echo $cdnpublic?>jquery.dropotron/1.4.3/jquery.dropotron.min.js"></script>
 		<!--[if lte IE 8]><script src="<?php echo $cdnpublic?>html5shiv/3.7.3/html5shiv.min.js"></script><![endif]-->
 		<!--[if lte IE 8]><script src="<?php echo $cdnpublic?>respond.js/1.4.2/respond.min.js"></script><![endif]-->
-		<title><?php echo $conf['title']?></title>
+		<title><?php echo h($conf['title'])?></title>
 	</head>
 
 	<body>
@@ -42,7 +42,7 @@ if(!defined('IN_CRONLITE'))exit();
                         </li><?php }?>
 						<?php if(!empty($conf['appurl'])){?>
 						<li>
-							<a href="<?php echo $conf['appurl']?>">APP下载</a>
+							<a href="<?php echo h($conf['appurl'])?>">APP下载</a>
 						</li><?php }?>
 					</ul>
 				</nav> 				<nav id="navRight">

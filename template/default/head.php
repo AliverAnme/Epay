@@ -5,9 +5,9 @@ if(!defined('IN_CRONLITE'))exit();
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-<title><?php echo $conf['title']?></title>
-<meta name="keywords" content="<?php echo $conf['keywords']?>">
-<meta name="description" content="<?php echo $conf['description']?>" />
+<title><?php echo h($conf['title'])?></title>
+<meta name="keywords" content="<?php echo h($conf['keywords'])?>">
+<meta name="description" content="<?php echo h($conf['description'])?>" />
 <meta name="viewport"content="user-scalable=no, width=device-width">
 <meta name="viewport"content="width=device-width, initial-scale=1"/>
 <meta name="renderer"content="webkit">
