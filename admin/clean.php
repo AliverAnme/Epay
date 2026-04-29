@@ -6,6 +6,7 @@ include("../includes/common.php");
 $title='系统数据清理';
 include './head.php';
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
+if($_SERVER['REQUEST_METHOD']==='POST' && (!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token'])) showmsg('CSRF验证失败，请刷新页面后重试',3);
 ?>
   <div class="container" style="padding-top:70px;">
     <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
@@ -73,22 +74,22 @@ showmsg('删除登录记录成功！',1);
 <a href="./clean.php?mod=cleansettle" onclick="return confirm('你确实要删除30天前的结算记录吗？');" class="btn btn-block btn-default">删除30天前结算记录</a><br/>
 <a href="./clean.php?mod=cleanrecord" onclick="return confirm('你确实要删除30天前的资金明细吗？');" class="btn btn-block btn-default">删除30天前资金明细</a><br/>
 <h4>自定义清理：</h4>
-<form action="./clean.php?mod=cleanorderi" method="post" role="form"><input type="hidden" name="do" value="submit"/>
+<form action="./clean.php?mod=cleanorderi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 <b>订单记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的订单记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
 </form><br/>
-<form action="./clean.php?mod=cleansettlei" method="post" role="form"><input type="hidden" name="do" value="submit"/>
+<form action="./clean.php?mod=cleansettlei" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 <b>结算记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的结算记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
 </form><br/>
-<form action="./clean.php?mod=cleanrecordi" method="post" role="form"><input type="hidden" name="do" value="submit"/>
+<form action="./clean.php?mod=cleanrecordi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 <b>资金明细</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的订单记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
 </form><br/>
-<form action="./clean.php?mod=cleantransferi" method="post" role="form"><input type="hidden" name="do" value="submit"/>
+<form action="./clean.php?mod=cleantransferi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 <b>付款记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的付款记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
 </form><br/>
-<form action="./clean.php?mod=cleanpsorderi" method="post" role="form"><input type="hidden" name="do" value="submit"/>
+<form action="./clean.php?mod=cleanpsorderi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 <b>分账记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的分账记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
 </form><br/>
-<form action="./clean.php?mod=cleanlogi" method="post" role="form"><input type="hidden" name="do" value="submit"/>
+<form action="./clean.php?mod=cleanlogi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
 <b>登录记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的登录记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
 </form><br/>
 </div>

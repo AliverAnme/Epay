@@ -41,7 +41,7 @@ break;
 
 case 'getPayType':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_type where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_type where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付方式不存在！"}');
 	$result = ['code'=>0,'msg'=>'succ','data'=>$row];
@@ -50,23 +50,21 @@ break;
 case 'setPayType':
 	$id=intval($_GET['id']);
 	$status=intval($_GET['status']);
-	$row=$DB->getRow("select * from pre_type where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_type where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付方式不存在！"}');
-	$sql = "UPDATE pre_type SET status='$status' WHERE id='$id'";
-	if($DB->exec($sql))exit('{"code":0,"msg":"修改支付方式成功！"}');
+	if($DB->exec("UPDATE pre_type SET status=:status WHERE id=:id", [':status'=>$status, ':id'=>$id]))exit('{"code":0,"msg":"修改支付方式成功！"}');
 	else exit('{"code":-1,"msg":"修改支付方式失败['.$DB->error().']"}');
 break;
 case 'delPayType':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("select * from pre_type where id='$id' limit 1");
+	$row=$DB->getRow("select * from pre_type where id=:id limit 1", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付方式不存在！"}');
-	$row=$DB->getRow("select * from pre_channel where type='$id' limit 1");
+	$row=$DB->getRow("select * from pre_channel where type=:id limit 1", [':id'=>$id]);
 	if($row)
 		exit('{"code":-1,"msg":"删除失败，存在使用该支付方式的支付通道"}');
-	$sql = "DELETE FROM pre_type WHERE id='$id'";
-	if($DB->exec($sql))exit('{"code":0,"msg":"删除支付方式成功！"}');
+	if($DB->delete('type', ['id'=>$id]))exit('{"code":0,"msg":"删除支付方式成功！"}');
 	else exit('{"code":-1,"msg":"删除支付方式失败['.$DB->error().']"}');
 break;
 case 'savePayType':
@@ -77,7 +75,7 @@ case 'savePayType':
 		if(!preg_match('/^[a-zA-Z0-9]+$/',$name)){
 			exit('{"code":-1,"msg":"调用值不符合规则"}');
 		}
-		$row=$DB->getRow("select * from pre_type where name='$name' and device='$device' limit 1");
+		$row=$DB->getRow("select * from pre_type where name=:name and device=:device limit 1", [':name'=>$name, ':device'=>$device]);
 		if($row)
 			exit('{"code":-1,"msg":"同一个调用值+支持设备不能重复"}');
 		$data = ['name'=>$name, 'showname'=>$showname, 'device'=>$device, 'status'=>1];
@@ -91,7 +89,7 @@ case 'savePayType':
 		if(!preg_match('/^[a-zA-Z0-9]+$/',$name)){
 			exit('{"code":-1,"msg":"调用值不符合规则"}');
 		}
-		$row=$DB->getRow("select * from pre_type where name='$name' and device='$device' and id<>$id limit 1");
+		$row=$DB->getRow("select * from pre_type where name=:name and device=:device and id<>:id limit 1", [':name'=>$name, ':device'=>$device, ':id'=>$id]);
 		if($row)
 			exit('{"code":-1,"msg":"同一个调用值+支持设备不能重复"}');
 		$data = ['name'=>$name, 'showname'=>$showname, 'device'=>$device];
@@ -101,7 +99,7 @@ case 'savePayType':
 break;
 case 'getPlugin':
 	$name = trim($_GET['name']);
-	$row=$DB->getRow("SELECT * FROM pre_plugin WHERE name='$name'");
+	$row=$DB->getRow("SELECT * FROM pre_plugin WHERE name=:name", [':name'=>$name]);
 	if($row){
 		$result = ['code'=>0,'msg'=>'succ','data'=>$row];
 		exit(json_encode($result));
@@ -110,10 +108,10 @@ case 'getPlugin':
 break;
 case 'getPlugins':
 	$typeid = intval($_GET['typeid']);
-	$type=$DB->getColumn("SELECT name FROM pre_type WHERE id='$typeid'");
+	$type=$DB->getColumn("SELECT name FROM pre_type WHERE id=:typeid", [':typeid'=>$typeid]);
 	if(!$type)
 		exit('{"code":-1,"msg":"当前支付方式不存在！"}');
-	$list=$DB->getAll("SELECT name,showname FROM pre_plugin WHERE types LIKE '%$type%' ORDER BY name ASC");
+	$list=$DB->getAll("SELECT name,showname FROM pre_plugin WHERE types LIKE :type_like ORDER BY name ASC", [':type_like'=>'%'.$type.'%']);
 	if($list){
 		$result = ['code'=>0,'msg'=>'succ','data'=>$list];
 		exit(json_encode($result));
@@ -122,7 +120,7 @@ case 'getPlugins':
 break;
 case 'getChannel':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
+	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id=:id", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付通道不存在！"}');
 	$result = ['code'=>0,'msg'=>'succ','data'=>$row];
@@ -130,10 +128,10 @@ case 'getChannel':
 break;
 case 'getChannels':
 	$typeid = intval($_GET['typeid']);
-	$type=$DB->getColumn("SELECT name FROM pre_type WHERE id='$typeid'");
+	$type=$DB->getColumn("SELECT name FROM pre_type WHERE id=:typeid", [':typeid'=>$typeid]);
 	if(!$type)
 		exit('{"code":-1,"msg":"当前支付方式不存在！"}');
-	$list=$DB->getAll("SELECT id,name FROM pre_channel WHERE type='$typeid' and status=1 ORDER BY id ASC");
+	$list=$DB->getAll("SELECT id,name FROM pre_channel WHERE type=:typeid and status=1 ORDER BY id ASC", [':typeid'=>$typeid]);
 	if($list){
 		$result = ['code'=>0,'msg'=>'succ','data'=>$list];
 		exit(json_encode($result));
@@ -141,9 +139,9 @@ case 'getChannels':
 	else exit('{"code":-1,"msg":"没有找到支持该支付方式的通道"}');
 break;
 case 'getChannelsByPlugin':
-	$plugin = $_GET['plugin'];
+	$plugin = trim($_GET['plugin']);
 	if($plugin){
-		$list=$DB->getAll("SELECT id,name FROM pre_channel WHERE plugin='$plugin' ORDER BY id ASC");
+		$list=$DB->getAll("SELECT id,name FROM pre_channel WHERE plugin=:plugin ORDER BY id ASC", [':plugin'=>$plugin]);
 	}else{
 		$list=$DB->getAll("SELECT id,name FROM pre_channel ORDER BY id ASC");
 	}
@@ -156,16 +154,20 @@ break;
 case 'getSubChannels':
 	$channel = intval($_GET['channel']);
 	$uid = intval($_GET['uid']);
-	$sql = " channel='$channel'";
-	if($uid > 0) $sql .= " AND uid='$uid'";
-	$list=$DB->getAll("SELECT id,name,channel,apply_id FROM pre_subchannel WHERE{$sql} ORDER BY id ASC");
+	$conditions = "channel=:channel";
+	$params = [':channel'=>$channel];
+	if($uid > 0) {
+		$conditions .= " AND uid=:uid";
+		$params[':uid'] = $uid;
+	}
+	$list=$DB->getAll("SELECT id,name,channel,apply_id FROM pre_subchannel WHERE {$conditions} ORDER BY id ASC", $params);
 	$result = ['code'=>0,'msg'=>'succ','data'=>$list];
 	exit(json_encode($result));
 break;
 case 'setChannel':
 	$id=intval($_GET['id']);
 	$status=intval($_GET['status']);
-	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
+	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id=:id", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付通道不存在！"}');
 	if($status==1 && empty($row['config'])){
@@ -174,13 +176,12 @@ case 'setChannel':
 	if($status==1 && $conf['admin_pwd']=='123456'){
 		exit('{"code":-1,"msg":"请先修改默认管理员密码后再开启支付通道"}');
 	}
-	$sql = "UPDATE pre_channel SET status='$status' WHERE id='$id'";
-	if($DB->exec($sql))exit('{"code":0,"msg":"修改支付通道成功！"}');
+	if($DB->exec("UPDATE pre_channel SET status=:status WHERE id=:id", [':status'=>$status, ':id'=>$id]))exit('{"code":0,"msg":"修改支付通道成功！"}');
 	else exit('{"code":-1,"msg":"修改支付通道失败['.$DB->error().']"}');
 break;
 case 'delChannel':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
+	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id=:id", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付通道不存在！"}');
 	if($DB->find('psreceiver', '*', ['channel'=>$id])){
@@ -189,9 +190,8 @@ case 'delChannel':
 	if($DB->find('applychannel', '*', ['channel'=>$id])){
 		exit('{"code":-1,"msg":"当前支付通道关联了进件渠道，无法删除"}');
 	}
-	$sql = "DELETE FROM pre_channel WHERE id='$id'";
-	if($DB->exec($sql)){
-		$DB->exec("DELETE FROM pre_subchannel WHERE channel='$id'");
+	if($DB->delete('channel', ['id'=>$id])){
+		$DB->exec("DELETE FROM pre_subchannel WHERE channel=:id", [':id'=>$id]);
 		exit('{"code":0,"msg":"删除支付通道成功！"}');
 	}
 	else exit('{"code":-1,"msg":"删除支付通道失败['.$DB->error().']"}');
@@ -223,7 +223,7 @@ case 'saveChannel':
 		if($paymax && !preg_match('/^[0-9.]+$/',$paymax)){
 			exit('{"code":-1,"msg":"最大支付金额不符合规则"}');
 		}
-		$row=$DB->getRow("SELECT * FROM pre_channel WHERE name='$name' LIMIT 1");
+		$row=$DB->getRow("SELECT * FROM pre_channel WHERE name=:name LIMIT 1", [':name'=>$name]);
 		if($row)
 			exit('{"code":-1,"msg":"支付通道名称重复"}');
 		$data = ['name'=>$name, 'rate'=>$rate, 'costrate'=>$costrate, 'mode'=>$mode, 'type'=>$type, 'plugin'=>$plugin, 'daytop'=>$daytop, 'paymin'=>$paymin, 'paymax'=>$paymax, 'daymaxorder'=>$daymaxorder, 'timestart'=>$timestart, 'timestop'=>$timestop];
@@ -231,7 +231,7 @@ case 'saveChannel':
 		else exit('{"code":-1,"msg":"新增支付通道失败['.$DB->error().']"}');
 	}elseif($_POST['action'] == 'copy'){
 		$id=intval($_POST['id']);
-		$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
+		$row=$DB->getRow("SELECT * FROM pre_channel WHERE id=:id", [':id'=>$id]);
 		if(!$row) exit('{"code":-1,"msg":"当前支付通道不存在！"}');
 		$name=trim($_POST['name']);
 		$rate=trim($_POST['rate']);
@@ -257,7 +257,7 @@ case 'saveChannel':
 		if($paymax && !preg_match('/^[0-9.]+$/',$paymax)){
 			exit('{"code":-1,"msg":"最大支付金额不符合规则"}');
 		}
-		$nrow=$DB->getRow("SELECT * FROM pre_channel WHERE name='$name' LIMIT 1");
+		$nrow=$DB->getRow("SELECT * FROM pre_channel WHERE name=:name LIMIT 1", [':name'=>$name]);
 		if($nrow)
 			exit('{"code":-1,"msg":"支付通道名称重复"}');
 		$data = ['name'=>$name, 'rate'=>$rate, 'costrate'=>$costrate, 'mode'=>$mode, 'type'=>$type, 'plugin'=>$plugin, 'daytop'=>$daytop, 'paymin'=>$paymin, 'paymax'=>$paymax, 'daymaxorder'=>$daymaxorder, 'config'=>$row['config'], 'apptype'=>$row['apptype'], 'appwxmp'=>$row['appwxmp'], 'appwxa'=>$row['appwxa'], 'timestart'=>$timestart, 'timestop'=>$timestop];
@@ -265,7 +265,7 @@ case 'saveChannel':
 		else exit('{"code":-1,"msg":"复制支付通道失败['.$DB->error().']"}');
 	}elseif($_POST['action'] == 'edit'){
 		$id=intval($_POST['id']);
-		$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
+		$row=$DB->getRow("SELECT * FROM pre_channel WHERE id=:id", [':id'=>$id]);
 		if(!$row) exit('{"code":-1,"msg":"当前支付通道不存在！"}');
 		$name=trim($_POST['name']);
 		$rate=trim($_POST['rate']);
@@ -291,13 +291,13 @@ case 'saveChannel':
 		if($paymax && !preg_match('/^[0-9.]+$/',$paymax)){
 			exit('{"code":-1,"msg":"最大支付金额不符合规则"}');
 		}
-		$nrow=$DB->getRow("SELECT * FROM pre_channel WHERE name='$name' AND id<>$id LIMIT 1");
+		$nrow=$DB->getRow("SELECT * FROM pre_channel WHERE name=:name AND id<>:id LIMIT 1", [':name'=>$name, ':id'=>$id]);
 		if($nrow)
 			exit('{"code":-1,"msg":"支付通道名称重复"}');
 		$data = ['name'=>$name, 'rate'=>$rate, 'costrate'=>$costrate, 'mode'=>$mode, 'type'=>$type, 'plugin'=>$plugin, 'daytop'=>$daytop, 'paymin'=>$paymin, 'paymax'=>$paymax, 'daymaxorder'=>$daymaxorder, 'timestart'=>$timestart, 'timestop'=>$timestop];
 		if($DB->update('channel', $data, ['id'=>$id])!==false){
 			if($row['daystatus']==1 && ($daytop==0 || $daytop>$row['daytop'] || $daymaxorder==0)){
-				$DB->exec("UPDATE pre_channel SET daystatus=0 WHERE id='$id'");
+				$DB->exec("UPDATE pre_channel SET daystatus=0 WHERE id=:id", [':id'=>$id]);
 			}
 			exit('{"code":0,"msg":"修改支付通道成功！"}');
 		}else exit('{"code":-1,"msg":"修改支付通道失败['.$DB->error().']"}');
@@ -305,10 +305,10 @@ case 'saveChannel':
 break;
 case 'channelInfo':
 	$id=intval($_GET['id']);
-	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id='$id'");
+	$row=$DB->getRow("SELECT * FROM pre_channel WHERE id=:id", [':id'=>$id]);
 	if(!$row)
 		exit('{"code":-1,"msg":"当前支付通道不存在！"}');
-	$typename = $DB->getColumn("SELECT name FROM pre_type WHERE id='{$row['type']}'");
+	$typename = $DB->getColumn("SELECT name FROM pre_type WHERE id=:type_id", [':type_id'=>$row['type']]);
 	//if($row['mode']>0){
 	//	exit('{"code":-1,"msg":"当前通道为商户直清模式，请进入用户列表-编辑-接口密钥进行配置"}');
 	//}

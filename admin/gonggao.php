@@ -112,7 +112,7 @@ $list = $DB->getAll("SELECT * FROM pre_anounce ORDER BY sort ASC");
 <div class="panel-body">
 <?php foreach($list as $row){?>
 		<div class="list-group-item">
-			<em class="fa fa-fw fa-volume-up"></em><font color="<?php echo $row['color']?$row['color']:null?>"><?php echo $row['content']?></font><small>&nbsp;-<?php echo $row['addtime']?></small>&nbsp;&nbsp;<?php echo $row['status']==1?'<span class="btn btn-xs btn-success" onclick="setStatus('.$row['id'].',0)">显示</span>':'<span class="btn btn-xs btn-warning" onclick="setStatus('.$row['id'].',1)">隐藏</span>'?>&nbsp;<a class="btn btn-xs btn-info" href="./gonggao.php?my=edit&id=<?php echo $row['id']?>">编辑</a>&nbsp;<a class="btn btn-xs btn-danger" href="javascript:delItem(<?php echo $row['id']?>)">删除</a>
+			<em class="fa fa-fw fa-volume-up"></em><font color="<?php echo h($row['color'])?$row['color']:null?>"><?php echo $row['content']?></font><small>&nbsp;-<?php echo $row['addtime']?></small>&nbsp;&nbsp;<?php echo $row['status']==1?'<span class="btn btn-xs btn-success" onclick="setStatus('.$row['id'].',0)">显示</span>':'<span class="btn btn-xs btn-warning" onclick="setStatus('.$row['id'].',1)">隐藏</span>'?>&nbsp;<a class="btn btn-xs btn-info" href="./gonggao.php?my=edit&id=<?php echo $row['id']?>">编辑</a>&nbsp;<a class="btn btn-xs btn-danger" href="javascript:delItem(<?php echo $row['id']?>)">删除</a>
 		</div>
 <?php }?>
 </div>
