@@ -1,67 +1,87 @@
 # 矩阵构建: AMD64 + ARM64 分别构建，合并为多架构镜像
-# 触发方式: 手动触发 (Web UI)
+# 触发方式: 手动触发 (Web UI)，输入版本号
+# 产物: :latest + :v版本号 两个多架构标签
 
 "**":
   web_trigger_build:
     # AMD64架构的构建任务
     - runner:
-        tags: cnb:arch:amd64  # 指定运行在AMD64架构的runner上
+        tags: cnb:arch:amd64
       services:
-        - docker  # 使用Docker服务
+        - docker
       env:
-        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest-linux-amd64
+        IMAGE_VER: ${VERSION:-latest}
+        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${VERSION:-latest}-linux-amd64
+        IMAGE_LATEST: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest-linux-amd64
       stages:
         - name: docker login
           script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
         - name: docker build (AMD64)
-          script: docker buildx build --platform linux/amd64 --provenance=false --tag ${IMAGE_TAG} .
+          script: |
+            docker buildx build --platform linux/amd64 --provenance=false \
+              --tag ${IMAGE_TAG} --tag ${IMAGE_LATEST} .
         - name: docker push
-          script: docker push ${IMAGE_TAG}
+          script: docker push ${IMAGE_TAG} && docker push ${IMAGE_LATEST}
         - name: resolve
           type: cnb:resolve
           options:
-            key: build-amd64  # 标记AMD64构建完成
+            key: build-amd64
     
     # ARM64架构的构建任务
     - runner:
-        tags: cnb:arch:arm64:v8  # 指定运行在ARM64架构的runner上
+        tags: cnb:arch:arm64:v8
       services:
         - docker
       env:
-        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest-linux-arm64
+        IMAGE_VER: ${VERSION:-latest}
+        IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${VERSION:-latest}-linux-arm64
+        IMAGE_LATEST: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest-linux-arm64
       stages:
         - name: docker login
           script: docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
         - name: docker build (ARM64)
-          script: docker buildx build --platform linux/arm64 --provenance=false --tag ${IMAGE_TAG} .
+          script: |
+            docker buildx build --platform linux/arm64 --provenance=false \
+              --tag ${IMAGE_TAG} --tag ${IMAGE_LATEST} .
         - name: docker push
-          script: docker push ${IMAGE_TAG}
+          script: docker push ${IMAGE_TAG} && docker push ${IMAGE_LATEST}
         - name: resolve
           type: cnb:resolve
           options:
-            key: build-arm64  # 标记ARM64构建完成
+            key: build-arm64
 
-    # 创建多架构镜像
+    # 创建多架构 latest 镜像
     - services:
         - docker
       env:
         IMAGE_TAG: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:latest
+        IMAGE_VER: ${VERSION:-latest}
       stages:
         - name: await the amd64
           type: cnb:await
           options:
-            key: build-amd64  # 等待AMD64构建完成
+            key: build-amd64
         - name: await the arm64
           type: cnb:await
           options:
-            key: build-arm64  # 等待ARM64构建完成
-        - name: manifest
-          image: plugins/manifest  # 使用manifest插件创建多架构镜像
+            key: build-arm64
+        - name: manifest (latest)
+          image: plugins/manifest
           settings:
             username: $CNB_TOKEN_USER_NAME
             password: $CNB_TOKEN
-            target: ${IMAGE_TAG}  # 目标镜像标签
-            template: ${IMAGE_TAG}-OS-ARCH  # 模板格式
-            platforms:  # 支持的平台
+            target: ${IMAGE_TAG}
+            template: ${IMAGE_TAG}-OS-ARCH
+            platforms:
+              - linux/amd64
+              - linux/arm64
+        - name: manifest (version)
+          image: plugins/manifest
+          settings:
+            username: $CNB_TOKEN_USER_NAME
+            password: $CNB_TOKEN
+            target: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${IMAGE_VER}
+            template: ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${IMAGE_VER}-OS-ARCH
+            platforms:
               - linux/amd64
               - linux/arm64
