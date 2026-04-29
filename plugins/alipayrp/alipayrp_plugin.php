@@ -119,7 +119,6 @@ class alipayrp_plugin
 		try{
 			$aop = new \Alipay\AlipayTransferService($alipay_config);
 			$result = $aop->aopExecute('alipay.fund.trans.common.query', $bizContent);
-			print_r($result);
 		}catch(Exception $e){
 			return ['type'=>'error','msg'=>'订单查询失败！'.$e->getMessage()];
 		}

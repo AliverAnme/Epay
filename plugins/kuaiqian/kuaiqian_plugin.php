@@ -589,7 +589,6 @@ class kuaiqian_plugin
 
 		try{
 			$result = $client->execute($head, $body);
-			print_r($result);
 		}catch(Exception $ex){
 			return ['type'=>'error','msg'=>$ex->getMessage()];
 		}
