@@ -86,7 +86,9 @@ if(isset($_GET['auth_code'])){
 		$session=md5($uid.$key.$password_hash);
 		$expiretime=time()+2592000;
 		$token=authcode("{$uid}\t{$session}\t{$expiretime}", 'ENCODE', SYS_KEY);
-		setcookie("user_token", $token, time() + 2592000);
+		$secure = is_https();
+		setcookie("user_token", $token, time() + 2592000, '/', '', $secure, true);
+		session_regenerate_id(true);
 		@header('Content-Type: text/html; charset=UTF-8');
 		exit("<script language='javascript'>window.location.href='./';</script>");
 	}elseif($islogin2==1){

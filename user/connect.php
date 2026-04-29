@@ -87,7 +87,9 @@ if($_GET['code'] && ($conf['login_qq']==1 || $conf['login_qq']==3 || $conf['logi
 		$session=md5($uid.$key.$password_hash);
 		$expiretime=time()+2592000;
 		$token=authcode("{$uid}\t{$session}\t{$expiretime}", 'ENCODE', SYS_KEY);
-		setcookie("user_token", $token, time() + 2592000);
+		$secure = is_https();
+		setcookie("user_token", $token, time() + 2592000, '/', '', $secure, true);
+		session_regenerate_id(true);
 		$DB->exec("update `pre_user` set `lasttime`=NOW() where `uid`='$uid'");
 		exit("<script language='javascript'>window.location.href='./';</script>");
 	}elseif($islogin2==1){
