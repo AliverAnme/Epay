@@ -460,6 +460,9 @@ function verifyPassword($pwd, $hash, $uid=null) {
 function needsRehashPassword($hash) {
     return strlen($hash) !== 60 || substr($hash, 0, 4) !== '$2y$';
 }
+function h($str) {
+    return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8');
+}
 function getMillisecond()
 {
 	list($s1, $s2) = explode(' ', microtime());
