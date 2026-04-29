@@ -63,7 +63,7 @@ if(!defined('IN_CRONLITE'))exit();
               <div class="mt-3">
                 <h1 class="home_title font-weight-normal text-white mx-auto text-capitalize mb-0"><?php echo $conf['sitename']?> - <span class="text-typed" data-elements="用支付响应世界 用支付创造未来！"></span></h1>
                 <div class="home_text_details">
-                  <p class="home_subtitle mt-4 mb-0"><font style="text-transform: uppercase;"><?php echo $_SERVER['HTTP_HOST']?></font> - 极速响应、安全可靠、方便快捷是我们最大的特点，轻松实现手机付款、在线付款，<?php echo $conf['sitename']?>是您的不二之选，欢迎咨询<?php echo $conf['sitename']?>。</p>
+                  <p class="home_subtitle mt-4 mb-0"><font style="text-transform: uppercase;"><?php echo htmlspecialchars($_SERVER['HTTP_HOST'])?></font> - 极速响应、安全可靠、方便快捷是我们最大的特点，轻松实现手机付款、在线付款，<?php echo $conf['sitename']?>是您的不二之选，欢迎咨询<?php echo $conf['sitename']?>。</p>
                 </div>
                 <div class="home_btn_manage mt-4 pt-3">
                   <a href="./user/" class="btn btn_outline btn_rounded mr-3">商户中心</a>
@@ -289,7 +289,7 @@ if(!defined('IN_CRONLITE'))exit();
           <h6 class="text-white text-capitalize">关于我们</h6>
           <p class="mt-3 text-white ">E-mail : <?php echo $conf['email']?></p>
           <p class="text-white">客服QQ : <a href="https://wpa.qq.com/msgrd?v=3&uin=<?php echo $conf['kfqq']?>&site=pay&menu=yes" title="点击联系客服QQ" target="_blank"><?php echo $conf['kfqq']?></a></p>
-          <p class="mb-0 mt-3 text-white">本站域名 : <?php echo $_SERVER['HTTP_HOST']?></p>
+          <p class="mb-0 mt-3 text-white">本站域名 : <?php echo htmlspecialchars($_SERVER['HTTP_HOST'])?></p>
         </div>
         <div class="col-lg-4">
           <h6 class="text-white text-capitalize">本站相关</h6>

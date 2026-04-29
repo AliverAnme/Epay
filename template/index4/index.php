@@ -82,7 +82,7 @@ if(!defined('IN_CRONLITE'))exit();
             <div class="col-lg-6">
               <div class="pr-5">
                 <h1 class="display-2 text-white font-weight-bold mb-0"><?php echo $conf['sitename']?></h1>
-                <h2 class="display-4 text-white font-weight-light"><font style="text-transform: uppercase;"><?php echo $_SERVER['HTTP_HOST']?></font>-我们专注的每一面，都是为了给你更好的体验</h2>
+                <h2 class="display-4 text-white font-weight-light"><font style="text-transform: uppercase;"><?php echo htmlspecialchars($_SERVER['HTTP_HOST'])?></font>-我们专注的每一面，都是为了给你更好的体验</h2>
                 <p class="text-white mt-4"><?php echo $conf['sitename']?>平台,以信誉求市场,以稳定求发展，行业内最安全，简单易用，专业的技术团队，最放心的免签约支付平台。</p>
                 <div class="mt-5">
                   <a href="/user/" class="btn btn-neutral my-2">商户中心</a>

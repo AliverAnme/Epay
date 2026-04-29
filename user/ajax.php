@@ -68,7 +68,6 @@ case 'login':
 	if($type==1 && is_numeric($user) && strlen($user)<=6)$type=0;
 	if($type==1){
 		$userrow=$DB->getRow("SELECT * FROM pre_user WHERE email=:user OR phone=:user limit 1", [':user'=>$user]);
-		$pass=getMd5Pwd($pass, $userrow['uid']);
 	}else{
 		if($conf['close_keylogin']==1)exit('{"code":-1,"msg":"未开启密钥登录，请使用账号密码登录！"}');
 		$userrow=$DB->getRow("SELECT * FROM pre_user WHERE uid=:user limit 1", [':user'=>$user]);
@@ -76,8 +75,12 @@ case 'login':
 			exit('{"code":-1,"msg":"该商户未开启密钥登录，请使用账号密码登录！"}');
 		}
 	}
-	if($userrow && ($type==0 && $pass==$userrow['key'] || $type==1 && $pass==$userrow['pwd'])) {
+	if($userrow && ($type==0 && $pass==$userrow['key'] || $type==1 && verifyPassword($pass, $userrow['pwd'], $userrow['uid']))) {
 		$uid = $userrow['uid'];
+		// 透明升级：MD5 密码迁移至 bcrypt
+		if($type==1 && needsRehashPassword($userrow['pwd'])){
+			$DB->update('user', ['pwd'=>hashPassword($pass)], ['uid'=>$uid]);
+		}
 		if($alipay_uid=$_SESSION['Oauth_alipay_uid']){
 			$DB->update('user', ['alipay_uid'=>$alipay_uid], ['uid'=>$uid]);
 			unset($_SESSION['Oauth_alipay_uid']);
@@ -339,8 +342,8 @@ case 'reg':
 		$sds=$DB->exec("INSERT INTO `pre_user` (`upid`, `key`, `money`, `email`, `phone`, `addtime`, `pay`, `settle`, `keylogin`, `apply`, `status`) VALUES (:upid, :key, '0.00', :email, :phone, NOW(), :paystatus, 1, 0, 0, 1)", [':upid'=>$upid, ':key'=>$key, ':email'=>$email, ':phone'=>$phone, ':paystatus'=>$paystatus]);
 		$uid=$DB->lastInsertId();
 		if($sds){
-			$pwd = getMd5Pwd($pwd, $uid);
-			$DB->exec("update `pre_user` set `pwd` ='{$pwd}' where `uid`='$uid'");
+			$pwd = hashPassword($pwd);
+			$DB->exec("update `pre_user` set `pwd` =:pwd where `uid`=:uid", [':pwd'=>$pwd, ':uid'=>$uid]);
 			if(!empty($email)){
 				$sub = $conf['sitename'].' - 注册成功通知';
 				$msg = '<h2>商户注册成功通知</h2>感谢您注册'.$conf['sitename'].'！<br/>您的登录账号：'.($info['email']?$info['email']:$info['phone']).'<br/>您的商户ID：'.$uid.'<br/>您的商户秘钥：'.$key.'<br/>'.$conf['sitename'].'官网：<a href="http://'.$_SERVER['HTTP_HOST'].'/" target="_blank">'.$_SERVER['HTTP_HOST'].'</a><br/>【<a href="'.$siteurl.'user/" target="_blank">商户管理后台</a>】';
@@ -448,8 +451,8 @@ case 'findpwd':
 	if($result !== true){
 		exit(json_encode(['code'=>-1, 'msg'=>$result]));
 	}
-	$pwd = getMd5Pwd($pwd, $userrow['uid']);
-	$sqs=$DB->exec("update `pre_user` set `pwd`='{$pwd}' where `uid`='{$userrow['uid']}'");
+	$pwd = hashPassword($pwd);
+	$sqs=$DB->exec("update `pre_user` set `pwd`=:pwd where `uid`=:uid", [':pwd'=>$pwd, ':uid'=>$userrow['uid']]);
 	if($sqs!==false){
 		\lib\VerifyCode::void_code();
 		exit('{"code":1,"msg":"重置密码成功！请牢记新密码"}');

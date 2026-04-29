@@ -448,6 +448,18 @@ function getSid() {
 function getMd5Pwd($pwd, $salt=null) {
     return md5(md5($pwd) . md5('1277180438'.$salt));
 }
+function hashPassword($pwd) {
+    return password_hash($pwd, PASSWORD_BCRYPT, ['cost'=>12]);
+}
+function verifyPassword($pwd, $hash, $uid=null) {
+    if(strlen($hash) === 60 && substr($hash, 0, 4) === '$2y$') {
+        return password_verify($pwd, $hash);
+    }
+    return $hash === getMd5Pwd($pwd, $uid) || (strlen($hash) === 32 && $hash === md5(md5($pwd)));
+}
+function needsRehashPassword($hash) {
+    return strlen($hash) !== 60 || substr($hash, 0, 4) !== '$2y$';
+}
 function getMillisecond()
 {
 	list($s1, $s2) = explode(' ', microtime());

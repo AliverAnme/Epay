@@ -270,7 +270,8 @@ class fubei_plugin
 				}
 			}
 			$openid = $_GET['open_id'];
-			$appid = 'wxab36abed3127b34a';
+		$pay_config = require(PAY_ROOT.'inc/config.php');
+		$appid = $pay_config['wxappid'];
 		}
 		
 		$blocks = checkBlockUser($openid, TRADE_NO);
@@ -296,7 +297,8 @@ class fubei_plugin
 
 	//微信小程序插件支付
 	static public function wxplugin(){
-		$appId = 'wx21efb7c54d4729d6';
+		$pay_config = require(PAY_ROOT.'inc/config.php');
+		$appId = $pay_config['wxplugin_appid'];
 		try{
 			$result = self::addOrder('wxpay', null, $appId);
 			$payinfo = ['appId'=>$appId, 'orderSn'=>$result['order_sn']];

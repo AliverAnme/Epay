@@ -1358,7 +1358,7 @@ $("select[name='ocr_type']").change(function(){
 	</div><br/>
 	<div class="form-group">
 	  <label class="col-sm-3 control-label">微信快捷登录</label>
-	  <div class="col-sm-9"><select class="form-control" name="login_wx" default="<?php echo $conf['login_wx']?>"><option value="0">关闭</option><?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?><option value="-1">彩虹聚合登录</option></select><font color="green">请先<a href="./pay_weixin.php" target="_blank">添加一个微信公众号</a>。需要服务号，并配置网页授权域名：<?php echo $_SERVER['HTTP_HOST'];?></font></div>
+	  <div class="col-sm-9"><select class="form-control" name="login_wx" default="<?php echo $conf['login_wx']?>"><option value="0">关闭</option><?php foreach($wxpay_channel as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].'</option>';} ?><option value="-1">彩虹聚合登录</option></select><font color="green">请先<a href="./pay_weixin.php" target="_blank">添加一个微信公众号</a>。需要服务号，并配置网页授权域名：<?php echo htmlspecialchars($_SERVER['HTTP_HOST']);?></font></div>
 	</div><br/>
 	<div id="setform2" style="<?php echo $conf['login_wx']<=0?'display:none;':null; ?>">
 	<div class="form-group">
