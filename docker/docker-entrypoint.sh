@@ -308,7 +308,18 @@ if [ ! -f "/var/www/html/includes/ip2region.xdb" ]; then
                 echo "[entrypoint] ip2region.xdb 下载完成，IP 归属地功能可用"
                 DOWNLOADED=true
                 break
-            fi
+fi
+
+# 确保 cron_key.txt 存在（重建容器时保留）
+if [ ! -f /cron_key.txt ]; then
+    php -r "
+    try {
+        \$pdo = new PDO('${DSN}', '${DB_USER}', '${DB_PWD}');
+        \$key = \$pdo->query(\"SELECT v FROM ${DB_PREFIX}_config WHERE k='cronkey'\")->fetchColumn();
+        if (\$key) file_put_contents('/cron_key.txt', \$key);
+    } catch (Exception \$e) {}
+    " 2>/dev/null
+fi
         fi
     done
     if [ "$DOWNLOADED" = false ]; then
