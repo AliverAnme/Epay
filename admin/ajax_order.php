@@ -19,59 +19,68 @@ case 'orderList':
 	}
 	unset($rs);
 
-	$sql=" 1=1";
+	$conditions = ["1=1"];
+	$params = [];
+	$allowed_columns = ['trade_no', 'out_trade_no', 'api_trade_no', 'uid', 'type', 'channel', 'name', 'money', 'realmoney', 'getmoney', 'domain', 'ip', 'buyer', 'status', 'subchannel', 'bill_trade_no', 'bill_mch_trade_no', 'mobile'];
 	if(isset($_POST['uid']) && !empty($_POST['uid'])) {
-		$uid = intval($_POST['uid']);
-		$sql.=" AND A.`uid`='$uid'";
+		$conditions[] = "A.`uid`=:f_uid";
+		$params[':f_uid'] = intval($_POST['uid']);
 	}
 	if(isset($_POST['type']) && !empty($_POST['type'])) {
-		$type = intval($_POST['type']);
-		$sql.=" AND A.`type`='$type'";
+		$conditions[] = "A.`type`=:f_type";
+		$params[':f_type'] = intval($_POST['type']);
 	}elseif(isset($_POST['channel']) && !empty($_POST['channel'])) {
-		$channel = intval($_POST['channel']);
-		$sql.=" AND A.`channel`='$channel'";
+		$conditions[] = "A.`channel`=:f_channel";
+		$params[':f_channel'] = intval($_POST['channel']);
 	}elseif(isset($_POST['subchannel']) && !empty($_POST['subchannel'])) {
-		$subchannel = intval($_POST['subchannel']);
-		$sql.=" AND A.`subchannel`='$subchannel'";
+		$conditions[] = "A.`subchannel`=:f_subchannel";
+		$params[':f_subchannel'] = intval($_POST['subchannel']);
 	}elseif(isset($_POST['applyid']) && !empty($_POST['applyid'])) {
-		$applyid = intval($_POST['applyid']);
-		$sql.=" AND A.`subchannel` IN (SELECT id FROM pre_subchannel WHERE apply_id='{$applyid}')";
+		$conditions[] = "A.`subchannel` IN (SELECT id FROM pre_subchannel WHERE apply_id=:f_applyid)";
+		$params[':f_applyid'] = intval($_POST['applyid']);
 	}
 	if(isset($_POST['dstatus']) && !isNullOrEmpty($_POST['dstatus'])) {
 		if(substr($_POST['dstatus'], 0, 6) == 'settle'){
-			$dstatus = intval(substr($_POST['dstatus'], 7));
-			$sql.=" AND A.settle={$dstatus}";
+			$conditions[] = "A.settle=:f_dstatus";
+			$params[':f_dstatus'] = intval(substr($_POST['dstatus'], 7));
 		}else{
-			$dstatus = intval($_POST['dstatus']);
-			$sql.=" AND A.status={$dstatus}";
+			$conditions[] = "A.status=:f_dstatus";
+			$params[':f_dstatus'] = intval($_POST['dstatus']);
 		}
 	}
 	if(!empty($_POST['starttime']) || !empty($_POST['endtime'])){
 		if(!empty($_POST['starttime'])){
-			$starttime = daddslashes($_POST['starttime']);
-			$sql.=" AND A.addtime>='{$starttime} 00:00:00'";
+			$conditions[] = "A.addtime>=:f_starttime";
+			$params[':f_starttime'] = $_POST['starttime'].' 00:00:00';
 		}
 		if(!empty($_POST['endtime'])){
-			$endtime = daddslashes($_POST['endtime']);
-			$sql.=" AND A.addtime<='{$endtime} 23:59:59'";
+			$conditions[] = "A.addtime<=:f_endtime";
+			$params[':f_endtime'] = $_POST['endtime'].' 23:59:59';
 		}
 	}
 	if(isset($_POST['value']) && !empty($_POST['value'])) {
-		if($_POST['column']=='name'){
-			$sql.=" AND A.`{$_POST['column']}` like '%{$_POST['value']}%'";
+		if(!in_array($_POST['column'], $allowed_columns)) exit('{"code":-1,"msg":"invalid column"}');
+		$column = $_POST['column'];
+		if($column == 'name'){
+			$conditions[] = "A.`{$column}` like :f_value";
+			$params[':f_value'] = '%'.$_POST['value'].'%';
 		}else{
-			if(($_POST['column'] == 'money' || $_POST['column'] == 'realmoney' || $_POST['column'] == 'getmoney') && strpos($_POST['value'],'-')){
+			if(($column == 'money' || $column == 'realmoney' || $column == 'getmoney') && strpos($_POST['value'], '-')){
 				$money = explode('-', $_POST['value']);
-				$sql.=" AND A.`{$_POST['column']}`>='{$money[0]}' AND A.`{$_POST['column']}`<='{$money[1]}'";
+				$conditions[] = "A.`{$column}`>=:f_value_min AND A.`{$column}`<=:f_value_max";
+				$params[':f_value_min'] = $money[0];
+				$params[':f_value_max'] = $money[1];
 			}else{
-				$sql.=" AND A.`{$_POST['column']}`='{$_POST['value']}'";
+				$conditions[] = "A.`{$column}`=:f_value";
+				$params[':f_value'] = $_POST['value'];
 			}
 		}
 	}
+	$where = implode(' AND ', $conditions);
 	$offset = intval($_POST['offset']);
 	$limit = intval($_POST['limit']);
-	$total = $DB->getColumn("SELECT count(*) from pre_order A WHERE{$sql}");
-	$list = $DB->getAll("SELECT A.*,B.plugin,B.name channelname FROM pre_order A LEFT JOIN pre_channel B ON A.channel=B.id WHERE{$sql} order by trade_no desc limit $offset,$limit");
+	$total = $DB->getColumn("SELECT count(*) from pre_order A WHERE {$where}", $params);
+	$list = $DB->getAll("SELECT A.*,B.plugin,B.name channelname FROM pre_order A LEFT JOIN pre_channel B ON A.channel=B.id WHERE {$where} order by trade_no desc limit {$offset},{$limit}", $params);
 	$list2 = [];
 	foreach($list as $row){
 		$row['typename'] = $paytypes[$row['type']];

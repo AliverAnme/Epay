@@ -633,12 +633,13 @@ function processOrder(&$srow,$notify=true){
 			$paystatus = $conf['user_review']==1?2:1;
 			$sds=$DB->exec("INSERT INTO `pre_user` (`upid`, `key`, `money`, `email`, `phone`, `addtime`, `pay`, `settle`, `keylogin`, `apply`, `status`) VALUES (:upid, :key, '0.00', :email, :phone, NOW(), :paystatus, 1, 0, 0, 1)", [':upid'=>$info['upid'], ':key'=>$key, ':email'=>$info['email'], ':phone'=>$info['phone'], ':paystatus'=>$paystatus]);
 			$uid=$DB->lastInsertId();
-			$pwd = getMd5Pwd($info['pwd'], $uid);
-			$DB->exec("UPDATE `pre_user` SET `pwd`='{$pwd}' WHERE `uid`='$uid'");
+			$pwd = hashPassword($info['pwd']);
+			$DB->exec("UPDATE `pre_user` SET `pwd`=:pwd WHERE `uid`=:uid", [':pwd'=>$pwd, ':uid'=>$uid]);
 			if($sds){
 				if(!empty($info['email'])){
 					$sub = $conf['sitename'].' - 注册成功通知';
-					$msg = '<h2>商户注册成功通知</h2>感谢您注册'.$conf['sitename'].'！<br/>您的登录账号：'.$info['email'].'<br/>您的商户ID：'.$uid.'<br/>您的商户秘钥：'.$key.'<br/>'.$conf['sitename'].'官网：<a href="http://'.$_SERVER['HTTP_HOST'].'/" target="_blank">'.$_SERVER['HTTP_HOST'].'</a><br/>【<a href="http://'.$_SERVER['HTTP_HOST'].'/user/" target="_blank">商户管理后台</a>】';
+					$host = htmlspecialchars($_SERVER['HTTP_HOST']);
+				$msg = '<h2>商户注册成功通知</h2>感谢您注册'.$conf['sitename'].'！<br/>您的登录账号：'.$info['email'].'<br/>您的商户ID：'.$uid.'<br/>您的商户秘钥：'.$key.'<br/>'.$conf['sitename'].'官网：<a href="http://'.$host.'/" target="_blank">'.$host.'</a><br/>【<a href="http://'.$host.'/user/" target="_blank">商户管理后台</a>】';
 					send_mail($info['email'], $sub, $msg);
 				}
 				if(isset($info['invitecodeid']) && $info['invitecodeid']>0){
@@ -663,7 +664,7 @@ function processOrder(&$srow,$notify=true){
 			$black = $DB->find('blacklist', '*', ['type'=>0, 'content'=>$srow['buyer']], null, 1);
 			if($black){
 				$srow['black'] = true;
-				$params = ['trade_no'=>$srow['trade_no'], 'money'=>$srow['realmoney'], 'key'=>md5($srow['trade_no'].SYS_KEY.$srow['trade_no'])];
+				$params = ['pid'=>$srow['uid'], 'trade_no'=>$srow['trade_no'], 'money'=>$srow['realmoney'], 'key'=>md5(SYS_KEY.$srow['uid'].$srow['trade_no'].SYS_KEY)];
 				get_curl($conf['localurl'].'api.php?act=refundapi', http_build_query($params));
 				return;
 			}
