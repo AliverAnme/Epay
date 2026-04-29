@@ -162,9 +162,14 @@ if [ "$TABLE_EXISTS" = "0" ]; then
     \$pdo->exec(\"UPDATE \\\`${DB_PREFIX}_config\\\` SET v='${ADMIN_PASSWORD}' WHERE k='admin_pwd'\");
     \$pdo->exec(\"UPDATE \\\`${DB_PREFIX}_config\\\` SET v='${ADMIN_PASSWORD}' WHERE k='admin_paypwd'\");
 
-    echo '[entrypoint] 安装完成! 成功: '.$success.' 条, 失败: '.$error.' 条' . PHP_EOL;
-    echo '[entrypoint] 系统密钥/定时任务密钥已生成，管理员密码可通过环境变量 ADMIN_PASSWORD 自定义' . PHP_EOL;
-    echo '[entrypoint] 请保存以上信息，并尽快修改管理员密码！' . PHP_EOL;
+    echo '[entrypoint] 安装完成! 成功: '.\$success.' 条, 失败: '.\$error.' 条' . PHP_EOL;
+    echo '[entrypoint] 系统密钥/定时任务密钥已生成，可通过以下方式获取定时任务密钥：' . PHP_EOL;
+    echo '[entrypoint]   1. 登录后台 → 系统设置 → 安全设置 → 监控密钥' . PHP_EOL;
+    echo '[entrypoint]   2. 或执行: docker compose exec php cat /cron_key.txt' . PHP_EOL;
+    echo '[entrypoint] 获取密钥后请填入 .env 的 CRON_KEY 并重启: docker compose up -d cron' . PHP_EOL;
+    echo '[entrypoint] 请尽快登录后台修改管理员密码！' . PHP_EOL;
+    // 将定时任务密钥写入文件（不在web目录下，仅容器内可读）
+    file_put_contents('/cron_key.txt', '${CRONKEY}');
     "
 
     touch "$INSTALL_LOCK"
