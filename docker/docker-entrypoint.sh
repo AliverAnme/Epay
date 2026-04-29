@@ -299,8 +299,8 @@ if [ ! -f "/var/www/html/includes/ip2region.xdb" ]; then
     echo "[entrypoint] ip2region.xdb 不存在，正在尝试下载 ..."
     DOWNLOADED=false
     for MIRROR in \
-        "https://edgeone.gh-proxy.org/https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.xdb" \
-        "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.xdb"; do
+        "https://edgeone.gh-proxy.org/https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb" \
+        "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb"; do
         echo "[entrypoint]   尝试: $MIRROR"
         if curl -sL --connect-timeout 10 -o /var/www/html/includes/ip2region.xdb "$MIRROR" 2>/dev/null; then
             if [ -s /var/www/html/includes/ip2region.xdb ]; then
@@ -313,7 +313,7 @@ if [ ! -f "/var/www/html/includes/ip2region.xdb" ]; then
     done
     if [ "$DOWNLOADED" = false ]; then
         echo "[entrypoint] 提示: ip2region.xdb 下载失败（网络不通），IP 归属地功能将不可用"
-        echo "[entrypoint] 可手动放入 includes/ 目录: https://github.com/lionsoul2014/ip2region"
+        echo "[entrypoint] 可手动下载 ip2region_v4.xdb 并放入 includes/ 目录"
     fi
 fi
 
