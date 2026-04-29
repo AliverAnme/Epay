@@ -1326,7 +1326,10 @@ function alipay_oauth($alipay_config = null){
 			}
 			return [$user_type, $user_id];
 		}else{
-			$redirect_uri = (is_https() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+			$site_host = parse_url($conf['siteurl'], PHP_URL_HOST);
+			$request_host = $_SERVER['HTTP_HOST'];
+			$host = ($site_host && stripos($request_host, $site_host) !== false) ? $request_host : $site_host;
+			$redirect_uri = (is_https() ? 'https://' : 'http://') . $host . $_SERVER['REQUEST_URI'];
 			if($conf['alipay_getmobile'] == 1 && defined('TRADE_NO')){
 				$oauth->oauth($redirect_uri, null, 'auth_user');
 			}else{

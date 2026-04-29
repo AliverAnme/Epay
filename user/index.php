@@ -202,7 +202,7 @@ if(empty($userrow['pwd'])){
 		</div>
 		<div class="list-group">
 <?php foreach($list as $row){?>
-			<div class="list-group-item"><em class="fa fa-fw fa-volume-up"></em><font color="<?php echo $row['color']?$row['color']:null?>"><?php echo $row['content']?></font><span class="text-xs text-muted">&nbsp;-<?php echo $row['addtime']?></span></div>
+			<div class="list-group-item"><em class="fa fa-fw fa-volume-up"></em><font color="<?php echo h($row['color'])?$row['color']:null?>"><?php echo $row['content']?></font><span class="text-xs text-muted">&nbsp;-<?php echo $row['addtime']?></span></div>
 <?php }?>
 		</div>
 		</div>

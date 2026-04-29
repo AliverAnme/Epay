@@ -26,7 +26,11 @@ class WechatOauth
      */
     public function login()
     {
-        $redirect_uri = (is_https() ? 'https://' : 'http://') . htmlspecialchars($_SERVER['HTTP_HOST']) . $_SERVER['REQUEST_URI'];
+        global $conf;
+        $site_host = parse_url($conf['siteurl'], PHP_URL_HOST);
+        $request_host = $_SERVER['HTTP_HOST'];
+        $host = ($site_host && stripos($request_host, $site_host) !== false) ? $request_host : $site_host;
+        $redirect_uri = (is_https() ? 'https://' : 'http://') . htmlspecialchars($host) . $_SERVER['REQUEST_URI'];
         $state = md5(uniqid(rand(), true));
         $_SESSION['wechat_oauth_state'] = $state;
         $param = [
