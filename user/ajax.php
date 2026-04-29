@@ -51,6 +51,12 @@ case 'login':
 	if(empty($user) || empty($pass))exit('{"code":-1,"msg":"请确保各项不能为空"}');
 	if(!$_POST['csrf_token'] || $_POST['csrf_token']!=$_SESSION['csrf_token'])exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
 
+	// 登录限流：同一IP每5分钟最多10次失败
+	$login_fail_count = $DB->getColumn("SELECT count(*) FROM pre_log WHERE ip=:ip AND type='登录失败' AND date>DATE_SUB(NOW(),INTERVAL 5 MINUTE)", [':ip'=>$clientip]);
+	if($login_fail_count >= 10){
+		exit('{"code":-1,"msg":"登录失败次数过多，请5分钟后再试"}');
+	}
+
 	if($conf['captcha_open_login']==1){
 		if(!isset($_SESSION['gtserver']))exit('{"code":-1,"msg":"验证加载失败"}');
 		if(!verify_captcha())exit('{"code":-1,"msg":"验证失败，请重新验证"}');
@@ -116,6 +122,7 @@ case 'login':
 		}
 		unset($_SESSION['csrf_token']);
 	}else {
+		$DB->insert('log', ['uid'=>0, 'type'=>'登录失败', 'date'=>'NOW()', 'ip'=>$clientip]);
 		$result=array("code"=>-1,"msg"=>"用户名或密码不正确！");
 	}
 	exit(json_encode($result));
