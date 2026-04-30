@@ -645,8 +645,7 @@ class alipay_plugin
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayTradeService($alipay_config);
 
-		try{
-			$verify_result = $aop->check($_POST);
+		$verify_result = $aop->client->verify($_POST);
 		}catch(\Exception $e){
 			return ['type'=>'error','msg'=>'签名验证异常：'.$e->getMessage()];
 		}
@@ -688,8 +687,7 @@ class alipay_plugin
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayTradeService($alipay_config);
 
-		try{
-			$verify_result = $aop->check($_GET);
+		$verify_result = $aop->client->verify($_GET);
 		}catch(\Exception $e){
 			return ['type'=>'error','msg'=>'签名验证异常：'.$e->getMessage()];
 		}

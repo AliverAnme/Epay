@@ -614,7 +614,7 @@ class alipaysl_plugin
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayTradeService($alipay_config);
 
-		$verify_result = $aop->check($_POST);
+		$verify_result = $aop->client->verify($_POST);
 
 		if($verify_result) {//验证成功
 			//商户订单号
@@ -653,7 +653,7 @@ class alipaysl_plugin
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayTradeService($alipay_config);
 
-		$verify_result = $aop->check($_GET);
+		$verify_result = $aop->client->verify($_GET);
 
 		if($verify_result) {//验证成功
 			//商户订单号
@@ -685,7 +685,7 @@ class alipaysl_plugin
 		$alipay_config['notify_url'] = $conf['localurl'].'pay/notify/'.TRADE_NO.'/';
 		$aop = new \Alipay\AlipayService($alipay_config);
 
-		$verify_result = $aop->check($_POST);
+		$verify_result = $aop->client->verify($_POST);
 
 		if($verify_result) {//验证成功
 			//商户订单号
@@ -770,7 +770,7 @@ class alipaysl_plugin
 		global $channel,$DB;
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayService($alipay_config);
-		$verify_result = $aop->check($_POST);
+		$verify_result = $aop->client->verify($_POST);
 		if($verify_result){
 			if($_POST['msg_method'] == 'alipay.merchant.tradecomplain.changed'){
 				$bizContent = json_decode($_POST['biz_content'], true);

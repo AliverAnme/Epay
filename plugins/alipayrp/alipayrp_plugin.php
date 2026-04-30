@@ -136,7 +136,7 @@ class alipayrp_plugin
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayTransferService($alipay_config);
 
-		$verify_result = $aop->check($_POST);
+		$verify_result = $aop->client->verify($_POST);
 		if($verify_result) {
 			if($_POST['msg_method'] == 'alipay.fund.trans.order.changed'){
 				$bizContent = json_decode($_POST['biz_content'], true);
