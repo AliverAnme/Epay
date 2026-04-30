@@ -12,7 +12,7 @@ use InvalidArgumentException;
 class AlipayService
 {
 	//AopClient
-	protected $client;
+	public $client;
 
 	//是否公钥证书模式
 	protected $isCertMode = false;
