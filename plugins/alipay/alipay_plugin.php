@@ -648,7 +648,7 @@ class alipay_plugin
 		try{
 			$verify_result = $aop->check($_POST);
 		}catch(\Exception $e){
-			return ['type'=>'html','data'=>'fail'];
+			return ['type'=>'error','msg'=>'签名验证异常：'.$e->getMessage()];
 		}
 
 		if($verify_result) {//验证成功
@@ -691,7 +691,7 @@ class alipay_plugin
 		try{
 			$verify_result = $aop->check($_GET);
 		}catch(\Exception $e){
-			return ['type'=>'error','msg'=>'支付宝返回验证失败'];
+			return ['type'=>'error','msg'=>'签名验证异常：'.$e->getMessage()];
 		}
 
 		if($verify_result) {//验证成功
