@@ -380,7 +380,7 @@ echo '</div>
 	exit;
 }
 function sysmsg($msg = '未知的异常',$title = '站点提示信息') {
-    if(empty($msg) || strlen(trim($msg)) == 0){
+    if(empty($msg) || strlen(trim($msg)) == 0 || strlen($msg) > 200 || strpos($msg, 'Stack trace') !== false || strpos($msg, 'on line') !== false){
         $msg = '系统错误，请稍后重试';
     }
     ?>  
