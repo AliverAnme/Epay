@@ -645,8 +645,9 @@ class alipay_plugin
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayTradeService($alipay_config);
 
-		$verify_result = $aop->client->verify($_POST);
-		}catch(\Exception $e){
+		try {
+			$verify_result = $aop->client->verify($_POST);
+		} catch(\Exception $e){
 			return ['type'=>'error','msg'=>'签名验证异常：'.$e->getMessage()];
 		}
 
@@ -668,8 +669,10 @@ class alipay_plugin
 				//退款日期超过可退款期限后（如三个月可退款），支付宝系统发送该交易状态通知
 			}
 			else if ($_POST['trade_status'] == 'TRADE_SUCCESS') {
-				if($out_trade_no == TRADE_NO && round($total_amount,2)==round($order['money'],2)){
+				if($out_trade_no == TRADE_NO && round($total_amount,2)==round($order['realmoney'],2)){
 					processNotify($order, $trade_no, $buyer_id);
+				} else {
+					error_log('[alipay_notify] Amount mismatch: trade_no='.TRADE_NO.' alipay_amount='.$total_amount.' order_money='.$order['money'].' order_realmoney='.$order['realmoney']);
 				}
 			}
 			return ['type'=>'html','data'=>'success'];
@@ -687,8 +690,9 @@ class alipay_plugin
 		$alipay_config = require(PAY_ROOT.'inc/config.php');
 		$aop = new \Alipay\AlipayTradeService($alipay_config);
 
-		$verify_result = $aop->client->verify($_GET);
-		}catch(\Exception $e){
+		try {
+			$verify_result = $aop->client->verify($_GET);
+		} catch(\Exception $e){
 			return ['type'=>'error','msg'=>'签名验证异常：'.$e->getMessage()];
 		}
 
@@ -702,7 +706,7 @@ class alipay_plugin
 			//交易金额
 			$total_amount = $_GET['total_amount'];
 
-			if($out_trade_no == TRADE_NO && round($total_amount,2)==round($order['money'],2)){
+			if($out_trade_no == TRADE_NO && round($total_amount,2)==round($order['realmoney'],2)){
 				processReturn($order, $trade_no);
 			}else{
 				return ['type'=>'error','msg'=>'订单信息校验失败'];
