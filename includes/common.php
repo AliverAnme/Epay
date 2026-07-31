@@ -5,7 +5,7 @@ ini_set('display_errors', '0');
 ini_set('display_startup_errors', '0');
 if(defined('IN_CRONLITE'))return;
 define('VERSION', '3097');
-define('DB_VERSION', '2054');
+define('DB_VERSION', '2055');
 define('IN_CRONLITE', true);
 define('SYSTEM_ROOT', dirname(__FILE__).'/');
 define('ROOT', dirname(SYSTEM_ROOT).'/');
