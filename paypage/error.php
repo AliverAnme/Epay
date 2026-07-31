@@ -6,6 +6,7 @@ if(!defined('IN_CRONLITE'))exit();
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>错误提示</title>
     <link href="/assets/css/weui.min.css" rel="stylesheet">
+    <link href="/paypage/css/epay-theme.css?version=20260731" rel="stylesheet">
     <style>.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}</style>
 </head>
 <body>

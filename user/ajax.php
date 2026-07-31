@@ -24,10 +24,10 @@ case 'sysinfo':
 break;
 case 'testpay':
 	if(!$conf['test_open'])exit('{"code":-1,"msg":"未开启测试支付"}');
-	$money=trim($_POST['money']);
-	$typeid=intval($_POST['typeid']);
+	$money=is_scalar($_POST['money'] ?? null)?trim($_POST['money']):'';
+	$typeid=is_scalar($_POST['typeid'] ?? null)?intval($_POST['typeid']):0;
 	$name = '支付测试';
-	if(!$_POST['csrf_token'] || $_POST['csrf_token']!=$_SESSION['csrf_token'])exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
+	if(!is_string($_POST['csrf_token'] ?? null) || !is_string($_SESSION['csrf_token'] ?? null) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token']))exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
 	if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))exit('{"code":-1,"msg":"金额不合法"}');
 	if($conf['pay_maxmoney']>0 && $money>$conf['pay_maxmoney'])exit('{"code":-1,"msg":"最大支付金额是'.$conf['pay_maxmoney'].'元"}');
 	if($conf['pay_minmoney']>0 && $money<$conf['pay_minmoney'])exit('{"code":-1,"msg":"最小支付金额是'.$conf['pay_minmoney'].'元"}');
@@ -148,7 +148,7 @@ case 'wxalogin':
 	}catch(Exception $e){
 		exit('{"code":-1,"msg":"'.$e->getMessage().'"}');
 	}
-	$userrow=$DB->getRow("SELECT * FROM pre_user WHERE wxa_uid='$openid' LIMIT 1");
+	$userrow=$DB->getRow("SELECT * FROM pre_user WHERE wxa_uid=:wxa_uid LIMIT 1", [':wxa_uid'=>$openid]);
 	if($userrow){
 		$uid=$userrow['uid'];
 		$key=$userrow['key'];
@@ -156,7 +156,9 @@ case 'wxalogin':
 		$session=md5($uid.$key.$password_hash);
 		$expiretime=time()+2592000;
 		$token=authcode("{$uid}\t{$session}\t{$expiretime}", 'ENCODE', SYS_KEY);
-		setcookie("user_token", $token, time() + 2592000);
+		$secure = is_https();
+		setcookie("user_token", $token, time() + 2592000, '/', '', $secure, true);
+		session_regenerate_id(true);
 		$DB->update('user', ['lasttime'=>'NOW()'], ['uid'=>$uid]);
 		$result=array("code"=>0,"user_token"=>$token,"msg"=>"登录成功！");
 		exit(json_encode($result));

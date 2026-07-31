@@ -4,10 +4,10 @@ include("./inc.php");
 
 if(!checkRefererHost())exit('{"code":403}');
 
-$biz_no = trim($_POST['n']);
-$time = trim($_POST['t']);
-$sign = trim($_POST['s']);
-$openid = trim($_POST['openid']);
+$biz_no = is_scalar($_POST['n'] ?? null)?trim($_POST['n']):'';
+$time = is_scalar($_POST['t'] ?? null)?trim($_POST['t']):'';
+$sign = is_scalar($_POST['s'] ?? null)?trim($_POST['s']):'';
+$openid = is_scalar($_POST['openid'] ?? null)?trim($_POST['openid']):'';
 if(empty($biz_no) || empty($time) || empty($sign) || empty($openid)) showerrorjson('参数错误');
 if(md5(SYS_KEY.$biz_no.$time.SYS_KEY) != $sign) showerrorjson('签名错误');
 if($time < time() - 86400) showerrorjson('红包已过期');

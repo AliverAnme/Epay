@@ -6,6 +6,7 @@ if(!defined('IN_CRONLITE'))exit();
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>确认收款页面</title>
     <link href="/assets/css/weui.min.css" rel="stylesheet">
+    <link href="/paypage/css/epay-theme.css?version=20260731" rel="stylesheet">
     <style>.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}</style>
 </head>
 <body>
@@ -17,10 +18,10 @@ if(!defined('IN_CRONLITE'))exit();
     </div>
     <div class="weui-msg__text-area">
         <h2 class="weui-msg__title"><span style="font-size:18px;">待你收款</span></h2>
-		<p class="weui-msg__desc"><span style="font-size:34px;font-weight:700;line-height: 64px;">¥</span><span style="font-size:44px;font-weight:700;vertical-align:top;"><?php echo $money?></span></p>
+		<p class="weui-msg__desc"><span style="font-size:34px;font-weight:700;line-height: 64px;">¥</span><span style="font-size:44px;font-weight:700;vertical-align:top;"><?php echo h($money)?></span></p>
         <div class="weui-msg__custom-area">
             <ul class="weui-form-preview__list">
-                <li role="option" class="weui-form-preview__item"><label class="weui-form-preview__label">转账时间</label><p class="weui-form-preview__value weui-cell__ft"><?php echo $addtime?></p></li>
+                <li role="option" class="weui-form-preview__item"><label class="weui-form-preview__label">转账时间</label><p class="weui-form-preview__value weui-cell__ft"><?php echo h($addtime)?></p></li>
             </ul>
         </div>
     </div>
@@ -33,7 +34,7 @@ if(!defined('IN_CRONLITE'))exit();
         <p class="weui-msg__tips">1天内未确认，将退还给商家</p>
     </div>
     <div class="weui-msg__extra-area">
-        <div class="weui-footer"><p class="weui-footer__links"></p><p class="weui-footer__text">Copyright © <?php echo date("Y")?> <?php echo $conf['sitename']?></p></div>
+        <div class="weui-footer"><p class="weui-footer__links"></p><p class="weui-footer__text">Copyright © <?php echo date("Y")?> <?php echo h($conf['sitename'])?></p></div>
     </div>
 </div>
     <div role="alert" id="loadingToast">
@@ -79,7 +80,7 @@ function jsApiCall(){
         WeixinJSBridge.invoke('requestMerchantTransfer', <?php echo $wxtransfer?>,
           function (res) {
             if (res.err_msg === 'requestMerchantTransfer:ok') {
-              window.location.href="<?php echo $url?>&do=success";
+              window.location.href=<?php echo json_encode($url.'&do=success', JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP)?>;
             }
           }
         );

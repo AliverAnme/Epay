@@ -7,7 +7,8 @@ include("../includes/common.php");
 
 if(isset($_GET['logout'])){
 	if(!checkRefererHost())exit();
-	setcookie("user_token", "", time() - 2592000);
+	$secure = is_https();
+	setcookie("user_token", "", time() - 2592000, '/', '', $secure, true);
 	@header('Content-Type: text/html; charset=UTF-8');
 	exit("<script language='javascript'>alert('您已成功注销本次登录！');window.location.href='./login.php';</script>");
 }elseif($islogin2==1){

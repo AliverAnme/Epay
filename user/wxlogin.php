@@ -15,8 +15,8 @@ session_start();
 
 if(isset($_GET['act']) && $_GET['act']=='login'){
 	if(isset($_SESSION['openid']) && !empty($_SESSION['openid'])){
-		$openId = daddslashes($_SESSION['openid']);
-		$userrow=$DB->getRow("SELECT * FROM pre_user WHERE wx_uid='{$openId}' LIMIT 1");
+		$openId = (string)$_SESSION['openid'];
+		$userrow=$DB->getRow("SELECT * FROM pre_user WHERE wx_uid=:wx_uid LIMIT 1", [':wx_uid'=>$openId]);
 		if($userrow){
 			$uid=$userrow['uid'];
 			$key=$userrow['key'];
@@ -31,7 +31,7 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
 			session_regenerate_id(true);
 			$result=array("code"=>0,"msg"=>"登录成功！正在跳转到用户中心","url"=>"./");
 		}elseif($islogin2==1){
-			$sds=$DB->exec("update `pre_user` set `wx_uid`='$openId' where `uid`='$uid'");
+			$sds=$DB->exec("update `pre_user` set `wx_uid`=:wx_uid where `uid`=:uid", [':wx_uid'=>$openId, ':uid'=>(int)$uid]);
 			$result=array("code"=>0,"msg"=>"已成功绑定微信账号！","url"=>"./editinfo.php");
 		}else{
 			$_SESSION['Oauth_wx_uid']=$openId;
@@ -54,16 +54,17 @@ if(isset($_GET['bind'])){
 }
 
 if($islogin2==1 && isset($_GET['unbind'])){
-	$DB->exec("update `pre_user` set `wx_uid`=NULL where `uid`='$uid'");
+	$DB->exec("update `pre_user` set `wx_uid`=NULL where `uid`=:uid", [':uid'=>(int)$uid]);
 	@header('Content-Type: text/html; charset=UTF-8');
 	exit("<script language='javascript'>alert('您已成功解绑微信账号！');window.location.href='./editinfo.php';</script>");
 }
 elseif(strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger')!==false){
 
-$redirect_url = isset($_GET['url'])?$_GET['url']:null;
+$redirect_url = isset($_GET['url']) && is_string($_GET['url'])?trim($_GET['url']):'';
+if($redirect_url && !preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $redirect_url)) $redirect_url = '';
+$redirect_target = json_encode('./'.$redirect_url, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
 if($islogin2==1 && !isset($_GET['bind']) && !isset($_GET['code'])){
-	if($redirect_url && !preg_match('/^[a-zA-Z0-9_\-\/\.]+$/', $redirect_url)) $redirect_url = '';
-	exit("<script language='javascript'>window.location.href='./{$redirect_url}';</script>");
+	exit("<script language='javascript'>window.location.href={$redirect_target};</script>");
 }
 
 if($conf['login_wx']==0)sysmsg("未开启微信快捷登录");
@@ -77,7 +78,7 @@ try{
 }
 $_SESSION['openid'] = $openId;
 
-	$userrow=$DB->getRow("SELECT * FROM pre_user WHERE wx_uid='{$openId}' limit 1");
+	$userrow=$DB->getRow("SELECT * FROM pre_user WHERE wx_uid=:wx_uid limit 1", [':wx_uid'=>$openId]);
 	if($userrow){
 		$uid=$userrow['uid'];
 		$key=$userrow['key'];
@@ -89,9 +90,9 @@ $_SESSION['openid'] = $openId;
 		setcookie("user_token", $token, time() + 604800, '/', '', $secure, true);
 		session_regenerate_id(true);
 		@header('Content-Type: text/html; charset=UTF-8');
-		exit("<script language='javascript'>window.location.href='./{$redirect_url}';</script>");
+		exit("<script language='javascript'>window.location.href={$redirect_target};</script>");
 	}elseif($islogin2==1){
-		$sds=$DB->exec("update `pre_user` set `wx_uid`='$openId' where `uid`='$uid'");
+		$sds=$DB->exec("update `pre_user` set `wx_uid`=:wx_uid where `uid`=:uid", [':wx_uid'=>$openId, ':uid'=>(int)$uid]);
 		@header('Content-Type: text/html; charset=UTF-8');
 		exit("<script language='javascript'>alert('已成功绑定微信账号！');window.location.href='./editinfo.php';</script>");
 	}else{

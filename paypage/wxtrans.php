@@ -3,8 +3,8 @@ $is_defend = true;
 include("./inc.php");
 @header('Content-Type: text/html; charset=UTF-8');
 
-$id = isset($_GET['id'])?trim($_GET['id']):exit('No id');
-$type = isset($_GET['type'])?trim($_GET['type']):'transfer';
+$id = isset($_GET['id']) && is_scalar($_GET['id'])?trim($_GET['id']):exit('No id');
+$type = isset($_GET['type']) && is_scalar($_GET['type'])?trim($_GET['type']):'transfer';
 
 if($type == 'transfer'){
     $row = $DB->find('transfer', '*', ['biz_no'=>$id]);
@@ -76,7 +76,7 @@ if(isset($_GET['do']) && $_GET['do'] == 'success'){
 try{
     $wechat = new \lib\wechat\WechatAPI($wxinfo['id']);
     $wxconfig = $wechat->getJsapiConfig($wxinfo['appid'], $url, ['requestMerchantTransfer']);
-    $wxconfig = json_encode($wxconfig);
+    $wxconfig = json_encode($wxconfig, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
 }catch(Exception $e){
     showerror($e->getMessage());
 }
@@ -86,7 +86,7 @@ $wxtransfer = [
     'appId' => $wxinfo['appid'],
     'package' => $package_info,
 ];
-$wxtransfer = json_encode($wxtransfer);
+$wxtransfer = json_encode($wxtransfer, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
 
 include ROOT.'paypage/wxtrans_confirm.php';
 exit;

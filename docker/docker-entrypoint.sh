@@ -190,7 +190,8 @@ else
     }
     ")
 
-    CURRENT_VERSION="2054"
+    # 必须与 includes/common.php 的 DB_VERSION 及 install.sql 保持一致。
+    CURRENT_VERSION="2055"
 
     if [ -n "$DB_VERSION" ] && [ "$DB_VERSION" != "0" ] && [ "$DB_VERSION" != "$CURRENT_VERSION" ]; then
         echo "[entrypoint] 数据库版本: $DB_VERSION → $CURRENT_VERSION，执行升级 ..."
@@ -302,7 +303,7 @@ if [ ! -f "/var/www/html/includes/ip2region.xdb" ]; then
         "https://edgeone.gh-proxy.org/https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb" \
         "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region_v4.xdb"; do
         echo "[entrypoint]   尝试: $MIRROR"
-        if curl -sL --connect-timeout 10 -o /var/www/html/includes/ip2region.xdb "$MIRROR" 2>/dev/null; then
+        if curl -sL --connect-timeout 10 --max-time 30 -o /var/www/html/includes/ip2region.xdb "$MIRROR" 2>/dev/null; then
             if [ -s /var/www/html/includes/ip2region.xdb ]; then
                 chown www-data:www-data /var/www/html/includes/ip2region.xdb
                 echo "[entrypoint] ip2region.xdb 下载完成，IP 归属地功能可用"

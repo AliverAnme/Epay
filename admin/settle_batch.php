@@ -3,7 +3,7 @@
  * 批量转账页面
 **/
 include("../includes/common.php");
-$type = isset($_GET['type'])?intval($_GET['type']):exit('no type');
+$type = isset($_GET['type']) && is_scalar($_GET['type'])?intval($_GET['type']):exit('no type');
 if($type == 1){
 	$typename = '支付宝';
 	$default_channel = $conf['transfer_alipay'];
@@ -32,12 +32,12 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
 if(!isset($_SESSION['paypwd']) || $_SESSION['paypwd']!==$conf['admin_paypwd'])showmsg('支付密码错误，请返回重新进入该页面');
 
 if(isset($_GET['batch'])){
-	$batch=$_GET['batch'];
-	$row=$DB->getRow("SELECT * from pre_batch where batch='$batch'");
+	$batch=is_string($_GET['batch'])?$_GET['batch']:'';
+	$row=$DB->getRow("SELECT * from pre_batch where batch=:batch", [':batch'=>$batch]);
 	if(!$row)showmsg('批次号不存在');
-	$list=$DB->getAll("SELECT * FROM pre_settle WHERE batch='{$batch}' and type={$type}");
+	$list=$DB->getAll("SELECT * FROM pre_settle WHERE batch=:batch and type=:type", [':batch'=>$batch, ':type'=>$type]);
 
-	$channel_select = $DB->getAll("SELECT id,name,plugin FROM pre_channel WHERE plugin IN (SELECT name FROM pre_plugin WHERE transtypes LIKE '%".$app."%')");
+	$channel_select = $DB->getAll("SELECT id,name,plugin FROM pre_channel WHERE plugin IN (SELECT name FROM pre_plugin WHERE FIND_IN_SET(:type, transtypes)>0)", [':type'=>$app]);
 
 ?>
 <script>
@@ -139,7 +139,7 @@ $(document).ready(function(){
 		<div class="panel-title"><p><h3 class="panel-title"><?php echo $typename?>批量转账</h3></p>
 			<div class="input-group"><div class="input-group-addon">通道选择</div>
 				<select name="channel" class="form-control">
-					<?php foreach($channel_select as $channel){echo '<option value="'.$channel['id'].'" '.($channel['id']==$default_channel?'selected':'').'>'.$channel['name'].''.($channel['id']==$default_channel?'（默认）':'').'</option>';} ?>
+					<?php foreach($channel_select as $channel){echo '<option value="'.h($channel['id']).'" '.($channel['id']==$default_channel?'selected':'').'>'.h($channel['name']).($channel['id']==$default_channel?'（默认）':'').'</option>';} ?>
 				</select>
 			</div>
 			<div class="input-group" style="padding:8px 0;">

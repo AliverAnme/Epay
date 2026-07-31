@@ -10,7 +10,9 @@ function Post(option){
         if(option.data && option.data.constructor == Object){
             var arr = [];
             for(var key in option.data){
-                arr.push(key+'='+option.data[key]);
+                if(Object.prototype.hasOwnProperty.call(option.data, key)){
+                    arr.push(encodeURIComponent(key)+'='+encodeURIComponent(option.data[key] == null ? '' : option.data[key]));
+                }
             }
             text = arr.join('&');
         }
@@ -33,7 +35,13 @@ function Post(option){
 		if(http.readyState != 4 || isTimeout){return;}
 		clearTimeout(timer);
 		if(http.status == 200){
-            var response = toJson ? JSON.parse(http.responseText) : http.responseText;
+			var response;
+			try {
+				response = toJson ? JSON.parse(http.responseText) : http.responseText;
+			} catch(e) {
+				error();
+				return;
+			}
 			success(response);
 		}else{
 			error();
@@ -62,13 +70,13 @@ function Loading(){
     }
     
     this.show = function(value){
-        txt.innerHTML = value || '加载中...';
+        txt.textContent = value || '加载中...';
         obj.classList.remove('none');
     };
     
     this.hide = function(){
         obj.classList.add('none');
-        txt.innerHTML = '';
+        txt.textContent = '';
     };
 }
 
@@ -109,7 +117,7 @@ function Tips(){
     
     this.show = function(value,callback){
         var fun = callback || hideFun;
-        txt.innerHTML = value || ' ';
+        txt.textContent = value || ' ';
         p.onclick = callback || hideFun;
         obj.classList.remove('none');
     };

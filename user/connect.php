@@ -27,7 +27,7 @@ if(isset($_GET['act']) && $_GET['act']=='qrlogin' && $conf['login_qq']==2){
 			$sds=$DB->exec("update `pre_user` set `qq_uid`=:qq where `uid`=:uid", [':qq'=>$qq, ':uid'=>$uid]);
 			$result=array("code"=>0,"msg"=>"已成功绑定QQ账号！","url"=>"./editinfo.php");
 		}else{
-			$_SESSION['Oauth_qq_uid']=$openId;
+			$_SESSION['Oauth_qq_uid']=$qq;
 			$result=array("code"=>0,"msg"=>"请输入商户ID和密钥完成绑定和登录","url"=>"./login.php?connect=true");
 		}
 	}else{

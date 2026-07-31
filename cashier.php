@@ -6,8 +6,8 @@ require './includes/common.php';
 @header('Content-Type: text/html; charset=UTF-8');
 
 $other=isset($_GET['other'])?true:false;
-$trade_no=daddslashes($_GET['trade_no']);
-$sitename=base64_decode(daddslashes($_GET['sitename']));
+$trade_no=is_scalar($_GET['trade_no'] ?? null)?daddslashes($_GET['trade_no']):'';
+$sitename=is_scalar($_GET['sitename'] ?? null)?base64_decode(daddslashes($_GET['sitename'])):'';
 $row=$DB->getRow("SELECT * FROM pre_order WHERE trade_no=:trade_no limit 1", [':trade_no'=>$trade_no]);
 if(!$row)sysmsg('该订单号不存在，请返回来源地重新发起请求！');
 if($row['status']==1)sysmsg('该订单已完成支付，请勿重复支付');
@@ -28,11 +28,12 @@ if(checkwechat()){
 <!DOCTYPE html>
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" name="viewport">
-<title>收银台 | <?php echo $sitename?$sitename:$conf['sitename']?> </title>
+<title>收银台 | <?php echo h($sitename?$sitename:$conf['sitename'])?> </title>
 <link href="/assets/css/reset.css" rel="stylesheet" type="text/css">
 <link href="/assets/css/main12.css?v=2" rel="stylesheet" type="text/css">
+<link href="/assets/css/epay-cashier.css?v=20260731" rel="stylesheet" type="text/css">
 </head>
-<body style="background-color:#f9f9f9">
+<body class="epay-cashier">
 <!--导航-->
 <div class="w100 navBD12">
     <div class="w1080 nav12">
@@ -40,12 +41,13 @@ if(checkwechat()){
             <img src="/assets/img/logo.png">
         </div>
 		<div class="nav12-right">
-            收银台
+            <span class="cashier-secure"><i class="fa fa-shield" aria-hidden="true"></i> 安全支付</span>
+            <span>收银台</span>
         </div>
 
     </div>
 </div>
-<input type="hidden" name="trade_no" value="<?php echo $trade_no?>"/>
+<input type="hidden" name="trade_no" value="<?php echo h($trade_no)?>"/>
 <!--订单金额-->
 <?php if($other){?>
 <div class="w1080 order-amount12" style="height: auto;">
@@ -61,20 +63,20 @@ if(checkwechat()){
     <ul class="order-amount12-left">
         <li>
             <span>商品名称：</span>
-            <span><?php echo $row['name']?></span>
+            <span><?php echo h($row['name'])?></span>
         </li>
         <li>
             <span>订单号：</span>
-            <span><?php echo $trade_no?></span>
+            <span><?php echo h($trade_no)?></span>
         </li>
 		<li>
             <span>创建时间：</span>
-            <span><?php echo $row['addtime']?></span>
+            <span><?php echo h($row['addtime'])?></span>
         </li>
     </ul>
     <div class="order-amount12-right">
         <span>订单金额：</span>
-        <strong><?php echo $row['money']?></strong>
+        <strong><?php echo h($row['money'])?></strong>
         <span>元</span>
     </div>  
 </div>
@@ -83,11 +85,12 @@ if(checkwechat()){
 <div class="w1080 PayMethod12">
     <div class="row">
         <h2>支付方式</h2>
+        <p class="pay-method-hint">选择一种方式完成付款，支付过程将由对应平台安全处理。</p>
         <ul class="types">
 		<?php foreach($paytype as $rows){?>
-          <li class="pay_li" value="<?php echo $rows['id']?>">
-             <img src="/assets/icon/<?php echo $rows['name']?>.ico">
-                    <span><?php echo $rows['showname']?></span>
+          <li class="pay_li" value="<?php echo h($rows['id'])?>" role="button" tabindex="0" aria-selected="false">
+             <img src="/assets/icon/<?php echo h($rows['name'])?>.ico" alt="">
+                    <span><?php echo h($rows['showname'])?></span>
           </li>
 		<?php }?>
         </ul>
@@ -95,9 +98,12 @@ if(checkwechat()){
 </div>
 <!--立即支付-->
 <div class="w1080 immediate-pay12">
+  <div class="immediate-pay12-left">
+    <span class="action-note"><i class="fa fa-lock" aria-hidden="true"></i> 支付前请确认订单信息</span>
+  </div>
   <div class="immediate-pay12-right">
-      <span>需支付：<strong><?php echo $row['realmoney']?$row['realmoney']:$row['money']?></strong>元<?php if($row['realmoney'] && $row['realmoney']!=$row['money'])echo '（包含'.($row['realmoney']-$row['money']).'元手续费）';?></span>
-        <a class="immediate_pay">立即支付</a>
+      <span>需支付：<strong><?php echo h($row['realmoney']?$row['realmoney']:$row['money'])?></strong>元<?php if($row['realmoney'] && $row['realmoney']!=$row['money'])echo '（包含'.h($row['realmoney']-$row['money']).'元手续费）';?></span>
+      <a class="immediate_pay" role="button">立即支付</a>
     </div>
 </div>
 <div class="mt_agree">
@@ -109,24 +115,31 @@ if(checkwechat()){
 </div>
 <!--底部-->
 <div class="w1080 footer12">
-    <p> <?php echo $sitename?$sitename:$conf['sitename']?></p>
+    <p> <?php echo h($sitename?$sitename:$conf['sitename'])?></p>
 </div>
 
 <script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
 <script type="text/javascript">
-$(document).ready(function(){
-	$(".types li").click(function(){
+	$(document).ready(function(){
+	function selectPayType(item){
 		$(".types li").each(function(){
-			$(this).attr('class','');
+			$(this).removeClass('active').attr('aria-selected','false');
 		});
-		$(this).attr('class','active');
+		$(item).addClass('active').attr('aria-selected','true');
+	}
+	$(".types li").on('click', function(){ selectPayType(this); });
+	$(".types li").on('keydown', function(event){
+		if(event.key === 'Enter' || event.key === ' '){
+			event.preventDefault();
+			selectPayType(this);
+		}
 	});
 	$(document).on("click", ".immediate_pay", function () {
 		var value = $(".types").find('.active').attr('value');
 		var trade_no = $("input[name='trade_no']").val();
-		window.location.href='./submit2.php?typeid='+value+'&trade_no='+trade_no;
+		window.location.href='./submit2.php?typeid='+encodeURIComponent(value)+'&trade_no='+encodeURIComponent(trade_no);
 	});
-	$(".types li:first").click();
+	$(".types li:first").each(function(){ selectPayType(this); });
 })
 </script>
 </body>

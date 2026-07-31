@@ -110,7 +110,7 @@ if(!defined('IN_CRONLITE'))exit();
                             <div class="icon bg-theme" data-animation="true" data-animation-type="bounceIn"><i class="fa fa-paint-brush"></i></div>
                             <div class="info">
                                 <h4 class="title">低手续费</h4>
-                                <p class="desc">结算费率低至<?php echo h($conf['settle_rate']*100; ?>%，每日满<?php echo h($conf['settle_money']); ?>元自动结算，上不封顶，提现手续费最低<?php echo h($conf['settle_fee_min']); ?>元，最高<?php echo h($conf['settle_fee_max']); ?>元。</p>
+                                <p class="desc">结算费率低至<?php echo h($conf['settle_rate']*100); ?>%，每日满<?php echo h($conf['settle_money']); ?>元自动结算，上不封顶，提现手续费最低<?php echo h($conf['settle_fee_min']); ?>元，最高<?php echo h($conf['settle_fee_max']); ?>元。</p>
                             </div>
                         </div>
                     </div>

@@ -3,9 +3,9 @@ $is_defend = true;
 include("./inc.php");
 @header('Content-Type: text/html; charset=UTF-8');
 
-$biz_no = trim($_GET['n']);
-$time = trim($_GET['t']);
-$sign = trim($_GET['s']);
+$biz_no = is_scalar($_GET['n'] ?? null)?trim($_GET['n']):'';
+$time = is_scalar($_GET['t'] ?? null)?trim($_GET['t']):'';
+$sign = is_scalar($_GET['s'] ?? null)?trim($_GET['s']):'';
 if(empty($biz_no) || empty($time) || empty($sign)) showerror('参数错误');
 if(md5(SYS_KEY.$biz_no.$time.SYS_KEY) != $sign) showerror('签名错误');
 if($time < time() - 86400) showerror('红包已过期，请重新获取二维码');
@@ -51,7 +51,7 @@ if($trans['type'] == 'alipay'){
         try{
             $wechat = new \lib\wechat\WechatAPI($wxinfo['id']);
             $wxconfig = $wechat->getJsapiConfig($wxinfo['appid'], $url, ['requestMerchantTransfer']);
-            $wxconfig = json_encode($wxconfig);
+            $wxconfig = json_encode($wxconfig, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP);
         }catch(Exception $e){
             showerror($e->getMessage());
         }

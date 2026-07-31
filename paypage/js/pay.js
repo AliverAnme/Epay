@@ -93,7 +93,7 @@ function submitFun(){
     var paytype = $("#paytype").val();
     var token = $("#token").val();
 	var direct = $("#direct").val();
-	var payer = encodeURIComponent($("#payer").val());
+    var payer = $("#payer").val();
     var remark = document.querySelector("#remark-content").innerText;
 
     submitAble = false;
@@ -106,7 +106,7 @@ function submitFun(){
             loading.hide();
             submitAble = true;
             //update by yuwm 2018.03.14
-            tips.show('<span style="color:#959595;margin-top:5px">网络异常，请重新发起支付</span>');
+            tips.show('网络异常，请重新发起支付');
         },
         success : function(data){
             loading.hide();
@@ -133,7 +133,13 @@ function submitFun(){
 
 //region WX JS
 function WxpayJsPay(payStr){
-    var jsonPayStr = eval("("+payStr+")");
+    var jsonPayStr;
+    try {
+        jsonPayStr = typeof payStr === 'string' ? JSON.parse(payStr) : payStr;
+    } catch(e) {
+        tips.show('支付参数异常');
+        return;
+    }
     WeixinJSBridge.invoke(
         'getBrandWCPayRequest',
         jsonPayStr,
@@ -143,7 +149,7 @@ function WxpayJsPay(payStr){
                 // 支付成功则关闭窗口
                 // tips.show("支付成功");
                 //WeixinJSBridge.call('closeWindow');
-                window.location.href="./success.php?trade_no="+$("#trade_no").val();
+                window.location.href="./success.php?trade_no="+encodeURIComponent($("#trade_no").val());
             } else if(res.err_msg == "get_brand_wcpay_request:cancel") {
                 // tips.show("支付过程中用户取消");
             } else if(res.err_msg == "get_brand_wcpay_request:fail") {
@@ -166,7 +172,7 @@ function AlipayJsPay(payStr) {
             var msg = "";
             if(result.resultCode == "9000"){
                 //AlipayJSBridge.call('closeWebview');
-				window.location.href="./success.php?trade_no="+$("#trade_no").val();
+				window.location.href="./success.php?trade_no="+encodeURIComponent($("#trade_no").val());
             }else if(result.resultCode == "8000"){
                 msg = "正在处理中";
             }else if(result.resultCode == "4000"){
@@ -194,14 +200,20 @@ function Alipayready(callback) {
 //region QQ JS
 function QQJsPay(payStr){
 	var trade_no = $("#trade_no").val();
-	var jsonPayStr = eval("("+payStr+")");
+	var jsonPayStr;
+	try {
+		jsonPayStr = typeof payStr === 'string' ? JSON.parse(payStr) : payStr;
+	} catch(e) {
+		tips.show('支付参数异常');
+		return;
+	}
 	mqq.tenpay.pay({
 		tokenId: jsonPayStr.tokenId,
 		appInfo: jsonPayStr.appInfo
 	}, function(result, resultCode){
 		if(resultCode == 0){ //支付成功
 			//mqq.ui.popBack();
-			window.location.href="./success.php?trade_no="+$("#trade_no").val();
+			window.location.href="./success.php?trade_no="+encodeURIComponent($("#trade_no").val());
 		}else{
 			tips.show("支付失败");
 		}
@@ -221,6 +233,27 @@ var valueFinal = 0;
 new Hammer(keyboard).on('tap',keypress);
 new Hammer(payBtn).on('tap',submitFun);
 new Hammer(clearBtn).on('tap',clearFun);
+
+// 为键盘用户提供与触摸相同的操作入口。
+keyboard.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    var target = e.target.closest('[data-value]');
+    if(!target) return;
+    e.preventDefault();
+    keypress({preventDefault:function(){}, target:target});
+});
+payBtn.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        submitFun();
+    }
+});
+clearBtn.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        clearFun();
+    }
+});
 
 var txAmount = $("#txAmount").val();
 if (!!txAmount && txAmount > 0) {

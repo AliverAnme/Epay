@@ -2,12 +2,12 @@
 $is_defend = true;
 include("./inc.php");
 if(isset($_GET['ucode'])){
-	$code=trim($_GET['ucode']);
+	$code=is_string($_GET['ucode'])?trim($_GET['ucode']):'';
     if(!preg_match('/^[a-zA-Z0-9]{1,32}$/',$code)) showerror('参数错误');
     $uid = $DB->findColumn('onecode', 'uid', ['code' => $code]);
     if(!$uid) showerror('当前码牌未绑定商户<br/>码牌编号：'.$code.'<br/><p class="weui-btn-area"><a href="/user/onecode.php?bind='.$code.'" class="weui-btn weui-btn_primary">点此绑定</a></p>');
 }elseif(isset($_GET['merchant'])){
-	$merchant=trim($_GET['merchant']);
+	$merchant=is_string($_GET['merchant'])?trim($_GET['merchant']):'';
 	$uid = authcode($merchant, 'DECODE', SYS_KEY);
 	if(!$uid || !is_numeric($uid))showerror('参数错误');
 }elseif(isset($_SESSION['paypage_uid'])){
@@ -15,7 +15,7 @@ if(isset($_GET['ucode'])){
 }else{
 	showerror('参数不完整');
 }
-$userrow = $DB->getRow("SELECT `uid`,`gid`,`money`,`mode`,`pay`,`cert`,`status`,`username`,`channelinfo`,`qq`,`codename`,`deposit` FROM `pre_user` WHERE `uid`='{$uid}' LIMIT 1");
+$userrow = $DB->getRow("SELECT `uid`,`gid`,`money`,`mode`,`pay`,`cert`,`status`,`username`,`channelinfo`,`qq`,`codename`,`deposit` FROM `pre_user` WHERE `uid`=:uid LIMIT 1", [':uid'=>(int)$uid]);
 if(!$userrow || $userrow['status']==0 || $userrow['pay']==0)showerror('当前商户不存在或已被封禁');
 if($userrow['pay']==2 && $conf['user_review']==1)showerror('商户没通过审核，请联系官方客服进行审核');
 $groupconfig = getGroupConfig($userrow['gid']);
@@ -44,7 +44,7 @@ $_SESSION['paypage_uid'] = $uid;
 
 $direct = '0';
 $checktype = check_paytype();
-$type = isset($_GET['type'])?trim($_GET['type']):$checktype;
+$type = isset($_GET['type']) && is_string($_GET['type'])?trim($_GET['type']):$checktype;
 if($type){
     if((isset($_GET['code']) || isset($_GET['auth_code']) || isset($_GET['userAuthCode'])) && $_SESSION['paypage_channel']){
         $submitData = \lib\Channel::info($_SESSION['paypage_channel'], $userrow['gid']);
@@ -145,7 +145,7 @@ if($type){
 	}
 }
 
-$money = isset($_GET['money'])?$_GET['money']:null;
+$money = isset($_GET['money']) && is_scalar($_GET['money'])?$_GET['money']:null;
 if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))$money = null;
 $codename = !empty($userrow['codename'])?$userrow['codename']:$userrow['username'];
 $csrf_token = bin2hex(random_bytes(16));
@@ -162,40 +162,38 @@ $_SESSION['paypage_token'] = $csrf_token;
     <meta http-equiv="expires" content="0">
     <link rel="stylesheet" href="css/default.css">
     <link rel="stylesheet" href="css/style.css?version=1001">
+    <link rel="stylesheet" href="css/epay-theme.css?version=20260731">
 </head>
-<body>
+<body class="epay-pay-page">
 <div class="layout-flex wrap">
 
   <!-- content start -->
   <div class="content">
-      <div class="mar20">
-          <table>
-              <tbody>
-                  <tr>
-                      <td><span class="sico_pay" style="margin:5px 5px 10px 5px"></span></td>
-                      <td  class="selTitle"><?php echo $codename?></td>
-                  </tr>
-              </tbody>
-          </table>
+      <div class="merchant-card" aria-label="收款商户">
+          <span class="sico_pay" aria-hidden="true"></span>
+          <div class="merchant-meta">
+              <span class="merchant-label">收款至</span>
+              <span class="selTitle"><?php echo h($codename)?></span>
+          </div>
       </div>
     <form name="payForm" action="dopay" method="post">
         <input type="hidden" name="uid" id="uid" value="<?php echo $uid?>">
         <input type="hidden" name="token" id="token" value="<?php echo $csrf_token?>">
-        <input type="hidden" name="paytype" id="paytype" value="<?php echo $type?>">
+        <input type="hidden" name="paytype" id="paytype" value="<?php echo h($type)?>">
 		<input type="hidden" name="direct" id="direct" value="<?php echo $direct?>">
-		<input type="hidden" name="payer" id="payer" value="<?php echo $openId?>">
+        <input type="hidden" name="payer" id="payer" value="<?php echo h($openId)?>">
 		<input type="hidden" name="trade_no" id="trade_no" value="">
-        <?php if($money){?><input type="hidden" name="txAmount" id="txAmount" value="<?php echo $money?>"><?php }?>
+        <?php if($money){?><input type="hidden" name="txAmount" id="txAmount" value="<?php echo h($money)?>"><?php }?>
         <div class="set_amount">
         	<div class="payMoney marLeft10">请输入付款金额</div>
             <div class="amount_bd">
                 <i class="i_money marLeft10" style="">¥</i>
-                <span class="input_simu " id="amount"></span>
+                <span class="input_simu " id="amount" aria-live="polite" aria-label="付款金额"></span>
 
                 <!-- 模拟input -->
                 <em class="line_simu" id="line"></em>
                 <!-- 模拟闪烁的光标 -->
-                <div  id="clearBtn"  style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></div>
+                <div id="clearBtn" role="button" tabindex="0" aria-label="清除金额" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></div>
                 <!-- 清除按钮 -->
             </div>
         </div>
@@ -203,9 +201,9 @@ $_SESSION['paypage_token'] = $csrf_token;
             <div class="have_been_set">
                 <span>备注：<span id="remark-content"></span></span>
                 <div class="remark_operate">
-                    <a href="#" class="remark_add" id="openModal">添加备注</a>
-                    <a href="#" class="remark_edit">编辑</a>
-                    <a href="#" class="remark_clear_away">清除</a>
+                    <a href="javascript:;" class="remark_add" id="openModal">添加备注</a>
+                    <a href="javascript:;" class="remark_edit">编辑</a>
+                    <a href="javascript:;" class="remark_clear_away">清除</a>
                 </div>
             </div>
         </div>
@@ -226,31 +224,31 @@ $_SESSION['paypage_token'] = $csrf_token;
   </div>
   <!-- content end -->
 
-  <div class="copyRight">由 <span style="font-weight:bold"><?php echo $conf['sitename']?></span> 提供服务支持</div>
+  <div class="copyRight">由 <span><?php echo h($conf['sitename'])?></span> 提供服务支持</div>
   <!-- 键盘 -->
   <div class="keyboard">
       <table class="key_table" id="keyboard" style="touch-action:pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
           <tbody>
               <tr>
-                <td class="key border b_rgt_btm" data-value="1">1</td>
-                <td class="key border b_rgt_btm" data-value="2">2</td>
-                <td class="key border b_rgt_btm" data-value="3">3</td>
-                <td class="key border b_btm clear" data-value="delete"></td>
+                <td class="key border b_rgt_btm" data-value="1" role="button" tabindex="0">1</td>
+                <td class="key border b_rgt_btm" data-value="2" role="button" tabindex="0">2</td>
+                <td class="key border b_rgt_btm" data-value="3" role="button" tabindex="0">3</td>
+                <td class="key border b_btm clear" data-value="delete" role="button" tabindex="0" aria-label="删除"></td>
               </tr>
               <tr>
-                <td class="key border b_rgt_btm" data-value="4">4</td>
-                <td class="key border b_rgt_btm" data-value="5">5</td>
-                <td class="key border b_rgt_btm" data-value="6">6</td>
-                <td class="pay_btn" rowspan="3" id="payBtn" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><em>确认</em>支付</td>
+                <td class="key border b_rgt_btm" data-value="4" role="button" tabindex="0">4</td>
+                <td class="key border b_rgt_btm" data-value="5" role="button" tabindex="0">5</td>
+                <td class="key border b_rgt_btm" data-value="6" role="button" tabindex="0">6</td>
+                <td class="pay_btn" rowspan="3" id="payBtn" role="button" tabindex="0" aria-label="确认支付" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><em>确认</em>支付</td>
               </tr>
               <tr>
-                <td class="key border b_rgt_btm" data-value="7">7</td>
-                <td class="key border b_rgt_btm" data-value="8">8</td>
-                <td class="key border b_rgt_btm" data-value="9">9</td>
+                <td class="key border b_rgt_btm" data-value="7" role="button" tabindex="0">7</td>
+                <td class="key border b_rgt_btm" data-value="8" role="button" tabindex="0">8</td>
+                <td class="key border b_rgt_btm" data-value="9" role="button" tabindex="0">9</td>
               </tr>
               <tr>
-                <td colspan="2" class="key border b_rgt" data-value="0">0</td>
-                <td class="key border b_rgt" data-value="dot">.</td>
+                <td colspan="2" class="key border b_rgt" data-value="0" role="button" tabindex="0">0</td>
+                <td class="key border b_rgt" data-value="dot" role="button" tabindex="0">.</td>
               </tr>
           </tbody>
       </table>

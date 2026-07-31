@@ -8,8 +8,7 @@ if(!defined('IN_CRONLITE'))exit();
 <title><?php echo h($conf['title'])?></title>
 <meta name="keywords" content="<?php echo h($conf['keywords'])?>">
 <meta name="description" content="<?php echo h($conf['description'])?>" />
-<meta name="viewport"content="user-scalable=no, width=device-width">
-<meta name="viewport"content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="renderer"content="webkit">
 <link rel="stylesheet" href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css" />
 <link rel="stylesheet" href="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/css/bootstrap.min.css" type="text/css" />
@@ -19,6 +18,7 @@ if(!defined('IN_CRONLITE'))exit();
 <script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
 <script src="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <link rel="stylesheet"type="text/css"href="<?php echo STATIC_ROOT?>css/index.css"/>
+<link rel="stylesheet"href="<?php echo STATIC_ROOT?>css/epay-modern.css">
 </head>
 <body>
 <!--[if (gt IE 6)&amp;(lt IE 9)]>
@@ -34,7 +34,7 @@ if(!defined('IN_CRONLITE'))exit();
 <div class="container">
 <div class="row">
 <div class="navbar-header">
-<button type="button"class="toggle navbar-toggle collapsed"data-toggle="collapse"data-target=".navbar-top-collapse">
+<button type="button" class="toggle navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-top-collapse" aria-label="打开导航菜单">
 <span class="sr-only">Toggle navigation</span>
 <span class="icon-bar"></span>
 <span class="icon-bar"></span>

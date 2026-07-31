@@ -2,46 +2,47 @@
 $is_defend=true;
 include("../includes/common.php");
 if(!$conf['test_open'])sysmsg("未开启测试支付");
+$csrf_token = '';
 if(isset($_GET['ok']) && isset($_GET['trade_no'])){
-	$trade_no=daddslashes($_GET['trade_no']);
-	$row=$DB->getRow("SELECT * FROM pre_order WHERE trade_no='{$trade_no}' AND uid='{$conf['test_pay_uid']}' limit 1");
+	$trade_no=is_string($_GET['trade_no'])?trim($_GET['trade_no']):'';
+	$row=$DB->getRow("SELECT * FROM pre_order WHERE trade_no=:trade_no AND uid=:uid limit 1", [':trade_no'=>$trade_no, ':uid'=>(int)$conf['test_pay_uid']]);
 	if(!$row)sysmsg('订单号不存在');
 	if($row['status']!=1)sysmsg('订单未完成支付');
 	$money = $row['money'];
 }else{
 	$trade_no=date("YmdHis").rand(111,999);
-	$userrow = $DB->getRow("SELECT uid,gid FROM pre_user WHERE uid='{$conf['test_pay_uid']}' limit 1");
+	$userrow = $DB->getRow("SELECT uid,gid FROM pre_user WHERE uid=:uid limit 1", [':uid'=>(int)$conf['test_pay_uid']]);
 	if(!$userrow)sysmsg("测试支付商户不存在");
 	$paytype = \lib\Channel::getTypes($userrow['uid'], $userrow['gid']);
-	$csrf_token = md5(mt_rand(0,999).time());
+	$csrf_token = bin2hex(random_bytes(16));
 	$_SESSION['csrf_token'] = $csrf_token;
 	$money = 1;
 }
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
-<body>
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-	<title><?php echo $conf['sitename']?> - 测试支付</title>
+	<title><?php echo h($conf['sitename'])?> - 测试支付</title>
     <link href="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet"/>
 	<link rel="stylesheet" href="./assets/css/captcha.css" type="text/css" />
 	<style>.form-group{margin-bottom:18px} #captcha{margin: auto;margin-bottom:16px}</style>
 </head>
+<body>
 <div class="container">
 <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
 <div class="page-header">
-  <h4><?php echo $conf['sitename']?> - 测试支付<a href="/" class="pull-right"><small>返回首页</small></a></h4>
+  <h4><?php echo h($conf['sitename'])?> - 测试支付<a href="/" class="pull-right"><small>返回首页</small></a></h4>
 </div>
 <div class="panel panel-primary">
 <div class="panel-body">
 
 <form name="alipayment">
-<input type="hidden" name="csrf_token" value="<?php echo $csrf_token?>">
+<input type="hidden" name="csrf_token" value="<?php echo h($csrf_token)?>">
 <div class="form-group"><div class="input-group">
 <span class="input-group-addon"><span class="glyphicon glyphicon-barcode"></span></span>
-<input class="form-control" placeholder="商户订单号" value="<?php echo $trade_no?>" name="trade_no" type="text" disabled="">
+<input class="form-control" placeholder="商户订单号" value="<?php echo h($trade_no)?>" name="trade_no" type="text" disabled="">
 </div></div>
 <div class="form-group"><div class="input-group">
 <span class="input-group-addon"><span class="glyphicon glyphicon-shopping-cart"></span></span>
@@ -49,7 +50,7 @@ if(isset($_GET['ok']) && isset($_GET['trade_no'])){
 </div></div>
 <div class="form-group"><div class="input-group">
 <span class="input-group-addon"><span class="glyphicon glyphicon-yen"></span></span>
-<input class="form-control" placeholder="付款金额" value="<?php echo $money?>" name="money" type="text" <?php echo isset($_GET['ok'])?'disabled=""':'required=""'?>>	        
+<input class="form-control" placeholder="付款金额" value="<?php echo h($money)?>" name="money" type="text" <?php echo isset($_GET['ok'])?'disabled=""':'required=""'?> >
 </div></div>
 <center>
 <?php if(isset($_GET['ok'])){?>
@@ -72,7 +73,7 @@ if(isset($_GET['ok']) && isset($_GET['trade_no'])){
 <div class="btn-group btn-group-justified" role="group" aria-label="...">
 <?php foreach($paytype as $rows){?>
 <div class="btn-group" role="group">
-  <button type="button" name="type" value="<?php echo $rows['id']?>" class="btn btn-default" onclick="submitPay(this)"><img src="/assets/icon/<?php echo $rows['name']?>.ico" height="18">&nbsp;<?php echo $rows['showname']?></button>
+  <button type="button" name="type" value="<?php echo h($rows['id'])?>" class="btn btn-default" onclick="submitPay(this)"><img src="/assets/icon/<?php echo h($rows['name'])?>.ico" height="18" alt="">&nbsp;<?php echo h($rows['showname'])?></button>
 </div>
 <?php }?>
 </div>
@@ -81,7 +82,7 @@ if(isset($_GET['ok']) && isset($_GET['trade_no'])){
 </form>
 </div>
 <div class="panel-footer text-center">
-<?php echo $conf['sitename']?> © <?php echo date("Y")?> All Rights Reserved.
+<?php echo h($conf['sitename'])?> © <?php echo date("Y")?> All Rights Reserved.
 </div>
 </div>
 </div>

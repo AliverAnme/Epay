@@ -167,14 +167,15 @@ case 'delTransfer':
 	else exit('{"code":-1,"msg":"删除失败['.$DB->error().']"}');
 break;
 case 'refundTransfer':
-	$biz_no=$_POST['biz_no'];
+	$biz_no=trim($_POST['biz_no'] ?? '');
 	$order = $DB->find('transfer', '*', ['biz_no' => $biz_no]);
     if(!$order) exit('{"code":-1,"msg":"付款记录不存在！"}');
 	if(!in_array($order['status'], [0, 3])) exit('{"code":-1,"msg":"该转账状态不支持退款"}');
-	if($DB->exec("UPDATE pre_transfer SET status='2' WHERE biz_no='$biz_no'")){
-		if($order['uid'] > 0){
-			changeUserMoney($order['uid'], $order['costmoney'], true, '代付退回', $biz_no);
-		}
+	// 将状态条件放进 UPDATE，避免并发请求在检查后重复退款。
+	$updated = $DB->exec("UPDATE pre_transfer SET status=:status WHERE biz_no=:biz_no AND status IN (0,3)", [':status'=>2, ':biz_no'=>$biz_no]);
+	if($updated !== 1) exit('{"code":-1,"msg":"该转账已被其他操作处理"}');
+	if($order['uid'] > 0 && !changeUserMoney($order['uid'], $order['costmoney'], true, '代付退回', $biz_no)){
+		exit('{"code":-1,"msg":"退款入账失败，请联系管理员"}');
 	}
 	exit('{"code":0,"msg":"已成功将¥'.$order['costmoney'].'退给商户'.$order['uid'].'"}');
 break;

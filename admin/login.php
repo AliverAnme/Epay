@@ -95,10 +95,12 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
   $token=authcode("{$conf['admin_user']}\t{$session}\t{$expiretime}", 'ENCODE', SYS_KEY);
   $secure = is_https();
   setcookie("admin_token", $token, $expiretime, '/', '', $secure, true);
+  session_regenerate_id(true);
   exit(json_encode(['code'=>0]));
 }elseif(isset($_GET['logout'])){
 	if(!checkRefererHost())exit();
-	setcookie("admin_token", "", time() - 2592000);
+	$secure = is_https();
+	setcookie("admin_token", "", time() - 2592000, '/', '', $secure, true);
 	exit("<script language='javascript'>window.location.href='./login.php';</script>");
 }elseif($islogin==1){
 	exit("<script language='javascript'>alert('您已登录！');window.location.href='./';</script>");

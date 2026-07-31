@@ -1,0 +1,433 @@
+/* 易支付用户端：清晰、高对比度的移动端主题。 */
+:root {
+    --epay-ink: #14213d;
+    --epay-muted: #718096;
+    --epay-line: #e7edf5;
+    --epay-surface: #ffffff;
+    --epay-surface-soft: #f7f9fc;
+    --epay-primary: #2563eb;
+    --epay-primary-dark: #1d4ed8;
+    --epay-primary-soft: #eaf1ff;
+    --epay-success: #16a34a;
+    --epay-shadow: 0 18px 50px rgba(27, 52, 93, .10);
+}
+
+html {
+    background: #f3f6fb;
+    color: var(--epay-ink);
+}
+
+body.epay-pay-page {
+    min-height: 100%;
+    background:
+        radial-gradient(circle at 8% 0%, rgba(37, 99, 235, .09), transparent 34%),
+        linear-gradient(180deg, #f7faff 0%, #f1f5fb 100%);
+    color: var(--epay-ink);
+    overflow-x: hidden;
+}
+
+.epay-pay-page .wrap {
+    min-height: 100%;
+}
+
+.epay-pay-page .content {
+    padding: 0 0 1.5rem;
+}
+
+.epay-pay-page .merchant-card {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    margin: 1.5rem 1.5rem 0;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid rgba(255, 255, 255, .86);
+    border-radius: 1.35rem;
+    background: rgba(255, 255, 255, .86);
+    box-shadow: var(--epay-shadow);
+    text-align: left;
+    backdrop-filter: blur(14px);
+}
+
+.epay-pay-page .merchant-card .sico_pay {
+    flex: 0 0 4.1rem;
+    width: 4.1rem;
+    height: 4.1rem;
+    margin: 0;
+    border-radius: 1.15rem;
+    background-color: var(--epay-primary-soft);
+    background-size: 3.2rem 3.2rem;
+    background-position: center;
+}
+
+.epay-pay-page .merchant-meta {
+    min-width: 0;
+}
+
+.epay-pay-page .merchant-label {
+    display: block;
+    margin-bottom: .2rem;
+    color: var(--epay-muted);
+    font-size: 1.2rem;
+    letter-spacing: .04em;
+}
+
+.epay-pay-page .selTitle {
+    display: block;
+    overflow: hidden;
+    color: var(--epay-ink);
+    font-size: 1.75rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epay-pay-page .set_amount {
+    margin: 1.35rem 1.5rem 0;
+    padding: 1.65rem 1.65rem 1.2rem;
+    border: 1px solid var(--epay-line);
+    border-radius: 1.35rem;
+    background: var(--epay-surface);
+    box-shadow: var(--epay-shadow);
+}
+
+.epay-pay-page .payMoney {
+    margin: 0 0 .7rem;
+    color: var(--epay-muted);
+    font-size: 1.25rem;
+}
+
+.epay-pay-page .amount_bd {
+    display: flex;
+    align-items: center;
+    min-height: 6rem;
+    border-bottom: 1px solid var(--epay-line);
+    line-height: 1;
+}
+
+.epay-pay-page .i_money {
+    height: auto;
+    padding: 0 .45rem 0 0;
+    color: var(--epay-primary);
+    font-size: 2.15rem;
+    font-weight: 700;
+}
+
+.epay-pay-page .set_amount .amount_bd .input_simu {
+    height: auto;
+    color: var(--epay-ink);
+    font-size: clamp(3.3rem, 11vw, 4.6rem);
+    font-weight: 700;
+    letter-spacing: -.04em;
+    line-height: 1;
+}
+
+.epay-pay-page .set_amount .amount_bd .line_simu {
+    height: 3.5rem;
+    margin: 0 0 0 .35rem;
+    background: var(--epay-primary);
+}
+
+.epay-pay-page #clearBtn {
+    top: 50%;
+    right: .2rem;
+    width: 3.2rem;
+    height: 3.2rem;
+    margin-top: -1.6rem;
+    border-radius: 50%;
+    background: var(--epay-surface-soft) url(../images/btn_clear.png) center / 1.5rem 1.5rem no-repeat;
+}
+
+.epay-pay-page .set_remark {
+    display: flex;
+    align-items: center;
+    min-height: 4.2rem;
+    margin: 0 1.5rem;
+    padding: 1rem 0 .35rem;
+    border-bottom: 1px solid rgba(225, 233, 244, .8);
+}
+
+.epay-pay-page .have_been_set {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    margin-left: 0;
+    color: var(--epay-muted);
+    text-align: left;
+}
+
+.epay-pay-page .have_been_set > span {
+    color: var(--epay-muted);
+    font-size: 1.25rem;
+}
+
+.epay-pay-page .remark_operate {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+    margin-left: .7rem;
+}
+
+.epay-pay-page .remark_operate > a {
+    position: relative;
+    margin: 0;
+    border: 1px solid #dbe6f7;
+    border-radius: 999px;
+    background: #f4f7fd;
+    color: var(--epay-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: .35rem .8rem .35rem 1.8rem;
+}
+
+.epay-pay-page .remark_operate > a::after {
+    bottom: 50%;
+    left: .55rem;
+    width: .9rem;
+    height: .9rem;
+    transform: translateY(50%);
+}
+
+.epay-pay-page .copyRight {
+    margin: .8rem 0 1rem;
+    color: #8b98aa;
+    font-size: 1.15rem;
+    text-align: center;
+}
+
+.epay-pay-page .copyRight span {
+    color: #5d6b7d;
+}
+
+.epay-pay-page .keyboard {
+    margin-top: auto;
+    padding: .7rem .7rem calc(.7rem + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(219, 228, 241, .9);
+    background: rgba(255, 255, 255, .86);
+    box-shadow: 0 -12px 35px rgba(41, 65, 101, .07);
+    backdrop-filter: blur(14px);
+}
+
+.epay-pay-page .key_table {
+    overflow: hidden;
+    border-radius: 1.2rem;
+    background: var(--epay-surface-soft);
+}
+
+.epay-pay-page .key_table td {
+    height: 6.2rem;
+    border-color: var(--epay-line);
+    color: var(--epay-ink);
+    font-size: 2.7rem;
+    font-weight: 600;
+    transition: background .16s ease, transform .16s ease;
+}
+
+.epay-pay-page .key_table td:active {
+    background: #e8eef9;
+    transform: scale(.98);
+}
+
+.epay-pay-page .keyboard .key.clear {
+    background-color: #f3f6fb;
+    background-size: 2.2rem 2.2rem;
+}
+
+.epay-pay-page .keyboard .pay_btn {
+    border-radius: 0 1.1rem 1.1rem 0;
+    background: linear-gradient(155deg, #3b82f6, var(--epay-primary-dark));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
+    color: #fff;
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 2.4rem;
+}
+
+.epay-pay-page .keyboard .pay_btn:active {
+    background: linear-gradient(155deg, #2563eb, #1e40af);
+    transform: none;
+}
+
+.epay-pay-page .keyboard .pay_btn.disable {
+    background: linear-gradient(155deg, #b9c8e2, #9dafcb);
+    color: rgba(255, 255, 255, .88);
+}
+
+.epay-pay-page .modal {
+    z-index: 20;
+    background: rgba(14, 27, 51, .48);
+    backdrop-filter: blur(4px);
+}
+
+.epay-pay-page .modal-content {
+    width: min(88%, 36rem);
+    margin: 0 auto;
+    border: 0;
+    border-radius: 1.5rem;
+    box-shadow: 0 24px 70px rgba(14, 27, 51, .25);
+}
+
+.epay-pay-page .modal-header {
+    padding: 1.6rem 1.8rem;
+    border-bottom: 1px solid var(--epay-line);
+    color: var(--epay-ink);
+}
+
+.epay-pay-page .modal-body {
+    padding: 1.6rem 1.8rem 1.8rem;
+}
+
+.epay-pay-page .modal-body textarea {
+    box-sizing: border-box;
+    min-height: 8rem;
+    border: 1px solid #d9e3f1;
+    border-radius: 1rem;
+    background: var(--epay-surface-soft);
+    color: var(--epay-ink);
+    font-size: 1.4rem;
+}
+
+.epay-pay-page .modal-body textarea:focus {
+    border-color: #7aa7f6;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+
+.epay-pay-page .modal-body button {
+    margin-top: 1.1rem;
+    border-radius: .9rem;
+    background: var(--epay-primary);
+    font-size: 1.45rem;
+    font-weight: 700;
+}
+
+/* Shared status pages (WeUI-backed). */
+html.weui-msg {
+    min-height: 100%;
+    background:
+        radial-gradient(circle at 90% 0%, rgba(37, 99, 235, .10), transparent 38%),
+        #f5f8fd;
+}
+
+html.weui-msg body {
+    min-height: 100%;
+    background: transparent;
+    color: var(--epay-ink);
+    font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+}
+
+html.weui-msg .page {
+    padding: 2rem 1.5rem;
+}
+
+html.weui-msg .weui-msg {
+    width: min(100%, 42rem);
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: 2.3rem 1.8rem 1.5rem;
+    border: 1px solid rgba(255,255,255,.9);
+    border-radius: 1.5rem;
+    background: rgba(255,255,255,.9);
+    box-shadow: var(--epay-shadow);
+}
+
+html.weui-msg .weui-msg__icon-area {
+    margin: .5rem 0 1.3rem;
+}
+
+html.weui-msg .weui-icon_msg {
+    font-size: 5.2rem;
+}
+
+html.weui-msg .weui-icon-success {
+    color: var(--epay-success);
+}
+
+html.weui-msg .weui-msg__title {
+    color: var(--epay-ink);
+    font-size: 1.7rem;
+    font-weight: 700;
+}
+
+html.weui-msg .weui-msg__desc {
+    color: var(--epay-primary);
+}
+
+html.weui-msg .weui-msg__custom-area {
+    margin-top: 1.6rem;
+}
+
+html.weui-msg .weui-cells,
+html.weui-msg .weui-form-preview__list {
+    overflow: hidden;
+    margin: 0;
+    border: 1px solid var(--epay-line);
+    border-radius: 1rem;
+    background: var(--epay-surface-soft);
+}
+
+html.weui-msg .weui-cell,
+html.weui-msg .weui-form-preview__item {
+    color: var(--epay-muted);
+}
+
+html.weui-msg .weui-cell__ft,
+html.weui-msg .weui-form-preview__value {
+    max-width: 65%;
+    overflow: hidden;
+    color: var(--epay-ink);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+html.weui-msg .weui-msg__opr-area {
+    margin-top: 2rem;
+}
+
+html.weui-msg .weui-btn-area {
+    margin: 0;
+}
+
+html.weui-msg .weui-btn {
+    border-radius: .9rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+}
+
+html.weui-msg .weui-btn_primary {
+    background: var(--epay-primary);
+}
+
+html.weui-msg .weui-btn_default {
+    border: 1px solid #d7e2f0;
+    background: #fff;
+    color: var(--epay-ink);
+}
+
+html.weui-msg .weui-footer {
+    color: #91a0b4;
+}
+
+html.weui-msg .weui-msg__tips {
+    color: var(--epay-muted);
+}
+
+@media (max-width: 360px) {
+    .epay-pay-page .merchant-card,
+    .epay-pay-page .set_amount {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .epay-pay-page .key_table td {
+        height: 5.6rem;
+        font-size: 2.45rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epay-pay-page *,
+    html.weui-msg * {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+    }
+}

@@ -6,6 +6,7 @@ if(!defined('IN_CRONLITE'))exit();
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>红包领取确认</title>
     <link href="/assets/css/weui.min.css" rel="stylesheet">
+    <link href="/paypage/css/epay-theme.css?version=20260731" rel="stylesheet">
     <style>.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}</style>
 </head>
 <body>
@@ -17,10 +18,10 @@ if(!defined('IN_CRONLITE'))exit();
     </div>
     <div class="weui-msg__text-area">
         <h2 class="weui-msg__title"><span style="font-size:18px;">待你收款</span></h2>
-		<p class="weui-msg__desc"><span style="font-size:34px;font-weight:700;line-height: 64px;">¥</span><span style="font-size:44px;font-weight:700;vertical-align:top;"><?php echo $trans['money']?></span></p>
+		<p class="weui-msg__desc"><span style="font-size:34px;font-weight:700;line-height: 64px;">¥</span><span style="font-size:44px;font-weight:700;vertical-align:top;"><?php echo h($trans['money'])?></span></p>
         <div class="weui-msg__custom-area">
             <ul class="weui-form-preview__list">
-                <li role="option" class="weui-form-preview__item"><label class="weui-form-preview__label">创建时间</label><p class="weui-form-preview__value weui-cell__ft"><?php echo $trans['addtime']?></p></li>
+                <li role="option" class="weui-form-preview__item"><label class="weui-form-preview__label">创建时间</label><p class="weui-form-preview__value weui-cell__ft"><?php echo h($trans['addtime'])?></p></li>
             </ul>
         </div>
     </div>
@@ -33,7 +34,7 @@ if(!defined('IN_CRONLITE'))exit();
         <p class="weui-msg__tips">请在24小时内确认</p>
     </div>
     <div class="weui-msg__extra-area">
-        <div class="weui-footer"><p class="weui-footer__links"></p><p class="weui-footer__text">Copyright © <?php echo date("Y")?> <?php echo $conf['sitename']?></p></div>
+        <div class="weui-footer"><p class="weui-footer__links"></p><p class="weui-footer__text">Copyright © <?php echo date("Y")?> <?php echo h($conf['sitename'])?></p></div>
     </div>
 </div>
     <div role="alert" id="loadingToast">
@@ -110,7 +111,7 @@ $(document).ready(function(){
     $.ajax({
       type: "POST",
       url: "./red_ajax.php",
-      data: {n: "<?php echo $biz_no?>", t: "<?php echo $time?>", s: "<?php echo $sign?>", openid: "<?php echo $openid?>"},
+      data: {n: <?php echo json_encode($biz_no, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP)?>, t: <?php echo json_encode($time, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP)?>, s: <?php echo json_encode($sign, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP)?>, openid: <?php echo json_encode($openid, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP)?>},
       dataType: "json",
       success: function(response) {
         $('#loadingToast').fadeOut(100);

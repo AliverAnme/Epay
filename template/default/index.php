@@ -2,105 +2,72 @@
 if(!defined('IN_CRONLITE'))exit();
 require INDEX_ROOT.'head.php';
 ?>
-<section class="screen1">
-<div id="myCarousel"class="carousel slide">
-<div class="carousel-inner">
-
-<div class="item active">
-<div class="banner2 banner3">
-<div class="container">
-<div class="row">
-
-<div class="col-xs-12 col-sm-6 col-md-6">
-<div class="ban2_img">
-<div class="cloud_db_img"><img src="<?php echo STATIC_ROOT?>images/banner4.png"class="img-responsive"></div>
+<main class="landing-page">
+<section class="screen1 hero-section" aria-labelledby="hero-title">
+<div class="hero-shell">
+<div class="container hero-container">
+<div class="hero-grid">
+<div class="hero-art" aria-hidden="true">
+<div class="hero-art-glow"></div>
+<img src="<?php echo STATIC_ROOT?>images/banner4.png" class="hero-illustration" alt="">
+<div class="hero-art-note"><span class="hero-art-dot"></span> 一站式支付基础设施</div>
+</div>
+<div class="hero-content">
+<p class="hero-eyebrow">PAYMENT INFRASTRUCTURE <span>•</span> READY FOR BUSINESS</p>
+<h1 id="hero-title">欢迎使用<?php echo h($conf['sitename'])?></h1>
+<p class="hero-copy">提供免签约支付宝、QQ钱包、微信支付，帮助商户更快接入、更稳收款。</p>
+<div class="hero-actions">
+<a href="/user/" class="btn hero-button hero-button-primary">登录商户 <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+<a href="/user/reg.php" class="btn hero-button hero-button-ghost">注册商户</a>
+</div>
+<dl class="hero-metrics" aria-label="平台能力">
+<div><dt>多渠道</dt><dd>支付宝 · 微信 · QQ</dd></div>
+<div><dt>低门槛</dt><dd>快速接入，实时收款</dd></div>
+</dl>
 </div>
 </div>
-<div class="col-xs-12 col-sm-6 col-md-6">
-<div class="ban2_text">
-<div class="ban2_status docker">
-<div class="ban2_middle">欢迎使用<?php echo h($conf['sitename'])?></div>
-<div class="ban2_content">提供免签约支付宝、QQ钱包、微信支付</div>
-                      
-                        <div class="ban2_experience">
-<a href="/user/"class="btn proceed">登录商户</a>&nbsp;&nbsp;<a href="/user/reg.php"class="btn proceed">注册商户</a><br/>
-                      </div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-</div>
-<!--   <ol class="carousel-indicators">
-<li data-target="#myCarousel"data-slide-to="1"class="active"></li>
-</ol>
-<div id="trun_left"><a href="#myCarousel"data-slide="prev"class="_left">&lsaquo;</a></div>
-<div id="trun_right"><a href="#myCarousel"data-slide="next"class="_right">&rsaquo;</a></div>-->
-</div>
-
-</section>
-   
-   <section class="screen3">
-<div class="container">
-<div class="row">
-<div class="col-xs-12 cloud_server">
-<div class="h3"><?php echo h($conf['sitename'])?>®免签约支付产品</div>
-</div>
-<div class="col-xs-6 col-sm-4 col-md-4">
-<div id="container_server">
-<div class="server_item container_server"></div>
-<div class="server-head h4">多种支付方式
-<div class="h5 text-center">支持财付通 支付宝 微信 QQ钱包</div>
-</div>
-</div>
-</div>
-<div class="col-xs-6 col-sm-4 col-md-4">
-<div id="server-arrange">
-<div class="server_item arrange"></div>
-<div class="server-head h4">对接费率超低
-<div class="h5 text-center">每笔交易手续费低至2%，比其它平台更便宜</div>
-</div>
-</div>
-</div>
-<div class="col-xs-6 col-sm-4 col-md-4">
-<div id="codebuild">
-<div class="server_item codebuild"></div>
-<div class="server-head h4">无需自主提现
-<div class="h5 text-center">满一定金额即可自动提现到你的支付宝账号</div>
-</div>
-</div>
-</div>
-
-
 </div>
 </div>
 </section>
 
-  
-    <section class="screen4">
-<div class="container">
-<div class="row">
-<div class="col-xs-12 blog-head">
-<div class="h3">平台合作伙伴</div>
-<div class="col-xs-3">
-<img src="<?php echo STATIC_ROOT?>images/alipay.png" width="150">
+<section class="screen3 feature-section" aria-labelledby="feature-title">
+<div class="container section-shell">
+<header class="section-heading">
+<p class="section-kicker">CORE CAPABILITIES</p>
+<h2 id="feature-title">一套平台，连接主流支付场景</h2>
+<p>从收款、结算到风控，把复杂的支付流程交给平台处理。</p>
+</header>
+<div class="feature-grid">
+<article class="feature-card">
+<div class="feature-card-top"><span class="feature-index">01</span><div class="server_item container_server" aria-hidden="true"></div></div>
+<div class="feature-copy"><h3>多种支付方式</h3><p>支持财付通、支付宝、微信与 QQ 钱包，覆盖常用付款场景。</p></div>
+</article>
+<article class="feature-card">
+<div class="feature-card-top"><span class="feature-index">02</span><div class="server_item arrange" aria-hidden="true"></div></div>
+<div class="feature-copy"><h3>对接费率更低</h3><p>清晰的费率规则与统一接口，降低接入和日常运营成本。</p></div>
+</article>
+<article class="feature-card">
+<div class="feature-card-top"><span class="feature-index">03</span><div class="server_item codebuild" aria-hidden="true"></div></div>
+<div class="feature-copy"><h3>结算更省心</h3><p>达到结算条件后自动处理，商户无需重复操作和人工跟进。</p></div>
+</article>
 </div>
-<div class="col-xs-3">
-<img src="<?php echo STATIC_ROOT?>images/wxpay.png" width="150">
-</div>
-<div class="col-xs-3">
-<img src="<?php echo STATIC_ROOT?>images/qqpay.png" width="150">
-</div>
-<div class="col-xs-3">
-<img src="<?php echo STATIC_ROOT?>images/tenpay.png" width="150">
-</div>
-</div>
-          
-          
-        </div>
 </div>
 </section>
+
+<section class="screen4 partner-section" aria-labelledby="partner-title">
+<div class="container section-shell">
+<header class="partner-heading">
+<div><p class="section-kicker">PAYMENT NETWORK</p><h2 id="partner-title">平台合作伙伴</h2></div>
+<p>兼容支付宝、微信、QQ 钱包等主流支付生态，让用户用熟悉的方式完成付款。</p>
+</header>
+<div class="partner-grid">
+<div class="partner-card"><img src="<?php echo STATIC_ROOT?>images/alipay.png" alt="支付宝"></div>
+<div class="partner-card"><img src="<?php echo STATIC_ROOT?>images/wxpay.png" alt="微信支付"></div>
+<div class="partner-card"><img src="<?php echo STATIC_ROOT?>images/qqpay.png" alt="QQ 钱包"></div>
+<div class="partner-card"><img src="<?php echo STATIC_ROOT?>images/tenpay.png" alt="财付通"></div>
+</div>
+</div>
+</section>
+</main>
 
 <?php require INDEX_ROOT.'foot.php';?>

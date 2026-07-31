@@ -7,7 +7,8 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
   <div class="container" style="padding-top:70px;">
     <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
 <?php
-$app = isset($_GET['app'])?$_GET['app']:'alipay';
+$app = isset($_GET['app']) && is_string($_GET['app'])?$_GET['app']:'alipay';
+if(!in_array($app, ['alipay', 'wxpay'], true))sysmsg('参数错误');
 
 if(isset($_POST['submit'])){
 	if(!checkRefererHost())exit();
@@ -36,7 +37,7 @@ if(isset($_POST['submit'])){
 
 $out_biz_no = date("YmdHis").rand(11111,99999);
 
-$channel_select = $DB->getAll("SELECT id,name,plugin FROM pre_channel WHERE plugin IN (SELECT name FROM pre_plugin WHERE transtypes LIKE '%".$app."%')");
+$channel_select = $DB->getAll("SELECT id,name,plugin FROM pre_channel WHERE plugin IN (SELECT name FROM pre_plugin WHERE FIND_IN_SET(:type, transtypes)>0)", [':type'=>$app]);
 
 if($app=='alipay'){
 	$default_channel = $conf['transfer_alipay'];
@@ -57,8 +58,8 @@ if($app=='alipay'){
 			<input type="hidden" name="type" value="<?php echo $app?>"/>
 		    <div class="form-group">
 				<div class="input-group"><div class="input-group-addon">通道选择</div>
-				<select name="channel" class="form-control" default="<?php echo $default_channel?>">
-					<?php foreach($channel_select as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].''.($channel['id']==$default_channel?'（默认）':'').'</option>';} ?>
+				<select name="channel" class="form-control" default="<?php echo h($default_channel)?>">
+					<?php foreach($channel_select as $channel){echo '<option value="'.h($channel['id']).'">'.h($channel['name']).($channel['id']==$default_channel?'（默认）':'').'</option>';} ?>
 				</select>
 			</div></div>
 			<div class="form-group">
@@ -71,7 +72,7 @@ if($app=='alipay'){
 			</div></div>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">红包备注</div>
-				<input type="text" name="desc" value="" class="form-control" placeholder="可留空，默认为：<?php echo $app=='alipay'?$conf['transfer_name']:$conf['transfer_desc']?>"/>
+				<input type="text" name="desc" value="" class="form-control" placeholder="可留空，默认为：<?php echo h($app=='alipay'?$conf['transfer_name']:$conf['transfer_desc'])?>"/>
 			</div></div>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">支付密码</div>

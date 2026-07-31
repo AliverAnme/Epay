@@ -1,0 +1,448 @@
+/* 收银台：让订单信息、支付方式和主要操作形成清晰的单列流程。 */
+:root {
+    --cashier-ink: #17233e;
+    --cashier-muted: #718096;
+    --cashier-line: #e3eaf4;
+    --cashier-blue: #2f6fed;
+    --cashier-blue-dark: #1854c7;
+    --cashier-soft: #f4f7fc;
+}
+
+html,
+body.epay-cashier {
+    min-height: 100%;
+}
+
+body.epay-cashier {
+    display: flex;
+    min-width: 0;
+    min-height: 100vh;
+    flex-direction: column;
+    overflow-x: hidden;
+    background:
+        radial-gradient(circle at 10% 0, rgba(91, 157, 255, .16), transparent 31%),
+        linear-gradient(180deg, #f5f8fd 0%, #eef3fa 100%);
+    color: var(--cashier-ink);
+    font-family: 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+}
+
+.epay-cashier .navBD12 {
+    flex: none;
+    border-bottom: 1px solid rgba(219, 228, 241, .95);
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 8px 28px rgba(19, 43, 83, .07);
+    backdrop-filter: blur(14px);
+}
+
+.epay-cashier .nav12 {
+    display: flex;
+    width: min(1010px, calc(100% - 48px));
+    height: 70px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+}
+
+.epay-cashier .nav12-left,
+.epay-cashier .nav12-right {
+    float: none;
+    height: auto;
+}
+
+.epay-cashier .nav12-left img {
+    display: block;
+    width: 146px;
+    max-width: 100%;
+    height: auto;
+}
+
+.epay-cashier .nav12-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0;
+    color: var(--cashier-ink);
+    font-size: 19px;
+    font-weight: 750;
+    letter-spacing: .06em;
+}
+
+.epay-cashier .cashier-secure {
+    color: #3b8b6a;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+
+.epay-cashier .cashier-secure i {
+    margin-right: 3px;
+}
+
+.epay-cashier .order-amount12,
+.epay-cashier .PayMethod12,
+.epay-cashier .immediate-pay12 {
+    width: min(1010px, calc(100% - 48px));
+    box-sizing: border-box;
+    border: 1px solid var(--cashier-line);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .96);
+    box-shadow: 0 15px 36px rgba(20, 45, 84, .065);
+}
+
+.epay-cashier .order-amount12 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: 128px;
+    height: auto;
+    margin-top: 28px;
+    padding: 24px 30px;
+}
+
+.epay-cashier .order-amount12-left {
+    float: none;
+    margin: 0;
+    padding: 0;
+}
+
+.epay-cashier .order-amount12-left li {
+    display: flex;
+    gap: 14px;
+    line-height: 27px;
+}
+
+.epay-cashier .order-amount12-left span,
+.epay-cashier .order-amount12 span {
+    color: var(--cashier-muted);
+    font-size: 14px;
+}
+
+.epay-cashier .order-amount12-left li span:first-child {
+    flex: 0 0 70px;
+    color: #91a0b4;
+    white-space: nowrap;
+}
+
+.epay-cashier .order-amount12-left li span:last-child {
+    overflow: hidden;
+    color: #536683;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epay-cashier .order-amount12-right {
+    display: flex;
+    float: none;
+    align-items: baseline;
+    gap: 7px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.epay-cashier .order-amount12-right strong {
+    color: var(--cashier-blue);
+    font-size: 38px;
+    font-weight: 750;
+    letter-spacing: -.04em;
+}
+
+.epay-cashier .PayMethod12 {
+    margin-top: 18px;
+    padding: 28px 30px 30px;
+}
+
+.epay-cashier .PayMethod12 .row {
+    margin: 0;
+}
+
+.epay-cashier .PayMethod12 h2 {
+    height: auto;
+    margin: 0;
+    color: var(--cashier-ink);
+    font-size: 18px;
+    font-weight: 750;
+    line-height: 1.4;
+}
+
+.epay-cashier .pay-method-hint {
+    margin: 7px 0 20px;
+    color: #8b9ab0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.epay-cashier .PayMethod12 ul.types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+.epay-cashier .PayMethod12 ul.types li {
+    position: relative;
+    display: inline-flex;
+    width: 168px;
+    height: auto;
+    min-height: 66px;
+    box-sizing: border-box;
+    float: none;
+    align-items: center;
+    margin: 0;
+    padding: 15px 38px 15px 16px;
+    border: 1px solid var(--cashier-line);
+    border-radius: 13px;
+    outline: none;
+    background: var(--cashier-soft);
+    cursor: pointer;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
+}
+
+.epay-cashier .PayMethod12 ul.types li::after {
+    position: absolute;
+    top: 50%;
+    right: 13px;
+    width: 15px;
+    height: 15px;
+    box-sizing: border-box;
+    border: 1px solid #c9d5e6;
+    border-radius: 50%;
+    background: #fff;
+    content: '';
+    transform: translateY(-50%);
+}
+
+.epay-cashier .PayMethod12 ul.types li:hover,
+.epay-cashier .PayMethod12 ul.types li:focus-visible {
+    border-color: #9dbcf7;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, .10);
+    transform: translateY(-2px);
+}
+
+.epay-cashier .PayMethod12 ul.types li.active {
+    border-color: var(--cashier-blue);
+    background: #eef4ff;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, .12);
+}
+
+.epay-cashier .PayMethod12 ul.types li.active::after {
+    border: 4px solid var(--cashier-blue);
+    background: #fff;
+}
+
+.epay-cashier .PayMethod12 ul.types li img {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    margin: 0 10px 0 0;
+}
+
+.epay-cashier .PayMethod12 ul.types li span {
+    overflow: hidden;
+    color: var(--cashier-ink);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 22px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.epay-cashier .immediate-pay12 {
+    display: flex;
+    min-height: 80px;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 18px;
+    padding: 12px 18px 12px 30px;
+}
+
+.epay-cashier .immediate-pay12-left {
+    margin-right: auto;
+}
+
+.epay-cashier .action-note {
+    color: #8b9ab0;
+    font-size: 12px;
+}
+
+.epay-cashier .action-note i {
+    margin-right: 5px;
+    color: #4f9b7a;
+}
+
+.epay-cashier .immediate-pay12-right {
+    display: flex;
+    float: none;
+    align-items: center;
+    gap: 20px;
+    min-height: 0;
+}
+
+.epay-cashier .immediate-pay12-right span {
+    float: none;
+    margin: 0;
+    color: var(--cashier-muted);
+    font-size: 14px;
+}
+
+.epay-cashier .immediate-pay12-right span strong {
+    color: var(--cashier-blue);
+    font-size: 22px;
+    font-weight: 750;
+}
+
+.epay-cashier .immediate-pay12-right .immediate_pay {
+    display: block;
+    width: 150px;
+    height: 50px;
+    float: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #3b82f6, var(--cashier-blue-dark));
+    box-shadow: 0 10px 24px rgba(37, 99, 235, .22);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 50px;
+    text-align: center;
+    text-decoration: none;
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.epay-cashier .immediate-pay12-right .immediate_pay:hover,
+.epay-cashier .immediate-pay12-right .immediate_pay:focus-visible {
+    color: #fff;
+    box-shadow: 0 14px 28px rgba(37, 99, 235, .28);
+    transform: translateY(-2px);
+}
+
+.epay-cashier .footer12 {
+    flex: none;
+    width: min(1010px, calc(100% - 48px));
+    margin: auto auto 26px;
+    color: #91a0b4;
+    font-size: 12px;
+    text-align: center;
+}
+
+.epay-cashier .mt_agree .mt_agree_main {
+    width: min(500px, calc(100% - 32px));
+    margin-left: 0;
+    transform: translateX(-50%);
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(12, 31, 64, .22);
+}
+
+@media screen and (max-width: 768px) {
+    .epay-cashier .nav12 {
+        width: calc(100% - 32px);
+        height: 60px;
+    }
+
+    .epay-cashier .nav12-left img {
+        width: 130px;
+    }
+
+    .epay-cashier .nav12-right {
+        gap: 9px;
+        font-size: 16px;
+    }
+
+    .epay-cashier .cashier-secure {
+        font-size: 10px;
+    }
+
+    .epay-cashier .order-amount12,
+    .epay-cashier .PayMethod12,
+    .epay-cashier .immediate-pay12,
+    .epay-cashier .footer12 {
+        width: calc(100% - 24px);
+    }
+
+    .epay-cashier .order-amount12 {
+        display: block;
+        min-height: 0;
+        margin-top: 16px;
+        padding: 19px 20px 18px;
+    }
+
+    .epay-cashier .order-amount12-left li {
+        gap: 10px;
+        line-height: 26px;
+    }
+
+    .epay-cashier .order-amount12-left span {
+        font-size: 13px;
+    }
+
+    .epay-cashier .order-amount12-right {
+        justify-content: flex-end;
+        margin-top: 14px;
+    }
+
+    .epay-cashier .order-amount12-right strong {
+        font-size: 32px;
+    }
+
+    .epay-cashier .PayMethod12 {
+        margin-top: 12px;
+        padding: 21px 20px 22px;
+    }
+
+    .epay-cashier .pay-method-hint {
+        margin-bottom: 16px;
+        font-size: 12px;
+    }
+
+    .epay-cashier .PayMethod12 ul.types {
+        display: block;
+    }
+
+    .epay-cashier .PayMethod12 ul.types li {
+        width: 100%;
+        min-height: 60px;
+        margin-bottom: 10px;
+    }
+
+    .epay-cashier .PayMethod12 ul.types li:last-child {
+        margin-bottom: 0;
+    }
+
+    .epay-cashier .immediate-pay12 {
+        min-height: 0;
+        align-items: stretch;
+        justify-content: stretch;
+        margin-top: 12px;
+        padding: 17px 16px 16px;
+    }
+
+    .epay-cashier .immediate-pay12-left {
+        display: none;
+    }
+
+    .epay-cashier .immediate-pay12-right {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .epay-cashier .immediate-pay12-right span {
+        flex: 1 1 100%;
+        font-size: 13px;
+    }
+
+    .epay-cashier .immediate-pay12-right .immediate_pay {
+        width: 100%;
+    }
+
+    .epay-cashier .footer12 {
+        margin: auto auto 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .epay-cashier .PayMethod12 ul.types li,
+    .epay-cashier .immediate-pay12-right .immediate_pay {
+        transition: none;
+    }
+}

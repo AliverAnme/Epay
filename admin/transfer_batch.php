@@ -3,7 +3,8 @@
  * 批量转账页面
 **/
 include("../includes/common.php");
-$type = isset($_GET['type'])?daddslashes($_GET['type']):exit('no type');
+$type = isset($_GET['type']) && is_string($_GET['type'])?trim($_GET['type']):exit('no type');
+if(!in_array($type, ['alipay', 'wxpay', 'qqpay', 'bank'], true))sysmsg('参数错误');
 if($type == 'alipay'){
 	$typename = '支付宝';
 	$default_channel = $conf['transfer_alipay'];
@@ -19,7 +20,7 @@ if($type == 'alipay'){
 }else{
 	sysmsg('参数错误');
 }
-$channel_select = $DB->getAll("SELECT id,name,plugin FROM pre_channel WHERE plugin IN (SELECT name FROM pre_plugin WHERE transtypes LIKE '%".$type."%')");
+$channel_select = $DB->getAll("SELECT id,name,plugin FROM pre_channel WHERE plugin IN (SELECT name FROM pre_plugin WHERE FIND_IN_SET(:type, transtypes)>0)", [':type'=>$type]);
 
 $title=$typename.'批量转账';
 include './head.php';
@@ -32,7 +33,7 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
 		<div class="panel-title"><p><h3 class="panel-title"><?php echo $typename?>批量转账</h3></p>
 			<div class="form-group"><div class="input-group"><div class="input-group-addon">通道选择</div>
 				<select name="channel" class="form-control">
-					<?php foreach($channel_select as $channel){echo '<option value="'.$channel['id'].'" '.($channel['id']==$default_channel?'selected':'').'>'.$channel['name'].''.($channel['id']==$default_channel?'（默认）':'').'</option>';} ?>
+					<?php foreach($channel_select as $channel){echo '<option value="'.h($channel['id']).'" '.($channel['id']==$default_channel?'selected':'').'>'.h($channel['name']).($channel['id']==$default_channel?'（默认）':'').'</option>';} ?>
 				</select>
 			</div></div>
 			<div class="form-group"><div class="input-group"><div class="input-group-addon">收款列表</div>
@@ -77,7 +78,11 @@ function SelectAll(checkbox) {
 	$('#list input[type="checkbox"]').prop('checked', isChecked);
 }
 
-$(function(){
+	$(function(){
+	function escapeHtml(value) {
+		return $('<div>').text(value == null ? '' : String(value)).html();
+	}
+
 	// 导入Excel按钮点击
 	$('#importExcel').click(function(){
 		$('#excelFile').click();
@@ -107,11 +112,11 @@ $(function(){
 				// 第一行：转账信息
 				$('#list').append(`
 					<tr>
-						<td><input type="checkbox" checked> ${item.index}</td>
-						<td>${item.account}</td>
-						<td>${item.name||''}</td>
-						<td>${item.money}</td>
-						<td>${item.remark||''}</td>
+						<td><input type="checkbox" checked> ${escapeHtml(item.index)}</td>
+						<td>${escapeHtml(item.account)}</td>
+						<td>${escapeHtml(item.name||'')}</td>
+						<td>${escapeHtml(item.money)}</td>
+						<td>${escapeHtml(item.remark||'')}</td>
 						<td style="text-align:center"><button class="btn btn-xs btn-primary submit-btn">提交转账</button></td>
 					</tr>
 					<tr>
@@ -170,13 +175,13 @@ $(function(){
 			if(result.code == 0){
 				// 成功
 				btn.replaceWith(result.status==1?'<font color="green">转账成功</font>':'<font color="green">正在处理</font>');
-				nextRow.find('.result-cell').html('<font color="green">'+result.msg+'</font>');
+				nextRow.find('.result-cell').text(result.msg || '已提交');
 				checkbox.prop('checked', false);
 				rescode = true;
 			}else if(result.code == -1){
 				// 收款方原因失败
 				btn.replaceWith('<font color="red">转账失败</font>');
-				nextRow.find('.result-cell').html('<font color="red">'+result.msg+'</font>');
+				nextRow.find('.result-cell').text(result.msg || '转账失败');
 				checkbox.prop('checked', false);
 				rescode = true;
 			}else{

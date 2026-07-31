@@ -7,7 +7,8 @@ if($islogin==1){}else exit("<script language='javascript'>window.location.href='
   <div class="container" style="padding-top:70px;">
     <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
 <?php
-$app = isset($_GET['app'])?$_GET['app']:'alipay';
+$app = isset($_GET['app']) && is_string($_GET['app'])?$_GET['app']:'alipay';
+if(!in_array($app, ['alipay', 'wxpay', 'qqpay', 'bank'], true))sysmsg('参数错误');
 
 if(isset($_POST['submit'])){
 	if(!checkRefererHost())exit();
@@ -47,7 +48,7 @@ if(isset($_POST['submit'])){
 
 $out_biz_no = date("YmdHis").rand(11111,99999);
 
-$channel_select = $DB->getAll("SELECT id,name,plugin FROM pre_channel WHERE plugin IN (SELECT name FROM pre_plugin WHERE transtypes LIKE '%".$app."%')");
+$channel_select = $DB->getAll("SELECT id,name,plugin FROM pre_channel WHERE plugin IN (SELECT name FROM pre_plugin WHERE FIND_IN_SET(:type, transtypes)>0)", [':type'=>$app]);
 
 if($app=='alipay'){
 	$default_channel = $conf['transfer_alipay'];
@@ -82,8 +83,8 @@ if(isset($_GET['account']) && isset($_GET['username'])){
 			<input type="hidden" name="type" value="<?php echo $app?>"/>
 		    <div class="form-group">
 				<div class="input-group"><div class="input-group-addon">通道选择</div>
-				<select name="channel" class="form-control" default="<?php echo $default_channel?>">
-					<?php foreach($channel_select as $channel){echo '<option value="'.$channel['id'].'">'.$channel['name'].''.($channel['id']==$default_channel?'（默认）':'').'</option>';} ?>
+				<select name="channel" class="form-control" default="<?php echo h($default_channel)?>">
+					<?php foreach($channel_select as $channel){echo '<option value="'.h($channel['id']).'">'.h($channel['name']).($channel['id']==$default_channel?'（默认）':'').'</option>';} ?>
 				</select>
 			</div></div>
 			<div class="form-group">
@@ -93,17 +94,17 @@ if(isset($_GET['account']) && isset($_GET['username'])){
 <?php if($app=='alipay'){?>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">支付宝账号</div>
-				<input type="text" name="payee_account" value="<?php echo $copy['account']?>" class="form-control" required placeholder="支付宝登录账号或支付宝UID或支付宝Openid"/>
+				<input type="text" name="payee_account" value="<?php echo h($copy['account'])?>" class="form-control" required placeholder="支付宝登录账号或支付宝UID或支付宝Openid"/>
 				<div class="input-group-btn"><button type="button" class="btn btn-default recent-payer-btn" data-type="alipay"><i class="fa fa-address-book"/></i></button></div>
 			</div></div>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">支付宝姓名</div>
-				<input type="text" name="payee_real_name" value="<?php echo $copy['username']?>" class="form-control" placeholder="不填写则不校验真实姓名"/>
+				<input type="text" name="payee_real_name" value="<?php echo h($copy['username'])?>" class="form-control" placeholder="不填写则不校验真实姓名"/>
 			</div></div>
 <?php }elseif($app=='wxpay'){?>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">Openid</div>
-				<input type="text" name="payee_account" value="<?php echo $copy['account']?>" class="form-control" required placeholder="只能填写微信Openid"/>
+				<input type="text" name="payee_account" value="<?php echo h($copy['account'])?>" class="form-control" required placeholder="只能填写微信Openid"/>
 				<div class="input-group-btn">
 					<button type="button" class="btn btn-default recent-payer-btn" data-type="wxpay"><i class="fa fa-address-book"/></i></button>
 					<a href="./gettoken.php?app=wechat" class="btn btn-default">获取</a>
@@ -111,27 +112,27 @@ if(isset($_GET['account']) && isset($_GET['username'])){
 			</div></div>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">真实姓名</div>
-				<input type="text" name="payee_real_name" value="<?php echo $copy['username']?>" class="form-control" placeholder="不填写则不校验真实姓名"/>
+				<input type="text" name="payee_real_name" value="<?php echo h($copy['username'])?>" class="form-control" placeholder="不填写则不校验真实姓名"/>
 			</div></div>
 <?php }elseif($app=='qqpay'){?>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">收款方QQ</div>
-				<input type="text" name="payee_account" value="<?php echo $copy['account']?>" class="form-control" required/>
+				<input type="text" name="payee_account" value="<?php echo h($copy['account'])?>" class="form-control" required/>
 				<div class="input-group-btn"><button type="button" class="btn btn-default recent-payer-btn" data-type="qqpay"><i class="fa fa-address-book"/></i></button></div>
 			</div></div>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">真实姓名</div>
-				<input type="text" name="payee_real_name" value="<?php echo $copy['username']?>" class="form-control" placeholder="不填写则不校验真实姓名"/>
+				<input type="text" name="payee_real_name" value="<?php echo h($copy['username'])?>" class="form-control" placeholder="不填写则不校验真实姓名"/>
 			</div></div>
 <?php }elseif($app=='bank'){?>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">银行卡号</div>
-				<input type="text" name="payee_account" value="<?php echo $copy['account']?>" class="form-control" required placeholder="收款方银行卡号"/>
+				<input type="text" name="payee_account" value="<?php echo h($copy['account'])?>" class="form-control" required placeholder="收款方银行卡号"/>
 				<div class="input-group-btn"><button type="button" class="btn btn-default recent-payer-btn" data-type="bank"><i class="fa fa-address-book"/></i></button></div>
 			</div></div>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">姓名</div>
-				<input type="text" name="payee_real_name" value="<?php echo $copy['username']?>" class="form-control" placeholder="收款方银行账户名称"/>
+				<input type="text" name="payee_real_name" value="<?php echo h($copy['username'])?>" class="form-control" placeholder="收款方银行账户名称"/>
 			</div></div>
 <?php }?>
 			<div class="form-group">
@@ -141,7 +142,7 @@ if(isset($_GET['account']) && isset($_GET['username'])){
 <?php if($app=='alipay'){?>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">转账标题</div>
-				<input type="text" name="title" value="<?php echo $copy['title']?>" class="form-control" placeholder="可留空，默认为：<?php echo $conf['transfer_name']?>"/>
+				<input type="text" name="title" value="<?php echo h($copy['title'])?>" class="form-control" placeholder="可留空，默认为：<?php echo h($conf['transfer_name'])?>"/>
 			</div></div>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">业务备注</div>
@@ -150,7 +151,7 @@ if(isset($_GET['account']) && isset($_GET['username'])){
 <?php }else{?>
 			<div class="form-group">
 				<div class="input-group"><div class="input-group-addon">转账备注</div>
-				<input type="text" name="desc" value="<?php echo $copy['desc']?>" class="form-control" placeholder="可留空，默认为：<?php echo $conf['transfer_desc']?>"/>
+				<input type="text" name="desc" value="<?php echo h($copy['desc'])?>" class="form-control" placeholder="可留空，默认为：<?php echo h($conf['transfer_desc'])?>"/>
 			</div></div>
 <?php }?>
 			<div class="form-group">
