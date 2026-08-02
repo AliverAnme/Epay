@@ -110,13 +110,13 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
       <div className="mx-auto grid max-w-5xl gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)] lg:items-start">
         <Card className="rounded-3xl shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between gap-4 border-b p-5 sm:p-7">
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
                 <ShieldCheck className="size-5" />
               </span>
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-muted-foreground">收款至</p>
-                <CardTitle className="mt-1 text-xl tracking-tight">
+                <CardTitle className="mt-1 break-all text-xl tracking-tight">
                   {config.codename || "商户"}
                 </CardTitle>
               </div>

@@ -75,6 +75,7 @@ const legacyDisplayObserver = new MutationObserver((records) => {
     const legacyOwned =
       element.id === "captcha_wait" ||
       element.id === "wait" ||
+      element.id === "totp-form" ||
       Boolean(element.closest("#epay-react-legacy-slot"))
     if (
       legacyOwned &&
@@ -82,6 +83,7 @@ const legacyDisplayObserver = new MutationObserver((records) => {
       element.style.display !== "none"
     ) {
       element.classList.remove("hidden")
+      if (element.id === "totp-form") element.style.removeProperty("display")
     }
   })
 })

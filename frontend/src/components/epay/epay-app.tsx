@@ -1536,7 +1536,7 @@ function CashierView({ config }: { config?: CashierConfig }) {
     <div className="min-h-svh bg-muted/30 px-4 py-6 text-foreground sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <header className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <Brand name={config?.sitename ?? "Rainbow Pay"} />
             <Separator orientation="vertical" className="h-6" />
             <Badge variant="secondary" className="rounded-lg font-normal">
