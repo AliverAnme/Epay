@@ -253,6 +253,14 @@ function LoginForm({
                   variant="outline"
                   className="h-11 w-28 overflow-hidden rounded-xl bg-muted p-0"
                   title="点击更换验证码"
+                  onClick={() => {
+                    const image = document.getElementById(
+                      "verifycode"
+                    ) as HTMLImageElement | null
+                    if (image) {
+                      image.src = `./code.php?r=${Math.random()}`
+                    }
+                  }}
                 >
                   <img
                     id="verifycode"

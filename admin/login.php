@@ -229,8 +229,8 @@ function submitlogin(){
         if(data.vcode==1){
           $("#verifycode").attr('src', './code.php?r='+Math.random())
         }else if(data.vcode==2){
-          $("#totp-form").show();
-          $("#login-form").hide();
+          $("#totp-form").removeClass('hidden').show().attr('aria-hidden', 'false');
+          $("#login-form").hide().attr('aria-hidden', 'true');
           $("#totp_code").focus();
           return false;
         }

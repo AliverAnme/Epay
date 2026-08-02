@@ -374,8 +374,8 @@ function WorkspaceShell({
   title: string
   description: string
 }) {
-  const { theme, setTheme } = useTheme()
-  const dark = theme === "dark"
+  const { resolvedTheme, setTheme } = useTheme()
+  const dark = resolvedTheme === "dark"
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const nav = kind === "admin" ? adminNav : merchantNav
   return (
@@ -649,12 +649,12 @@ function DocumentationNav({
 }
 
 function DocumentationShell({ config }: { config?: JsonObject }) {
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const active = String(config?.doc ?? "index")
   const title = String(config?.title ?? "开发文档")
   const sitename = String(config?.sitename ?? "Rainbow Pay")
-  const dark = theme === "dark"
+  const dark = resolvedTheme === "dark"
 
   return (
     <div className="min-h-svh bg-muted/30 text-foreground antialiased">
@@ -1330,6 +1330,20 @@ function CashierView({ config }: { config?: CashierConfig }) {
   const [selected, setSelected] = React.useState(String(types[0]?.id ?? ""))
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState("")
+  const goBack = () => {
+    try {
+      if (
+        document.referrer &&
+        new URL(document.referrer).origin === window.location.origin
+      ) {
+        window.history.back()
+        return
+      }
+    } catch {
+      // 直接打开收银台时回到官网。
+    }
+    window.location.assign("/")
+  }
   const submit = () => {
     if (!selected) {
       setError("请选择一种支付方式")
@@ -1356,10 +1370,24 @@ function CashierView({ config }: { config?: CashierConfig }) {
           </div>
         </header>
         {config?.other ? (
-          <Alert className="mb-5 rounded-2xl">
-            <AlertTitle>当前支付方式暂时维护</AlertTitle>
-            <AlertDescription>请返回并选择其他可用支付方式。</AlertDescription>
-          </Alert>
+          <Card className="rounded-2xl shadow-sm">
+            <CardContent className="space-y-4 p-5 sm:p-7">
+              <Alert className="rounded-2xl">
+                <AlertTitle>当前支付方式暂时维护</AlertTitle>
+                <AlertDescription>
+                  请返回并选择其他可用支付方式。
+                </AlertDescription>
+              </Alert>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 w-full rounded-xl"
+                onClick={goBack}
+              >
+                返回上一页
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <Card className="rounded-2xl shadow-sm">
             <CardHeader className="border-b">

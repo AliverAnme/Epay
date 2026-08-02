@@ -167,7 +167,8 @@ var handlerEmbed = function (captchaObj) {
 };
 $(document).ready(function(){
 	if($("#captcha").length>0) captcha_open=1;
-	$("#submit").click(function(){
+	// React 登录壳自行处理 submit，避免旧版委托再次发起一笔登录请求。
+	if(!document.getElementById('epay-react-root')) $("#submit").click(function(){
 		var type=$("input[name='type']").val();
 		var user=$("input[name='user']").val();
 		var pass=$("input[name='pass']").val();

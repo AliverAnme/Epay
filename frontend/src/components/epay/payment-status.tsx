@@ -25,7 +25,7 @@ export type PaymentStatusConfig = {
   receiveName?: string
 }
 
-function closeWindow() {
+function closeWindow(fallbackUrl = "/") {
   const browserWindow = window as Window & {
     AlipayJSBridge?: { call: (name: string) => void }
     WeixinJSBridge?: { call: (name: string) => void }
@@ -38,6 +38,22 @@ function closeWindow() {
   if (browserWindow.mqq?.ui?.popBack) return browserWindow.mqq.ui.popBack()
   window.opener = null
   window.close()
+  window.setTimeout(() => {
+    if (!document.hidden) window.location.assign(fallbackUrl)
+  }, 120)
+}
+
+function returnToPreviousPage() {
+  try {
+    const referrer = document.referrer
+    if (referrer && new URL(referrer).origin === window.location.origin) {
+      window.history.back()
+      return
+    }
+  } catch {
+    // 回退到官网，避免异常 referrer 阻塞错误页操作。
+  }
+  window.location.assign("/")
 }
 
 export function PaymentStatusView({
@@ -130,7 +146,7 @@ export function PaymentStatusView({
             type="button"
             variant={success ? "outline" : "default"}
             className="h-11 w-full rounded-xl"
-            onClick={closeWindow}
+            onClick={() => (success ? closeWindow() : returnToPreviousPage())}
           >
             {success ? "关闭页面" : "返回"}
           </Button>
