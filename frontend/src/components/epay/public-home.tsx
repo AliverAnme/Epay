@@ -73,6 +73,7 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
     config.test_open === 1 ||
     config.test_open === "1"
   const footer = textOf(config, "footer", "All Rights Reserved.")
+  const orgName = textOf(config, "orgname", "平台运营方")
   const email = textOf(config, "email", "")
   const kfqq = textOf(config, "kfqq", "")
 
@@ -105,6 +106,15 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
                       <a href={href}>{label}</a>
                     </Button>
                   ))}
+                  {testOpen && (
+                    <Button
+                      asChild
+                      variant="ghost"
+                      className="justify-start rounded-xl"
+                    >
+                      <a href="/user/test.php">支付测试</a>
+                    </Button>
+                  )}
                 </nav>
               </SheetContent>
             </Sheet>
@@ -121,6 +131,15 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
                 <a href={href}>{label}</a>
               </Button>
             ))}
+            {testOpen && (
+              <Button
+                asChild
+                variant="ghost"
+                className="rounded-xl px-3 text-sm font-normal"
+              >
+                <a href="/user/test.php">支付测试</a>
+              </Button>
+            )}
           </nav>
           <div className="ml-auto flex items-center gap-2 md:ml-3">
             <Button
@@ -330,7 +349,7 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
               让支付接入更简单，让每一笔收款都清晰可控。
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm">
+          <div className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm sm:grid-cols-3">
             <div className="space-y-3">
               <p className="font-medium">产品</p>
               <a
@@ -353,6 +372,12 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
                   支付测试
                 </a>
               )}
+            </div>
+            <div className="space-y-3">
+              <p className="font-medium">关于我们</p>
+              <p className="max-w-[16rem] leading-6 text-muted-foreground">
+                {siteName}是{orgName}旗下的免签约支付产品。
+              </p>
             </div>
             <div className="space-y-3">
               <p className="font-medium">联系我们</p>
@@ -379,7 +404,9 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
         </div>
         <Separator className="my-8" />
         <p className="text-xs text-muted-foreground">
-          {siteName} · © {new Date().getFullYear()} · {footer}
+          {siteName} · © {new Date().getFullYear()} ·{" "}
+          {/* 管理后台允许 footer 配置保留 HTML，兼容旧版主题的页脚声明。 */}
+          <span dangerouslySetInnerHTML={{ __html: footer }} />
         </p>
       </footer>
     </div>

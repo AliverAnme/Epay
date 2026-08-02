@@ -296,7 +296,13 @@ function objectOf(
   return value && typeof value === "object" ? (value as JsonObject) : {}
 }
 
-function Brand({ compact = false }: { compact?: boolean }) {
+function Brand({
+  compact = false,
+  name = "Rainbow Pay",
+}: {
+  compact?: boolean
+  name?: string
+}) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
@@ -304,7 +310,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
       </div>
       {!compact && (
         <div className="leading-tight">
-          <p className="font-semibold tracking-tight">Rainbow Pay</p>
+          <p className="font-semibold tracking-tight">{name}</p>
           <p className="text-[11px] text-muted-foreground">支付运营工作台</p>
         </div>
       )}
@@ -368,11 +374,13 @@ function WorkspaceShell({
   kind,
   title,
   description,
+  sitename = "Rainbow Pay",
 }: {
   children: React.ReactNode
   kind: "admin" | "merchant"
   title: string
   description: string
+  sitename?: string
 }) {
   const { resolvedTheme, setTheme } = useTheme()
   const dark = resolvedTheme === "dark"
@@ -396,7 +404,7 @@ function WorkspaceShell({
             <SheetContent side="left" className="w-[280px] p-0">
               <SheetHeader className="border-b px-5 py-4 text-left">
                 <SheetTitle>
-                  <Brand />
+                  <Brand name={sitename} />
                 </SheetTitle>
                 <SheetDescription>快速访问常用功能</SheetDescription>
               </SheetHeader>
@@ -406,7 +414,7 @@ function WorkspaceShell({
             </SheetContent>
           </Sheet>
           <div className="hidden md:block">
-            <Brand />
+            <Brand name={sitename} />
           </div>
           <Separator
             orientation="vertical"
@@ -528,11 +536,13 @@ function PageHeading({
   title,
   description,
   action,
+  brandName = "Rainbow Pay",
 }: {
   eyebrow: string
   title: string
   description: string
   action?: React.ReactNode
+  brandName?: string
 }) {
   return (
     <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -540,7 +550,7 @@ function PageHeading({
         <Breadcrumb className="mb-3">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Rainbow Pay</BreadcrumbLink>
+              <BreadcrumbLink href="/">{brandName}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -674,7 +684,7 @@ function DocumentationShell({ config }: { config?: JsonObject }) {
             <SheetContent side="left" className="w-[290px] p-0">
               <SheetHeader className="border-b px-5 py-4 text-left">
                 <SheetTitle>
-                  <Brand />
+                  <Brand name={sitename} />
                 </SheetTitle>
                 <SheetDescription>快速浏览接口文档</SheetDescription>
               </SheetHeader>
@@ -687,7 +697,7 @@ function DocumentationShell({ config }: { config?: JsonObject }) {
             </SheetContent>
           </Sheet>
           <div className="hidden md:block">
-            <Brand />
+            <Brand name={sitename} />
           </div>
           <Separator
             orientation="vertical"
@@ -743,6 +753,7 @@ function DocumentationShell({ config }: { config?: JsonObject }) {
             eyebrow="开发文档"
             title={title}
             description="使用统一的接口规范接入收款、退款、商户与代付能力。"
+            brandName={sitename}
           />
           <LegacyContentSlot />
         </main>
@@ -830,7 +841,7 @@ function FetchError({ onRetry }: { onRetry: () => void }) {
   )
 }
 
-function AdminDashboard() {
+function AdminDashboard({ config }: { config?: JsonObject }) {
   const [data, setData] = React.useState<JsonObject | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [failed, setFailed] = React.useState(false)
@@ -853,16 +864,19 @@ function AdminDashboard() {
   const order = objectOf(data, "order")
   const orderToday = objectOf(data, "order_today")
   const rows = Object.entries(order).slice(0, 7)
+  const sitename = String(config?.sitename ?? "Rainbow Pay")
   return (
     <WorkspaceShell
       kind="admin"
       title="平台运营"
       description="统一管理订单、商户、支付通道与结算"
+      sitename={sitename}
     >
       <PageHeading
         eyebrow="平台首页"
         title="运营总览"
         description="实时掌握支付业务的核心指标与近期趋势。"
+        brandName={sitename}
         action={
           <Button onClick={load} variant="outline" className="rounded-xl">
             <RefreshCw className="mr-2 size-4" />
@@ -1107,16 +1121,19 @@ function MerchantDashboard({ config }: { config?: JsonObject }) {
   const channels = Array.isArray(data?.channels)
     ? (data?.channels as JsonObject[])
     : []
+  const sitename = String(config?.sitename ?? "Rainbow Pay")
   return (
     <WorkspaceShell
       kind="merchant"
       title="商户工作台"
       description="收款、结算与接口配置一站式管理"
+      sitename={sitename}
     >
       <PageHeading
         eyebrow="用户中心"
         title="欢迎回来"
         description="这是你的商户经营概览，重要状态会在这里第一时间提醒。"
+        brandName={sitename}
         action={
           <div className="flex gap-2">
             <Button asChild variant="outline" className="rounded-xl">
@@ -1358,7 +1375,7 @@ function CashierView({ config }: { config?: CashierConfig }) {
       <div className="mx-auto max-w-3xl">
         <header className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Brand />
+            <Brand name={config?.sitename ?? "Rainbow Pay"} />
             <Separator orientation="vertical" className="h-6" />
             <Badge variant="secondary" className="rounded-lg font-normal">
               安全收银台
@@ -1563,6 +1580,7 @@ export function EpayApp({ view, config }: EpayAppProps) {
         kind="merchant"
         title={shellTitle || "商户工作台"}
         description="收款、结算与接口配置一站式管理"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
       >
         <LegacyContentSlot className="epay-legacy-workspace-surface" />
       </WorkspaceShell>
@@ -1576,9 +1594,10 @@ export function EpayApp({ view, config }: EpayAppProps) {
         kind="admin"
         title={shellTitle || "平台运营"}
         description="统一管理订单、商户、支付通道与结算"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
       >
         <LegacyContentSlot className="epay-legacy-workspace-surface" />
       </WorkspaceShell>
     )
-  return <AdminDashboard />
+  return <AdminDashboard config={config as JsonObject | undefined} />
 }

@@ -52,9 +52,11 @@ function isOpen(value: unknown) {
 function Brand({
   compact = false,
   inverse = false,
+  name = "Rainbow Pay",
 }: {
   compact?: boolean
   inverse?: boolean
+  name?: string
 }) {
   return (
     <div className="flex items-center gap-3">
@@ -63,7 +65,7 @@ function Brand({
       </div>
       {!compact && (
         <div className="leading-tight">
-          <p className="font-semibold tracking-tight">Rainbow Pay</p>
+          <p className="font-semibold tracking-tight">{name}</p>
           <p
             className={cn(
               "text-[11px]",
@@ -97,7 +99,7 @@ export function AuthView({ mode, config = {} }: AuthViewProps) {
         <section className="relative hidden overflow-hidden bg-primary p-10 text-primary-foreground lg:flex lg:flex-col lg:justify-between">
           <div className="absolute -top-32 -right-32 size-96 rounded-full border border-white/10" />
           <div className="absolute -bottom-48 -left-20 size-[28rem] rounded-full border border-white/10" />
-          <Brand inverse />
+          <Brand inverse name={siteName} />
           <div className="relative max-w-lg">
             <Badge
               variant="secondary"
@@ -130,7 +132,7 @@ export function AuthView({ mode, config = {} }: AuthViewProps) {
         <main className="flex items-center justify-center p-4 sm:p-8">
           <div className="w-full max-w-md">
             <div className="mb-7 flex items-center justify-between lg:hidden">
-              <Brand compact />
+              <Brand compact name={siteName} />
               <Badge variant="secondary" className="rounded-lg">
                 安全登录
               </Badge>
