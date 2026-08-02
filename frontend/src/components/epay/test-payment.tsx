@@ -59,7 +59,7 @@ export function TestPaymentView({
                   使用测试订单验证支付通道与回调链路。
                 </p>
               </div>
-              <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <CreditCard className="size-5" />
               </div>
             </div>

@@ -159,11 +159,16 @@ class Payment {
         switch($type){
             case 'jump': //跳转
                 $selfurl = is_self_url($result['url']);
-                $html_text = '<script>window.location.replace(\''.$result['url'].'\');</script>';
-                if(!isset($result['submit']) && is_url($result['url']) && !$selfurl && ($conf['wxpay_qrpaylogin'] == 1 && checkwechat()) || ($conf['alipay_qrpaylogin'] == 1 && checkalipay())){
+                if(!isset($result['submit']) && is_url($result['url']) && !$selfurl && (
+                    ($conf['wxpay_qrpaylogin'] == 1 && checkwechat()) ||
+                    ($conf['alipay_qrpaylogin'] == 1 && checkalipay())
+                )){
                     self::updateOrderPayUrl(TRADE_NO, $result['url']);
                     $result['url'] = $siteurl.'pay/checkpay/'.TRADE_NO.'/';
                 }
+                $targetUrl = json_encode((string)$result['url'], JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_SLASHES);
+                if($targetUrl === false) $targetUrl = '""';
+                $html_text = '<script>window.location.replace('.$targetUrl.');</script>';
                 if(isset($result['submit']) && $result['submit']){
                     submitTemplate($html_text);
                 }else{

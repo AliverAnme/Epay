@@ -40,12 +40,18 @@ function textOf(config: JsonObject, key: string, fallback: string) {
 
 function Brand({ name }: { name: string }) {
   return (
-    <a href="/" className="flex items-center gap-3" aria-label={`${name} 首页`}>
-      <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+    <a
+      href="/"
+      className="flex min-w-0 items-center gap-3"
+      aria-label={`${name} 首页`}
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
         <CircleDollarSign className="size-5" />
       </span>
-      <span className="leading-tight">
-        <span className="block font-semibold tracking-tight">{name}</span>
+      <span className="min-w-0 leading-tight">
+        <span className="block truncate font-semibold tracking-tight">
+          {name}
+        </span>
         <span className="block text-[11px] text-muted-foreground">
           支付运营工作台
         </span>
@@ -167,7 +173,7 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
             <div className="max-w-2xl">
               <Badge
                 variant="secondary"
-                className="mb-6 rounded-lg px-3 py-1.5 tracking-wide"
+                className="mb-6 h-auto max-w-full rounded-lg px-3 py-1.5 text-center leading-5 whitespace-normal tracking-wide"
               >
                 PAYMENT INFRASTRUCTURE · READY FOR BUSINESS
               </Badge>
@@ -221,7 +227,7 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
                     <CardDescription>运营工作台</CardDescription>
                     <CardTitle className="mt-1 text-xl">收款状态总览</CardTitle>
                   </div>
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <BarChart3 className="size-5" />
                   </span>
                 </div>
@@ -431,7 +437,7 @@ function FeatureCard({
           <span className="text-sm font-medium text-muted-foreground">
             {index}
           </span>
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-300 group-hover:scale-110">
             <Icon className="size-5" />
           </span>
         </div>
@@ -446,7 +452,7 @@ function Partner({ name, src }: { name: string; src: string }) {
   return (
     <Card className="rounded-2xl shadow-sm transition-colors hover:border-primary/40">
       <CardContent className="flex items-center gap-3 p-4">
-        <img src={src} alt="" className="size-10 rounded-xl" />
+        <img src={src} alt="" className="size-10 shrink-0 rounded-xl" />
         <span className="text-sm font-medium">{name}</span>
       </CardContent>
     </Card>

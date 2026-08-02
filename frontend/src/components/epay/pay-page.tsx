@@ -55,7 +55,7 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
         <Card className="rounded-3xl shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between gap-4 border-b p-5 sm:p-7">
             <div className="flex items-center gap-3">
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
                 <ShieldCheck className="size-5" />
               </span>
               <div>

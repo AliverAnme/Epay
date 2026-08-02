@@ -32,13 +32,18 @@ type AuthViewProps = { mode: AuthMode; config?: JsonObject }
 
 function enabled(config: JsonObject, key: string) {
   const value = config[key]
-  return (
-    value === true ||
-    value === 1 ||
-    value === "1" ||
-    value === -1 ||
-    value === "-1"
-  )
+  if (typeof value === "boolean") return value
+  if (typeof value === "number") {
+    return key === "login_qq" ? value > 0 : value > 0 || value === -1
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const numeric = Number(value)
+    if (Number.isFinite(numeric)) {
+      return key === "login_qq" ? numeric > 0 : numeric > 0 || numeric === -1
+    }
+    return value.trim().toLowerCase() === "true"
+  }
+  return false
 }
 
 function isOpen(value: unknown) {
@@ -61,13 +66,13 @@ function Brand({
   name?: string
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+    <div className="flex min-w-0 items-center gap-3">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
         <span className="text-sm font-semibold">RP</span>
       </div>
       {!compact && (
-        <div className="leading-tight">
-          <p className="font-semibold tracking-tight">{name}</p>
+        <div className="min-w-0 leading-tight">
+          <p className="truncate font-semibold tracking-tight">{name}</p>
           <p
             className={cn(
               "text-[11px]",
@@ -162,7 +167,7 @@ export function AuthView({ mode, config = {} }: AuthViewProps) {
                             : "请输入你的商户信息"}
                     </CardDescription>
                   </div>
-                  <div className="hidden size-10 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex">
+                  <div className="hidden size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex">
                     <ShieldCheck className="size-5" />
                   </div>
                 </div>

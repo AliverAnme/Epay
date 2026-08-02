@@ -305,13 +305,13 @@ function Brand({
   name?: string
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+    <div className="flex min-w-0 items-center gap-3">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
         <CircleDollarSign className="size-5" aria-hidden="true" />
       </div>
       {!compact && (
-        <div className="leading-tight">
-          <p className="font-semibold tracking-tight">{name}</p>
+        <div className="min-w-0 leading-tight">
+          <p className="truncate font-semibold tracking-tight">{name}</p>
           <p className="text-[11px] text-muted-foreground">支付运营工作台</p>
         </div>
       )}
@@ -1215,7 +1215,7 @@ function MerchantDashboard({ config }: { config?: JsonObject }) {
                         <TableRow key={String(channel.name)}>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <div className="flex size-8 items-center justify-center rounded-lg bg-muted">
+                              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
                                 <CreditCard className="size-4 text-muted-foreground" />
                               </div>
                               <span className="font-medium">
@@ -1262,7 +1262,7 @@ function MerchantDashboard({ config }: { config?: JsonObject }) {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <div className="flex items-center gap-3 rounded-xl border bg-primary/5 p-3">
-                  <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Check className="size-4" />
                   </div>
                   <div>
@@ -1386,7 +1386,7 @@ function CashierView({ config }: { config?: CashierConfig }) {
               安全收银台
             </Badge>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
             <ShieldCheck className="size-4 text-primary" />
             支付过程已加密
           </div>
