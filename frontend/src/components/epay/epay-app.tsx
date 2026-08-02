@@ -1860,7 +1860,17 @@ export function EpayApp({ view, config }: EpayAppProps) {
   if (view === "merchant-dashboard")
     return <MerchantDashboard config={config as JsonObject | undefined} />
   if (view === "admin-order")
-    return <AdminOrderView config={config as AdminOrderConfig | undefined} />
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title="订单管理"
+        description="查询、核对并处理平台订单"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminOrderView config={config as AdminOrderConfig | undefined} />
+      </WorkspaceShell>
+    )
   if (view === "merchant-shell")
     return (
       <WorkspaceShell
