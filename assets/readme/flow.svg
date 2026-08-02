@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="240" viewBox="0 0 1200 240" role="img" aria-labelledby="title desc">
+  <title id="title">彩虹易支付支付流程</title>
+  <desc id="desc">六步流程：商户系统签名下单，易支付网关分发到支付渠道，支付完成后异步回调商户，商户验签后发货。</desc>
+
+  <defs>
+    <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF5E5B"/>
+      <stop offset="17%" stop-color="#FF9F1C"/>
+      <stop offset="33%" stop-color="#FFD23F"/>
+      <stop offset="50%" stop-color="#4CDB6C"/>
+      <stop offset="67%" stop-color="#2EC4B6"/>
+      <stop offset="83%" stop-color="#4B8BFF"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="240" rx="24" fill="#0B1220"/>
+
+  <!-- 步骤条 -->
+  <g id="flow-steps">
+    <!-- 步骤 1：商户系统 -->
+    <g>
+      <circle cx="131" cy="52" r="22" fill="#131C2E" stroke="#26334D" stroke-width="1.5"/>
+      <text x="131" y="59" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" fill="#7DD3FC">&lt;/&gt;</text>
+      <text x="131" y="112" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="22" font-weight="600" fill="#F4F7FB">商户系统</text>
+      <text x="131" y="142" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#8CA0BC">your app</text>
+    </g>
+
+    <!-- 步骤 2：签名下单 -->
+    <g>
+      <circle cx="307" cy="52" r="22" fill="#131C2E" stroke="#26334D" stroke-width="1.5"/>
+      <text x="307" y="59" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" fill="#7DD3FC">MD5</text>
+      <text x="307" y="112" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="22" font-weight="600" fill="#F4F7FB">签名下单</text>
+      <text x="307" y="142" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#8CA0BC">RSA · MD5 签名</text>
+    </g>
+
+    <!-- 步骤 3：易支付网关（高亮） -->
+    <g>
+      <circle cx="483" cy="52" r="22" fill="url(#rainbow)" stroke-width="0"/>
+      <text x="483" y="59" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="18" font-weight="700" fill="#0B1220">易</text>
+      <text x="483" y="112" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="22" font-weight="700" fill="url(#rainbow)">易支付网关</text>
+      <text x="483" y="142" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#8CA0BC">gateway 分发</text>
+    </g>
+
+    <!-- 步骤 4：渠道支付 -->
+    <g>
+      <circle cx="659" cy="52" r="22" fill="#131C2E" stroke="#26334D" stroke-width="1.5"/>
+      <text x="659" y="59" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" fill="#7DD3FC">¥</text>
+      <text x="659" y="112" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="22" font-weight="600" fill="#F4F7FB">渠道支付</text>
+      <text x="659" y="142" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#8CA0BC">支付宝 · 微信 · QQ</text>
+    </g>
+
+    <!-- 步骤 5：异步回调 -->
+    <g>
+      <circle cx="835" cy="52" r="22" fill="#131C2E" stroke="#26334D" stroke-width="1.5"/>
+      <text x="835" y="59" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" fill="#7DD3FC">↩</text>
+      <text x="835" y="112" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="22" font-weight="600" fill="#F4F7FB">异步回调</text>
+      <text x="835" y="142" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#8CA0BC">notify 验签</text>
+    </g>
+
+    <!-- 步骤 6：订单完成 -->
+    <g>
+      <circle cx="1011" cy="52" r="22" fill="#131C2E" stroke="#26334D" stroke-width="1.5"/>
+      <text x="1011" y="59" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="20" fill="#34D399">✓</text>
+      <text x="1011" y="112" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="22" font-weight="600" fill="#F4F7FB">订单完成</text>
+      <text x="1011" y="142" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#8CA0BC">商户发货</text>
+    </g>
+
+    <!-- 步骤间箭头 -->
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22" fill="#3B82F6" text-anchor="middle">
+      <text x="223" y="60">→</text>
+      <text x="399" y="60">→</text>
+      <text x="575" y="60">→</text>
+      <text x="751" y="60">→</text>
+      <text x="927" y="60">→</text>
+    </g>
+  </g>
+
+  <!-- 底部说明 -->
+  <text x="600" y="200" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19" fill="#8CA0BC">支付完成后，系统异步通知 notify_url，商户验签后更新订单状态</text>
+</svg>

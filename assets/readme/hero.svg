@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">彩虹易支付系统 - PHP 开源支付聚合网关</title>
+  <desc id="desc">深色画布上，左侧为品牌标题与价值说明，右侧为支付宝、微信、QQ钱包、财付通、银联五个支付渠道汇聚到易支付网关的架构图。</desc>
+
+  <defs>
+    <linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF5E5B"/>
+      <stop offset="17%" stop-color="#FF9F1C"/>
+      <stop offset="33%" stop-color="#FFD23F"/>
+      <stop offset="50%" stop-color="#4CDB6C"/>
+      <stop offset="67%" stop-color="#2EC4B6"/>
+      <stop offset="83%" stop-color="#4B8BFF"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4B8BFF" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#4B8BFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 背景画布 -->
+  <rect width="1200" height="360" rx="24" fill="#0B1220"/>
+
+  <!-- 右侧极淡光晕，衬托网关中心 -->
+  <circle cx="915" cy="195" r="180" fill="url(#glow)"/>
+
+  <!-- ==================== 左栏：标题与价值 ==================== -->
+  <g id="title-block" transform="translate(56 44)">
+    <!-- 类别标签 -->
+    <text y="18" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#7DD3FC">PHP 开源支付聚合网关</text>
+
+    <!-- 品牌标题：彩虹渐变 + 白色 -->
+    <text y="104" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="68" font-weight="700" fill="url(#rainbow)">彩虹</text>
+    <text x="174" y="104" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="68" font-weight="700" fill="#F4F7FB">易支付</text>
+    <text x="408" y="104" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="24" fill="#8CA0BC">系统</text>
+
+    <!-- 一句话价值 -->
+    <text y="158" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="26" fill="#D6E1F0">一站式免签约收款，一个 API 对接全渠道</text>
+
+    <!-- 元数据 -->
+    <text y="206" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#8CA0BC">PHP 7.4+  ·  MySQL 5.6+  ·  65+ 渠道插件  ·  Docker 部署</text>
+
+    <!-- 能力标签 -->
+    <g transform="translate(0 236)">
+      <rect width="156" height="44" rx="22" fill="#131C2E" stroke="#26334D"/>
+      <text x="78" y="28" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="20" fill="#D6E1F0">一键部署</text>
+      <rect x="172" width="230" height="44" rx="22" fill="#131C2E" stroke="#26334D"/>
+      <text x="287" y="28" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="20" fill="#D6E1F0">RSA 签名 · nonce 防重放</text>
+      <rect x="418" width="156" height="44" rx="22" fill="#131C2E" stroke="#26334D"/>
+      <text x="496" y="28" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="20" fill="#D6E1F0">异步回调</text>
+    </g>
+  </g>
+
+  <!-- ==================== 右栏：渠道汇聚图 ==================== -->
+  <g id="channel-map">
+    <!-- 汇聚线：渠道 → 网关（彩虹渐变） -->
+    <g stroke="url(#rainbow)" stroke-width="2" opacity="0.45">
+      <line x1="808" y1="114" x2="898" y2="180"/>
+      <line x1="1046" y1="114" x2="932" y2="180"/>
+      <line x1="1108" y1="217" x2="932" y2="212"/>
+      <line x1="1046" y1="320" x2="932" y2="228"/>
+      <line x1="808" y1="320" x2="898" y2="228"/>
+    </g>
+
+    <!-- 网关中心 -->
+    <circle cx="915" cy="195" r="50" fill="#131C2E" stroke="url(#rainbow)" stroke-width="3"/>
+    <text x="915" y="203" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="24" font-weight="700" fill="#F4F7FB">易支付</text>
+
+    <!-- 渠道节点 -->
+    <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="20" fill="#D6E1F0">
+      <rect x="760" y="92" width="96" height="44" rx="12" fill="#131C2E" stroke="#26334D"/>
+      <text x="808" y="120" text-anchor="middle">支付宝</text>
+
+      <rect x="998" y="92" width="96" height="44" rx="12" fill="#131C2E" stroke="#26334D"/>
+      <text x="1046" y="120" text-anchor="middle">微信支付</text>
+
+      <rect x="1060" y="195" width="96" height="44" rx="12" fill="#131C2E" stroke="#26334D"/>
+      <text x="1108" y="223" text-anchor="middle">QQ钱包</text>
+
+      <rect x="998" y="298" width="96" height="44" rx="12" fill="#131C2E" stroke="#26334D"/>
+      <text x="1046" y="326" text-anchor="middle">财付通</text>
+
+      <rect x="760" y="298" width="96" height="44" rx="12" fill="#131C2E" stroke="#26334D"/>
+      <text x="808" y="326" text-anchor="middle">银联</text>
+    </g>
+
+    <!-- 底部标注 -->
+    <text x="915" y="330" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" fill="#8CA0BC">65+ 渠道插件 · 可扩展</text>
+  </g>
+</svg>
