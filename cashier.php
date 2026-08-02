@@ -24,123 +24,36 @@ if(checkwechat()){
 		}
 	}
 }
+
+$epay_cashier_config = [
+	'tradeNo' => $trade_no,
+	'sitename' => $sitename ? $sitename : $conf['sitename'],
+	'other' => $other,
+	'order' => [
+		'name' => $row['name'],
+		'addtime' => $row['addtime'],
+		'money' => $row['money'],
+		'realmoney' => $row['realmoney'] ? $row['realmoney'] : $row['money'],
+	],
+	'paytype' => array_map(function($channel){
+		return [
+			'id' => $channel['id'],
+			'name' => $channel['name'],
+			'showname' => $channel['showname'],
+		];
+	}, $paytype),
+];
 ?>
 <!DOCTYPE html>
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" name="viewport">
-<title>收银台 | <?php echo h($sitename?$sitename:$conf['sitename'])?> </title>
-<link href="/assets/css/reset.css" rel="stylesheet" type="text/css">
-<link href="/assets/css/main12.css?v=2" rel="stylesheet" type="text/css">
-<link href="/assets/css/epay-cashier.css?v=20260731" rel="stylesheet" type="text/css">
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>收银台 | <?php echo h($sitename?$sitename:$conf['sitename'])?></title>
+<link rel="stylesheet" href="/assets/dist/epay-ui.css">
 </head>
-<body class="epay-cashier">
-<!--导航-->
-<div class="w100 navBD12">
-    <div class="w1080 nav12">
-        <div class="nav12-left">
-            <img src="/assets/img/logo.png">
-        </div>
-		<div class="nav12-right">
-            <span class="cashier-secure"><i class="fa fa-shield" aria-hidden="true"></i> 安全支付</span>
-            <span>收银台</span>
-        </div>
-
-    </div>
-</div>
-<input type="hidden" name="trade_no" value="<?php echo h($trade_no)?>"/>
-<!--订单金额-->
-<?php if($other){?>
-<div class="w1080 order-amount12" style="height: auto;">
-    <h2><font style="color: red">当前支付方式暂时关闭维护，请更换其他方式支付</font></h2>
-</div>
-<?php if(in_array('qqpay',array_column($paytype,'name'))){?>
-<div class="w1080 order-amount12" style="height: auto;">
-    <h2 style="font-size:18px"><font style="color: green">如果您需要微信支付请将微信余额转到QQ再选择QQ钱包支付！</font></h2>
-	<h3><a href="./wx.html" style="font-size:20px;color:blue">点击查看微信余额转到QQ钱包教程</a></h3>
-</div>
-<?php }}else{?>
-<div class="w1080 order-amount12">
-    <ul class="order-amount12-left">
-        <li>
-            <span>商品名称：</span>
-            <span><?php echo h($row['name'])?></span>
-        </li>
-        <li>
-            <span>订单号：</span>
-            <span><?php echo h($trade_no)?></span>
-        </li>
-		<li>
-            <span>创建时间：</span>
-            <span><?php echo h($row['addtime'])?></span>
-        </li>
-    </ul>
-    <div class="order-amount12-right">
-        <span>订单金额：</span>
-        <strong><?php echo h($row['money'])?></strong>
-        <span>元</span>
-    </div>  
-</div>
-<?php }?>
-<!--支付方式-->
-<div class="w1080 PayMethod12">
-    <div class="row">
-        <h2>支付方式</h2>
-        <p class="pay-method-hint">选择一种方式完成付款，支付过程将由对应平台安全处理。</p>
-        <ul class="types">
-		<?php foreach($paytype as $rows){?>
-          <li class="pay_li" value="<?php echo h($rows['id'])?>" role="button" tabindex="0" aria-selected="false">
-             <img src="/assets/icon/<?php echo h($rows['name'])?>.ico" alt="">
-                    <span><?php echo h($rows['showname'])?></span>
-          </li>
-		<?php }?>
-        </ul>
-    </div>
-</div>
-<!--立即支付-->
-<div class="w1080 immediate-pay12">
-  <div class="immediate-pay12-left">
-    <span class="action-note"><i class="fa fa-lock" aria-hidden="true"></i> 支付前请确认订单信息</span>
-  </div>
-  <div class="immediate-pay12-right">
-      <span>需支付：<strong><?php echo h($row['realmoney']?$row['realmoney']:$row['money'])?></strong>元<?php if($row['realmoney'] && $row['realmoney']!=$row['money'])echo '（包含'.h($row['realmoney']-$row['money']).'元手续费）';?></span>
-      <a class="immediate_pay" role="button">立即支付</a>
-    </div>
-</div>
-<div class="mt_agree">
-  <div class="mt_agree_main">
-    <h2>提示信息</h2>
-    <p id="errorContent" style="text-align:center;line-height:36px;"></p>
-    <a class="close_btn">确定</a>
-  </div>
-</div>
-<!--底部-->
-<div class="w1080 footer12">
-    <p> <?php echo h($sitename?$sitename:$conf['sitename'])?></p>
-</div>
-
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script type="text/javascript">
-	$(document).ready(function(){
-	function selectPayType(item){
-		$(".types li").each(function(){
-			$(this).removeClass('active').attr('aria-selected','false');
-		});
-		$(item).addClass('active').attr('aria-selected','true');
-	}
-	$(".types li").on('click', function(){ selectPayType(this); });
-	$(".types li").on('keydown', function(event){
-		if(event.key === 'Enter' || event.key === ' '){
-			event.preventDefault();
-			selectPayType(this);
-		}
-	});
-	$(document).on("click", ".immediate_pay", function () {
-		var value = $(".types").find('.active').attr('value');
-		var trade_no = $("input[name='trade_no']").val();
-		window.location.href='./submit2.php?typeid='+encodeURIComponent(value)+'&trade_no='+encodeURIComponent(trade_no);
-	});
-	$(".types li:first").each(function(){ selectPayType(this); });
-})
-</script>
+<body>
+<div id="epay-react-root" data-epay-view="cashier" data-epay-config="<?php echo h(json_encode($epay_cashier_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE))?>"></div>
+<script type="module" src="/assets/dist/epay-ui.js"></script>
 </body>
 </html>

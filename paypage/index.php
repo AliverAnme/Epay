@@ -150,169 +150,43 @@ if($money<=0 || !is_numeric($money) || !preg_match('/^[0-9.]+$/', $money))$money
 $codename = !empty($userrow['codename'])?$userrow['codename']:$userrow['username'];
 $csrf_token = bin2hex(random_bytes(16));
 $_SESSION['paypage_token'] = $csrf_token;
+$epay_paypage_config=[
+	'uid'=>$uid,
+	'token'=>$csrf_token,
+	'paytype'=>$type,
+	'direct'=>$direct,
+	'payer'=>isset($openId)?$openId:'',
+	'money'=>$money,
+	'codename'=>$codename,
+	'sitename'=>$conf['sitename'],
+];
 ?>
-<html lang="zh-cn">
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
     <title>向商户付款</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="format-detection" content="telephone=no">
-    <meta http-equiv="pragma" content="no-cache">
-    <meta http-equiv="cache-control" content="no-cache">
-    <meta http-equiv="expires" content="0">
-    <link rel="stylesheet" href="css/default.css">
-    <link rel="stylesheet" href="css/style.css?version=1001">
-    <link rel="stylesheet" href="css/epay-theme.css?version=20260731">
+    <link rel="stylesheet" href="/assets/dist/epay-ui.css">
 </head>
-<body class="epay-pay-page">
-<div class="layout-flex wrap">
-
-  <!-- content start -->
-  <div class="content">
-      <div class="merchant-card" aria-label="收款商户">
-          <span class="sico_pay" aria-hidden="true"></span>
-          <div class="merchant-meta">
-              <span class="merchant-label">收款至</span>
-              <span class="selTitle"><?php echo h($codename)?></span>
-          </div>
-      </div>
-    <form name="payForm" action="dopay" method="post">
-        <input type="hidden" name="uid" id="uid" value="<?php echo $uid?>">
-        <input type="hidden" name="token" id="token" value="<?php echo $csrf_token?>">
-        <input type="hidden" name="paytype" id="paytype" value="<?php echo h($type)?>">
-		<input type="hidden" name="direct" id="direct" value="<?php echo $direct?>">
-        <input type="hidden" name="payer" id="payer" value="<?php echo h($openId)?>">
-		<input type="hidden" name="trade_no" id="trade_no" value="">
-        <?php if($money){?><input type="hidden" name="txAmount" id="txAmount" value="<?php echo h($money)?>"><?php }?>
-        <div class="set_amount">
-        	<div class="payMoney marLeft10">请输入付款金额</div>
-            <div class="amount_bd">
-                <i class="i_money marLeft10" style="">¥</i>
-                <span class="input_simu " id="amount" aria-live="polite" aria-label="付款金额"></span>
-
-                <!-- 模拟input -->
-                <em class="line_simu" id="line"></em>
-                <!-- 模拟闪烁的光标 -->
-                <div id="clearBtn" role="button" tabindex="0" aria-label="清除金额" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></div>
-                <!-- 清除按钮 -->
-            </div>
-        </div>
-        <div class="set_remark">
-            <div class="have_been_set">
-                <span>备注：<span id="remark-content"></span></span>
-                <div class="remark_operate">
-                    <a href="javascript:;" class="remark_add" id="openModal">添加备注</a>
-                    <a href="javascript:;" class="remark_edit">编辑</a>
-                    <a href="javascript:;" class="remark_clear_away">清除</a>
-                </div>
-            </div>
-        </div>
-    </form>
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="title">添加备注</h5>
-                <span class="close" id="modal-close">&times;</span>
-            </div>
-            <div class="modal-body" id="remark-form">
-                <textarea name="remark" placeholder="请输入备注内容，30个字以内" rows="3"></textarea>
-                <button type="button">确认</button>
-                <div class="remark-tip">备注内容不能超过30个字</div>
-            </div>
-        </div>
-    </div>
-  </div>
-  <!-- content end -->
-
-  <div class="copyRight">由 <span><?php echo h($conf['sitename'])?></span> 提供服务支持</div>
-  <!-- 键盘 -->
-  <div class="keyboard">
-      <table class="key_table" id="keyboard" style="touch-action:pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);">
-          <tbody>
-              <tr>
-                <td class="key border b_rgt_btm" data-value="1" role="button" tabindex="0">1</td>
-                <td class="key border b_rgt_btm" data-value="2" role="button" tabindex="0">2</td>
-                <td class="key border b_rgt_btm" data-value="3" role="button" tabindex="0">3</td>
-                <td class="key border b_btm clear" data-value="delete" role="button" tabindex="0" aria-label="删除"></td>
-              </tr>
-              <tr>
-                <td class="key border b_rgt_btm" data-value="4" role="button" tabindex="0">4</td>
-                <td class="key border b_rgt_btm" data-value="5" role="button" tabindex="0">5</td>
-                <td class="key border b_rgt_btm" data-value="6" role="button" tabindex="0">6</td>
-                <td class="pay_btn" rowspan="3" id="payBtn" role="button" tabindex="0" aria-label="确认支付" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><em>确认</em>支付</td>
-              </tr>
-              <tr>
-                <td class="key border b_rgt_btm" data-value="7" role="button" tabindex="0">7</td>
-                <td class="key border b_rgt_btm" data-value="8" role="button" tabindex="0">8</td>
-                <td class="key border b_rgt_btm" data-value="9" role="button" tabindex="0">9</td>
-              </tr>
-              <tr>
-                <td colspan="2" class="key border b_rgt" data-value="0" role="button" tabindex="0">0</td>
-                <td class="key border b_rgt" data-value="dot" role="button" tabindex="0">.</td>
-              </tr>
-          </tbody>
-      </table>
-  </div>
-
-</div>
-
+<body>
+<div id="epay-react-root" data-epay-view="pay-page" data-epay-config="<?php echo h(json_encode($epay_paypage_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE))?>"></div>
+<script type="module" src="/assets/dist/epay-ui.js"></script>
 <script src="<?php echo $cdnpublic?>jquery/3.4.1/jquery.min.js"></script>
 <script src="//open.mobile.qq.com/sdk/qqapi.js?_bid=152"></script>
-<script src="js/hammer.js"></script>
-<script src="js/common.js"></script>
-<script src="js/pay.js?v=1005"></script>
 <script>
-	document.body.addEventListener('touchmove', function (event) {
-		event.preventDefault();
-	},{ passive: false });
-    var tips = new Tips();
-
-    // 模态框操作
-    var modal = document.getElementById("myModal");
-    document.querySelector(".remark_add").onclick = function() {
-        modal.classList.add("show");
-        document.querySelector(".modal-header .title").innerText = "添加备注";
+(function(){
+    var scripts = ['js/hammer.js', 'js/common.js', 'js/pay.js?v=1005'];
+    function loadNext(index){
+        if(index >= scripts.length) return;
+        var script = document.createElement('script');
+        script.src = scripts[index];
+        script.onload = function(){loadNext(index + 1);};
+        document.body.appendChild(script);
     }
-    document.getElementById("modal-close").onclick = function() {
-        modal.classList.remove("show");
-        modal.addEventListener('transitionend', () => {
-            modal.style.display = "none";
-        }, { once: true });
-    }
-
-    // 添加备注
-    var submitBtn = document.querySelector("#remark-form button");
-    submitBtn.onclick = function() {
-        var remark = document.querySelector("#remark-form textarea").value;
-        if (remark.length > 30) {
-            document.querySelector(".remark-tip").style.display = "block";
-            document.querySelector("#remark-form textarea").style.borderColor = "red";
-            document.querySelector("#remark-form textarea").onfocus = function() {
-                document.querySelector("#remark-form textarea").style.borderColor = "#ddd";
-                document.querySelector(".remark-tip").style.display = "none";
-            }
-            return;
-        }
-        document.querySelector("#remark-content").innerText = remark;
-        modal.classList.remove("show");
-        modal.addEventListener('transitionend', () => {
-            modal.style.display = "none";
-        }, { once: true });
-        if(remark.length > 0){
-            document.querySelector(".remark_operate").classList.add("yes");
-        }
-    }
-    // 编辑备注
-    document.querySelector(".remark_edit").onclick = function() {
-        modal.classList.add("show");
-        document.querySelector(".modal-header .title").innerText = "编辑备注";
-    }
-    // 清除备注
-    document.querySelector(".remark_clear_away").onclick = function() {
-        document.querySelector("#remark-content").innerText = "";
-        document.querySelector("#remark-form textarea").value = "";
-        document.querySelector(".remark_operate").classList.remove("yes");
-    }
+    document.addEventListener('epay-ui-mounted', function(){loadNext(0);}, {once:true});
+})();
 </script>
 </body>
 </html>

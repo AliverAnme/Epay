@@ -2,68 +2,32 @@
 $is_defend = true;
 include("./inc.php");
 @header('Content-Type: text/html; charset=UTF-8');
-	$trade_no=is_scalar($_GET['trade_no'] ?? null)?daddslashes($_GET['trade_no']):'';
-	$row=$DB->getRow("SELECT * FROM pre_order WHERE trade_no=:trade_no limit 1", [':trade_no'=>$trade_no]);
+$trade_no=is_scalar($_GET['trade_no'] ?? null)?daddslashes($_GET['trade_no']):'';
+$row=$DB->getRow("SELECT * FROM pre_order WHERE trade_no=:trade_no limit 1", [':trade_no'=>$trade_no]);
 if(!$row)showerror('订单号不存在');
 if($row['status']!=1)showerror('订单未完成支付');
 if(!isset($_SESSION['paypage_trade_no']) || $_SESSION['paypage_trade_no']!=$trade_no)showerror('订单校验失败');
 $userrow=$DB->getRow("select codename,username from pre_user where uid=:uid limit 1", [':uid'=>(int)$row['uid']]);
 $codename = !empty($userrow['codename'])?$userrow['codename']:$userrow['username'];
+$epay_status_config=[
+	'status'=>'success',
+	'sitename'=>$conf['sitename'],
+	'amount'=>$row['money'],
+	'recipient'=>$codename,
+	'tradeNo'=>$trade_no,
+	'createdAt'=>$row['endtime'],
+];
 ?>
-<html class="weui-msg">
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>支付成功页面</title>
-    <link href="/assets/css/weui.min.css" rel="stylesheet">
-    <link href="/paypage/css/epay-theme.css?version=20260731" rel="stylesheet">
-    <style>.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}</style>
+    <link rel="stylesheet" href="/assets/dist/epay-ui.css">
 </head>
 <body>
-<div class="container">
-<div class="page">
-<div class="weui-msg">
-    <div class="weui-msg__icon-area">
-        <i class="weui-icon-success weui-icon_msg"></i>
-    </div>
-    <div class="weui-msg__text-area">
-        <h2 class="weui-msg__title">支付成功</h2>
-		<h2 class="weui-msg__title"><span style="font-size:38px;font-weight:700;color:#f40;">¥<?php echo h($row['money'])?></span></h2>
-		<div class="weui-msg__custom-area">
-			<div class="weui-cells">
-			  <div class="weui-cell weui-cell_example">
-				<span class="weui-cell__bd">收款方</span>
-				<span class="weui-cell__ft"><strong><?php echo h($codename)?></strong></span>
-			  </div>
-			  <div class="weui-cell weui-cell_example">
-				<span class="weui-cell__bd">完成时间</span>
-				<span class="weui-cell__ft"><?php echo h($row['endtime'])?></span>
-			  </div>
-			  <div class="weui-cell weui-cell_example">
-				<span class="weui-cell__bd">订单号</span>
-				<span class="weui-cell__ft"><?php echo h($trade_no)?></span>
-			  </div>
-			</div>
-		</div>
-    </div>
-    <div class="weui-msg__opr-area">
-        <p class="weui-btn-area">
-            <a href="javascript:;" class="weui-btn weui-btn_default" id="Close">关闭</a>
-        </p>
-    </div>
-    <div class="weui-msg__extra-area">
-        <div class="weui-footer"><p class="weui-footer__links"></p><p class="weui-footer__text">Copyright © <?php echo date("Y")?> <?php echo h($conf['sitename'])?></p></div>
-    </div>
-</div>
-</div>
-</div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="//open.mobile.qq.com/sdk/qqapi.js?_bid=152"></script>
-<script src="js/close.js"></script>
-<script>
-document.body.addEventListener('touchmove', function (event) {
-	event.preventDefault();
-},{ passive: false });
-</script>
+<div id="epay-react-root" data-epay-view="payment-status" data-epay-config="<?php echo h(json_encode($epay_status_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE))?>"></div>
+<script type="module" src="/assets/dist/epay-ui.js"></script>
 </body>
 </html>

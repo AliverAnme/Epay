@@ -6,6 +6,10 @@ if(!isset($_SESSION['admin_csrf_token'])) {
 	$_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
 }
 $admin_csrf_token = $_SESSION['admin_csrf_token'];
+$epay_ui_view = isset($epay_ui_view) ? (string)$epay_ui_view : ($islogin==1 ? 'admin-shell' : '');
+$epay_ui_config = isset($epay_ui_config) && is_array($epay_ui_config) ? $epay_ui_config : [];
+if($epay_ui_view && !isset($epay_ui_config['title'])) $epay_ui_config['title'] = isset($title) ? $title : '平台运营';
+if($epay_ui_view && !isset($epay_ui_config['sitename'])) $epay_ui_config['sitename'] = $conf['sitename'];
 
 $admin_cdnpublic = 0;
 if($admin_cdnpublic==1){
@@ -29,16 +33,19 @@ if($admin_cdnpublic==1){
   <link href="../assets/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="../assets/css/bootstrap-table.css?v=1" rel="stylesheet"/>
   <link href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
+  <?php if($epay_ui_view){?><link href="../assets/dist/epay-ui.css" rel="stylesheet"/><?php }?>
   <script src="<?php echo $cdnpublic?>modernizr/2.8.3/modernizr.min.js"></script>
   <script src="<?php echo $cdnpublic?>jquery/3.4.1/jquery.min.js"></script>
   <script src="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <?php if($epay_ui_view){?><script type="module" src="../assets/dist/epay-ui.js"></script><?php }?>
   <!--[if lt IE 9]>
     <script src="<?php echo $cdnpublic?>html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="<?php echo $cdnpublic?>respond.js/1.4.2/respond.min.js"></script>
   <![endif]-->
 </head>
 <body>
-<?php if($islogin==1){?>
+<?php if($epay_ui_view){?><div id="epay-react-root" data-epay-view="<?php echo htmlspecialchars($epay_ui_view, ENT_QUOTES, 'UTF-8');?>" data-epay-config="<?php echo htmlspecialchars(json_encode($epay_ui_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div><?php }?>
+<?php if($islogin==1 && !$epay_ui_view){?>
   <nav class="navbar navbar-fixed-top navbar-default">
     <div class="container">
       <div class="navbar-header">

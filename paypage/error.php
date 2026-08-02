@@ -1,41 +1,20 @@
 <?php
 if(!defined('IN_CRONLITE'))exit();
-?><html class="weui-msg">
+$epay_status_config=[
+	'status'=>'error',
+	'sitename'=>$conf['sitename'],
+	'message'=>$msg,
+];
+?><!DOCTYPE html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>错误提示</title>
-    <link href="/assets/css/weui.min.css" rel="stylesheet">
-    <link href="/paypage/css/epay-theme.css?version=20260731" rel="stylesheet">
-    <style>.page{position:absolute;top:0;right:0;bottom:0;left:0;overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}</style>
+    <link rel="stylesheet" href="/assets/dist/epay-ui.css">
 </head>
 <body>
-<div class="container">
-<div class="page">
-<div class="weui-msg">
-    <div class="weui-msg__icon-area">
-        <i class="weui-icon-warn weui-icon_msg"></i>
-    </div>
-    <div class="weui-msg__text-area">
-        <h2 class="weui-msg__title"><?php echo h($msg)?></h2>
-    </div>
-    <div class="weui-msg__opr-area">
-        <p class="weui-btn-area">
-            <a href="javascript:;" class="weui-btn weui-btn_default" id="Close">关闭</a>
-        </p>
-    </div>
-    <div class="weui-msg__extra-area">
-        <div class="weui-footer"><p class="weui-footer__links"></p></div>
-    </div>
-</div>
-</div>
-</div>
-<script src="<?php echo $cdnpublic?>jquery/1.12.4/jquery.min.js"></script>
-<script src="js/close.js"></script>
-<script>
-document.body.addEventListener('touchmove', function (event) {
-	event.preventDefault();
-},{ passive: false });
-</script>
+<div id="epay-react-root" data-epay-view="payment-status" data-epay-config="<?php echo h(json_encode($epay_status_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE))?>"></div>
+<script type="module" src="/assets/dist/epay-ui.js"></script>
 </body>
 </html>

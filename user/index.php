@@ -32,7 +32,13 @@ if($userrow['status']==0){
 	$status = '<font color="green">正常</font>';
 }
 $title='用户中心';
+$epay_ui_view='merchant-dashboard';
+$epay_ui_config=[
+	'sitename'=>$conf['sitename'],
+	'money'=>$userrow['money'],
+];
 include './head.php';
+if($epay_ui_view){exit('</div></body></html>');}
 ?>
 <style>
 .round {
