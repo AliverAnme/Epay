@@ -138,7 +138,7 @@ if [ "$TABLE_EXISTS" = "0" ]; then
     echo "[entrypoint] 首次安装，执行数据库初始化 ..."
 
     # 生成随机密钥
-    SYSKEY=$(php -r "echo substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 32);")
+    SYSKEY=$(php -r "echo bin2hex(random_bytes(16));")
     CRONKEY=$(php -r "echo bin2hex(random_bytes(16));")
     BUILD_DATE=$(date +%Y-%m-%d)
 
@@ -245,7 +245,7 @@ else
 
     \$syskey = \$pdo->query(\"SELECT v FROM ${DB_PREFIX}_config WHERE k='syskey'\")->fetchColumn();
     if (!\$syskey) {
-        \$new_syskey = substr(str_shuffle('abcdefghijklmnopqrstuvwxyz0123456789'), 0, 32);
+        \$new_syskey = bin2hex(random_bytes(16));
         \$pdo->exec(\"INSERT INTO ${DB_PREFIX}_config VALUES ('syskey', '\$new_syskey')\");
         echo '[entrypoint] 已补充 SYS_KEY' . PHP_EOL;
     }

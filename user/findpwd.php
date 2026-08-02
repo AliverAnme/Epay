@@ -4,7 +4,7 @@ include("../includes/common.php");
 
 //if($conf['reg_open']==0)sysmsg('未开放商户申请');
 
-$csrf_token = md5(mt_rand(0,999).time());
+$csrf_token = bin2hex(random_bytes(16));
 $_SESSION['csrf_token'] = $csrf_token;
 $epay_ui_view='user-recovery';
 $epay_ui_config=[

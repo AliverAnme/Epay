@@ -3,7 +3,7 @@ include("../includes/common.php");
 if($islogin2==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 $title='授权支付域名';
 include './head.php';
-$csrf_token = md5(mt_rand(0,999).time());
+$csrf_token = bin2hex(random_bytes(16));
 $_SESSION['csrf_token'] = $csrf_token;
 echo '<script>var user_csrf_token = "'.$csrf_token.'";</script>';
 ?>

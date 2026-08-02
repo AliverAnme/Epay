@@ -16,10 +16,11 @@ location / {
 }
 
 # ==========================================
-# 敏感路径拦截
+# 安装器入口由 install/index.php 根据 install.lock 自行锁定；禁止下载安装产物。
 # ==========================================
-location ^~ /install {
+location ~* ^/install/.*\.(sql|lock)$ {
   deny all;
+  return 403;
 }
 location ^~ /plugins {
   deny all;

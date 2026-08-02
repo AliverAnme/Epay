@@ -224,7 +224,7 @@ if($epay_ui_view && !isset($epay_ui_config['sitename'])) $epay_ui_config['sitena
                 </a>
               </li>
 			  <?php }?>
-        <?php if($conf['complain_open']==1){?>
+        <?php if($conf['complain_open']==1 && file_exists(__DIR__.'/complain.php')){?>
               <li class="<?php echo checkIfActive('complain,complain_info')?>">
                 <a href="complain.php">
                   <?php $complain_total = $DB->getColumn("SELECT count(*) from pre_complain WHERE uid=$uid AND status=0"); if($complain_total>0){echo '<b class="label bg-danger pull-right">'.$complain_total.'</b>';}?>
@@ -233,7 +233,7 @@ if($epay_ui_view && !isset($epay_ui_config['sitename'])) $epay_ui_config['sitena
                 </a>
               </li>
 			  <?php }?>
-        <?php if($conf['mchrisk_open']==1){?>
+        <?php if($conf['mchrisk_open']==1 && file_exists(__DIR__.'/mchrisk.php')){?>
               <li class="<?php echo checkIfActive('mchrisk')?>">
                 <a href="mchrisk.php">
                   <i class="fa fa-asterisk fa-fw"></i>

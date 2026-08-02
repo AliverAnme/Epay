@@ -15,8 +15,9 @@ case 'captcha_verify':
 	$captcha_result = verify_captcha4();
 	if($captcha_result !== true){
 		echo json_encode(['code'=>-1, 'msg'=>'验证失败，请重新验证']);
+		exit;
 	}
-	$key = time().getDefendKey($pid, $trade_no).rand(111111,999999);
+	$key = time().getDefendKey($pid, $trade_no).random_int(111111,999999);
 	echo json_encode(['code'=>0, 'key'=>$key]);
 break;
 default:

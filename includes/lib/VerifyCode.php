@@ -37,7 +37,7 @@ class VerifyCode{
             if($count>=self::SMS_IP_DAYLY_TIME){
                 return '你今天发送次数过多，请明天再试！';
             }
-            $code = rand(111111,999999);
+            $code = random_int(111111,999999);
             $result = send_sms($phone, $code, $scene);
             if($result===true){
                 if($DB->insert('regcode', ['uid'=>$uid, 'scene'=>$scene, 'type'=>$type, 'code'=>$code, 'to'=>$phone, 'time'=>time(), 'ip'=>$clientip, 'status'=>0])){
@@ -62,7 +62,7 @@ class VerifyCode{
             if($count>=self::EMAIL_IP_DAYLY_TIME){
                 return '你今天发送次数过多，请明天再试！';
             }
-            $code = rand(1111111,9999999);
+            $code = random_int(1111111,9999999);
             $result = self::send_mail_code($email, $code, $scene);
             if($result===true){
                 if($DB->insert('regcode', ['uid'=>$uid, 'scene'=>$scene, 'type'=>$type, 'code'=>$code, 'to'=>$email, 'time'=>time(), 'ip'=>$clientip, 'status'=>0])){

@@ -1,7 +1,7 @@
 <?php
 include("../includes/common.php");
 if($islogin2==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
-$csrf_token = md5(mt_rand(0,999).time());
+$csrf_token = bin2hex(random_bytes(16));
 $_SESSION['csrf_token'] = $csrf_token;
 $title='创建红包';
 include './head.php';

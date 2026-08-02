@@ -47,6 +47,8 @@ if($step==3){
         $dbqz=isset($_POST['dbqz'])?$_POST['dbqz']:null;
         if(empty($host) || empty($port) || empty($user) || empty($pwd) || empty($database) || empty($dbqz)){
             $errorMsg='请填写完整所有数据库信息！';
+        }elseif(!preg_match('/^[a-zA-Z0-9_]+$/', $dbqz)){
+            $errorMsg='数据表前缀只能包含字母、数字和下划线！';
         }
         $dbconfig=array(
             'host' => $host,
@@ -118,9 +120,9 @@ if($step==3){
             $DB->exec("set names utf8");
             $sqls=file_get_contents('install.sql');
             $sqls=explode(';', $sqls);
-            $sqls[]="INSERT INTO `".$dbqz."_config` VALUES ('syskey', '".random(32)."')";
+            $sqls[]="INSERT INTO `".$dbqz."_config` VALUES ('syskey', '".bin2hex(random_bytes(16))."')";
             $sqls[]="INSERT INTO `".$dbqz."_config` VALUES ('build', '".date("Y-m-d")."')";
-            $sqls[]="INSERT INTO `".$dbqz."_config` VALUES ('cronkey', '".rand(111111,999999)."')";
+            $sqls[]="INSERT INTO `".$dbqz."_config` VALUES ('cronkey', '".bin2hex(random_bytes(16))."')";
             $success=0;$error=0;$errorMsg=null;
             foreach ($sqls as $value) {
                 $value=trim($value);
@@ -191,7 +193,7 @@ if($step==3){
                             <div class="form-group">
                                 <label class="col-sm-2 control-label">数据库密码</label>
                                 <div class="col-sm-10">
-                                    <input type="text" name="pwd" class="form-control" required>
+                                    <input type="password" name="pwd" class="form-control" autocomplete="new-password" required>
                                 </div>
                             </div>
 							<div class="form-group">

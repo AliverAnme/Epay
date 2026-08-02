@@ -1255,7 +1255,7 @@ function checkPayVerifyOpen($pid){
 function showPayVerifyPage($defend_key, $query_arr){
 	global $conf, $cdnpublic;
 	if($conf['pay_verify_type'] == 0){
-		$key = time().$defend_key.rand(111111,999999);
+		$key = time().$defend_key.random_int(111111,999999);
 		\lib\Payment::renderLegacyPaymentPage('verify_jump', get_defined_vars());
 	}elseif($conf['pay_verify_type'] == 1){
 		\lib\Payment::renderLegacyPaymentPage('verify_invisible', get_defined_vars());

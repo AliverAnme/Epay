@@ -8,7 +8,7 @@ include './head.php';
 $urow = $DB->getRow("SELECT uid,gid FROM pre_user WHERE uid='{$conf['reg_pay_uid']}' limit 1");
 if(!$urow)exit('充值收款商户不存在');
 $paytype = \lib\Channel::getTypes($urow['uid'], $urow['gid']);
-$csrf_token = md5(mt_rand(0,999).time());
+$csrf_token = bin2hex(random_bytes(16));
 $_SESSION['csrf_token'] = $csrf_token;
 
 if(!$userrow['deposit']) $userrow['deposit'] = 0;

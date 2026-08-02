@@ -1,5 +1,9 @@
+	<rule name="block_install_artifacts" stopProcessing="true">
+		<match url="^install/.*\.(sql|lock)$"/>
+		<action type="CustomResponse" statusCode="403" statusReason="Forbidden" statusDescription="Installer artifact is protected"/>
+	</rule>
 	<rule name="block_sensitive" stopProcessing="true">
-		<match url="^(install|\.git|\.env|config\.php)"/>
+		<match url="^(\.git|\.env|config\.php)"/>
 		<action type="CustomResponse" statusCode="403" statusReason="Forbidden" statusDescription="Access Denied"/>
 	</rule>
 	<rule name="payrule1_rewrite" stopProcessing="true">

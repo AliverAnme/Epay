@@ -537,7 +537,18 @@ function RegisterForm({
             获取验证码
           </Button>
         </div>
-        <div id="wait" className="hidden" />
+        <div
+          id="captcha"
+          className="min-h-2 rounded-xl border bg-muted/30 p-2"
+          aria-live="polite"
+        >
+          <div
+            id="wait"
+            className="hidden text-center text-xs text-muted-foreground"
+          >
+            验证码加载中…
+          </div>
+        </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="pwd">登录密码</Label>
@@ -666,7 +677,18 @@ function RecoveryForm({ config }: { config: JsonObject }) {
             获取验证码
           </Button>
         </div>
-        <div id="wait" className="hidden" />
+        <div
+          id="captcha"
+          className="min-h-2 rounded-xl border bg-muted/30 p-2"
+          aria-live="polite"
+        >
+          <div
+            id="wait"
+            className="hidden text-center text-xs text-muted-foreground"
+          >
+            验证码加载中…
+          </div>
+        </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="pwd">新密码</Label>
