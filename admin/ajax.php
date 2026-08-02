@@ -211,6 +211,28 @@ case 'generate_wxa_link':
 	}
 	exit('{"code":0,"url":"'.$url_link.'"}');
 break;
+case 'delInvite':
+	$id = intval($_POST['id'] ?? $_GET['id'] ?? 0);
+	if($id <= 0) exit('{"code":-1,"msg":"邀请码参数错误"}');
+	if($DB->delete('invitecode', ['id'=>$id])) exit('{"code":0,"msg":"删除邀请码成功"}');
+	exit('{"code":-1,"msg":"删除邀请码失败"}');
+break;
+case 'clearInvite':
+	$status = isset($_POST['status']) ? intval($_POST['status']) : (isset($_GET['status']) ? intval($_GET['status']) : -1);
+	if($status === 1) $ok = $DB->exec("DELETE FROM pre_invitecode WHERE status=1");
+	else $ok = $DB->exec("DELETE FROM pre_invitecode");
+	if($ok !== false) exit('{"code":0,"msg":"清理邀请码成功"}');
+	exit('{"code":-1,"msg":"清理邀请码失败"}');
+break;
+case 'generateInvite':
+	$num = min(1000, max(1, intval($_POST['num'] ?? 0)));
+	$codes = [];
+	for($i=0; $i<$num; $i++){
+		$code = function_exists('random') ? random(8) : bin2hex(random_bytes(4));
+		if($DB->exec("INSERT INTO pre_invitecode (`code`,`addtime`,`status`) VALUES (:code,NOW(),0)", [':code'=>$code])) $codes[] = $code;
+	}
+	exit(json_encode(['code'=>0,'msg'=>'成功生成 '.count($codes).' 个邀请码','codes'=>$codes], JSON_UNESCAPED_UNICODE));
+break;
 default:
 	exit('{"code":-4,"msg":"No Act"}');
 break;

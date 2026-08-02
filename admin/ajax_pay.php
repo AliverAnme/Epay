@@ -345,7 +345,6 @@ case 'channelInfo':
 	if(!$plugin)
 		exit('{"code":-1,"msg":"当前支付插件不存在！"}');
 
-	$data = '<div class="modal-body"><form class="form" id="form-info">';
 	$select_list = [];
 	if(!empty($plugin['select_'.$typename])){
 		$select_list = $plugin['select_'.$typename];
@@ -353,55 +352,35 @@ case 'channelInfo':
 	elseif(!empty($plugin['select'])){
 		$select_list = $plugin['select'];
 	}
-	if(count($select_list) > 0){
-		$select = '';
-		foreach($select_list as $key=>$input){
-			$select .= '<label><input type="checkbox" '.(in_array($key,$apptype)?'checked':null).' name="apptype[]" value="'.$key.'">'.$input.'</label>&nbsp;';
-		}
-		$data .= '<div class="form-group"><input type="hidden" id="isapptype" name="isapptype" value="1"/><label>请选择可用的接口：</label><div class="checkbox">'.$select.'</div></div>';
-	}
+	$fields = [];
+	if(count($select_list) > 0) $fields[] = ['key'=>'apptype','label'=>'可用接口','type'=>'checkbox','value'=>$apptype,'options'=>$select_list,'required'=>true];
 	$config = json_decode($row['config'],true);
 	foreach($plugin['inputs'] as $key=>$input){
-		if($input['type'] == 'textarea'){
-			$data .= '<div class="form-group"><label>'.$input['name'].'：</label><br/><textarea name="config['.$key.']" rows="2" class="form-control" placeholder="'.$input['note'].'">'.$config[$key].'</textarea></div>';
-		}elseif($input['type'] == 'select'){
-			$addOptions = '';
-			foreach($input['options'] as $k=>$v){
-				$addOptions.='<option value="'.$k.'" '.($config[$key]==$k?'selected':'').'>'.$v.'</option>';
-			}
-			$data .= '<div class="form-group"><label>'.$input['name'].'：</label><br/><select class="form-control" name="config['.$key.']" default="'.$config[$key].'">'.$addOptions.'</select></div>';
-		}elseif($input['type'] == 'checkbox'){
-			$checked = $config[$key] ?? [];
-			$addOptions = '';
-			foreach($input['options'] as $k=>$v){
-				$addOptions.='<label><input type="checkbox" '.(in_array($k,$checked)?'checked':null).' name="config['.$key.'][]" value="'.$k.'">'.$v.'</label>&nbsp;';
-			}
-			$data .= '<div class="form-group"><label>'.$input['name'].'：</label><div class="checkbox">'.$addOptions.'</div></div>';
-		}else{
-			$data .= '<div class="form-group"><label>'.$input['name'].'：</label><br/><input type="text" name="config['.$key.']" value="'.$config[$key].'" class="form-control" placeholder="'.$input['note'].'"/></div>';
-		}
+		$fieldType = in_array($input['type'] ?? 'text', ['textarea','select','checkbox'], true) ? $input['type'] : 'text';
+		$fields[] = ['key'=>$key,'label'=>(string)($input['name'] ?? $key),'type'=>$fieldType,'value'=>$config[$key] ?? '', 'note'=>(string)($input['note'] ?? ''),'options'=>$input['options'] ?? []];
 	}
+	$wxmpOptions = [];
 	if($plugin['bindwxmp'] && $row['type']==2){
 		$wxmplist = $DB->getAll("SELECT * FROM pre_weixin WHERE type=0 ORDER BY id ASC");
-		$addOptions = '<option value="0">不绑定</option>';
+		$wxmpOptions['0'] = '不绑定';
 		foreach($wxmplist as $wxmp){
-			$addOptions.='<option value="'.$wxmp['id'].'" '.($row['appwxmp']==$wxmp['id']?'selected':'').'>'.$wxmp['name'].'（'.$wxmp['appid'].'）'.'</option>';
+			$wxmpOptions[(string)$wxmp['id']] = $wxmp['name'].'（'.$wxmp['appid'].'）';
 		}
-		$data .= '<div class="form-group"><label>绑定微信公众号：</label><br/><select class="form-control" name="appwxmp" default="'.$row[$key].'">'.$addOptions.'</select></div>';
+		$fields[] = ['key'=>'appwxmp','label'=>'绑定微信公众号','type'=>'select','value'=>(string)$row['appwxmp'],'options'=>$wxmpOptions];
 	}
+	$wxaOptions = [];
 	if($plugin['bindwxa'] && $row['type']==2){
 		$wxalist = $DB->getAll("SELECT * FROM pre_weixin WHERE type=1 ORDER BY id ASC");
-		$addOptions = '<option value="0">不绑定</option>';
+		$wxaOptions['0'] = '不绑定';
 		foreach($wxalist as $wxa){
-			$addOptions.='<option value="'.$wxa['id'].'" '.($row['appwxa']==$wxa['id']?'selected':'').'>'.$wxa['name'].'（'.$wxa['appid'].'）'.'</option>';
+			$wxaOptions[(string)$wxa['id']] = $wxa['name'].'（'.$wxa['appid'].'）';
 		}
-		$data .= '<div class="form-group"><label>绑定微信小程序：</label><br/><select class="form-control" name="appwxa" default="'.$row[$key].'">'.$addOptions.'</select></div>';
+		$fields[] = ['key'=>'appwxa','label'=>'绑定微信小程序','type'=>'select','value'=>(string)$row['appwxa'],'options'=>$wxaOptions];
 	}
 
 	$note = str_replace(['[siteurl]','[channel]','[basedir]'],[$siteurl,$id,ROOT],$plugin['note']);
 
-	$data .= '<button type="button" id="save" onclick="saveInfo('.$id.')" class="btn btn-primary btn-block">保存</button></form><br/><font color="green">'.$note.'</font></div>';
-	$result=array("code"=>0,"msg"=>"succ","data"=>$data);
+	$result = ['code'=>0,'msg'=>'succ','data'=>['id'=>$id,'type'=>(int)$row['type'],'typename'=>(string)$typename,'fields'=>$fields,'note'=>$note,'bindwxmp'=>!empty($plugin['bindwxmp']),'bindwxa'=>!empty($plugin['bindwxa'])]];
 	exit(json_encode($result));
 break;
 case 'saveChannelInfo':

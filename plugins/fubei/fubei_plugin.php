@@ -327,8 +327,10 @@ class fubei_plugin
 				$msg = '';
 				if(!empty($retData['sub_appid_msg'])) $msg .= $retData['sub_appid_msg'].'<br/>';
 				if(!empty($retData['jsapi_msg'])) $msg .= $retData['jsapi_msg'];
+				if(defined('EPAY_PLUGIN_JSON')) echojson(['code'=>0,'msg'=>strip_tags($msg) ?: '微信参数配置成功！']);
 				showmsg($msg,1);
 			}catch(Exception $e){
+				if(defined('EPAY_PLUGIN_JSON')) echojsonmsg('微信参数配置失败！'.$e->getMessage());
 				showmsg('微信参数配置失败！'.$e->getMessage(),4);
 			}
 		}

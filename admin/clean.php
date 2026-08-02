@@ -1,103 +1,42 @@
 <?php
-/**
- * 系统数据清理
-**/
+/** 系统数据清理（原生 shadcn 维护视图） */
 include("../includes/common.php");
-$title='系统数据清理';
-include './head.php';
-if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
-if($_SERVER['REQUEST_METHOD']==='POST' && (!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token'])) showmsg('CSRF验证失败，请刷新页面后重试',3);
-?>
-  <div class="container" style="padding-top:70px;">
-    <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
-<?php
-$mod=isset($_GET['mod'])?$_GET['mod']:null;
-if($mod=='cleancache'){
-$CACHE->clear();
-if(function_exists("opcache_reset"))@opcache_reset();
-showmsg('清理系统设置缓存成功！',1);
-}elseif($mod=='cleanorder'){
-$DB->exec("DELETE FROM `pre_order` WHERE addtime<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-30 days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_order`");
-showmsg('删除30天前订单记录成功！',1);
-}elseif($mod=='cleansettle'){
-$DB->exec("DELETE FROM `pre_settle` WHERE addtime<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-30 days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_settle`");
-showmsg('删除30天前结算记录成功！',1);
-}elseif($mod=='cleanrecord'){
-$DB->exec("DELETE FROM `pre_record` WHERE date<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-30 days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_record`");
-showmsg('删除30天前资金明细成功！',1);
-}elseif($mod=='cleanorderi' && $_POST['do']=='submit'){
-$days = intval($_POST['days']);
-if($days<=0)showmsg('请确保每项不能为空',3);
-$DB->exec("DELETE FROM `pre_order` WHERE addtime<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-{$days} days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_order`");
-showmsg('删除订单记录成功！',1);
-}elseif($mod=='cleansettlei' && $_POST['do']=='submit'){
-$days = intval($_POST['days']);
-if($days<=0)showmsg('请确保每项不能为空',3);
-$DB->exec("DELETE FROM `pre_settle` WHERE addtime<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-{$days} days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_settle`");
-showmsg('删除结算记录成功！',1);
-}elseif($mod=='cleanrecordi' && $_POST['do']=='submit'){
-$days = intval($_POST['days']);
-if($days<=0)showmsg('请确保每项不能为空',3);
-$DB->exec("DELETE FROM `pre_record` WHERE date<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-{$days} days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_record`");
-showmsg('删除资金明细成功！',1);
-}elseif($mod=='cleantransferi' && $_POST['do']=='submit'){
-$days = intval($_POST['days']);
-if($days<=0)showmsg('请确保每项不能为空',3);
-$DB->exec("DELETE FROM `pre_transfer` WHERE paytime<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-{$days} days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_transfer`");
-showmsg('删除付款记录成功！',1);
-}elseif($mod=='cleanpsorderi' && $_POST['do']=='submit'){
-$days = intval($_POST['days']);
-if($days<=0)showmsg('请确保每项不能为空',3);
-$DB->exec("DELETE FROM `pre_psorder` WHERE addtime<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-{$days} days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_psorder`");
-showmsg('删除分账记录成功！',1);
-}elseif($mod=='cleanlogi' && $_POST['do']=='submit'){
-$days = intval($_POST['days']);
-if($days<=0)showmsg('请确保每项不能为空',3);
-$DB->exec("DELETE FROM `pre_log` WHERE `date`<:thtime", [':thtime'=>date("Y-m-d H:i:s",strtotime("-{$days} days"))]);
-$DB->exec("OPTIMIZE TABLE `pre_log`");
-showmsg('删除登录记录成功！',1);
-}else{
-?>
-<div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">系统数据清理</h3></div>
-<div class="panel-body">
-<a href="./clean.php?mod=cleancache" class="btn btn-block btn-default">清理设置缓存</a><br/>
-<a href="./clean.php?mod=cleanorder" onclick="return confirm('你确实要删除30天前的订单记录吗？');" class="btn btn-block btn-default">删除30天前订单记录</a><br/>
-<a href="./clean.php?mod=cleansettle" onclick="return confirm('你确实要删除30天前的结算记录吗？');" class="btn btn-block btn-default">删除30天前结算记录</a><br/>
-<a href="./clean.php?mod=cleanrecord" onclick="return confirm('你确实要删除30天前的资金明细吗？');" class="btn btn-block btn-default">删除30天前资金明细</a><br/>
-<h4>自定义清理：</h4>
-<form action="./clean.php?mod=cleanorderi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
-<b>订单记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的订单记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
-</form><br/>
-<form action="./clean.php?mod=cleansettlei" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
-<b>结算记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的结算记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
-</form><br/>
-<form action="./clean.php?mod=cleanrecordi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
-<b>资金明细</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的订单记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
-</form><br/>
-<form action="./clean.php?mod=cleantransferi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
-<b>付款记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的付款记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
-</form><br/>
-<form action="./clean.php?mod=cleanpsorderi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
-<b>分账记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的分账记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
-</form><br/>
-<form action="./clean.php?mod=cleanlogi" method="post" role="form"><input type="hidden" name="do" value="submit"/><input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>"/>
-<b>登录记录</b>：<input type="text" name="days" value="" placeholder="天数"/>天前的登录记录&nbsp;<input type="submit" name="submit" value="立即删除" class="btn btn-sm btn-danger" onclick="return confirm('删除后无法恢复，确定继续吗？');"/>
-</form><br/>
-</div>
-<div class="panel-footer">
-<span class="glyphicon glyphicon-info-sign"></span>
-定期清理数据有助于提升网站访问速度
-</div>
-</div>
-<?php }?>
- </div>
-</div>
+require_once __DIR__.'/epay_ui_entry.php';
+
+$mod = isset($_GET['mod']) ? (string)$_GET['mod'] : '';
+if(isset($_GET['format']) && $_GET['format'] === 'json'){
+	if($_SERVER['REQUEST_METHOD'] === 'POST' && (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['admin_csrf_token'])) echojsonmsg('CSRF验证失败');
+	$days = max(1, intval($_POST['days'] ?? $_GET['days'] ?? 30));
+	$map = [
+		'cleancache'=>['msg'=>'清理系统设置缓存成功！'],
+		'cleanorder'=>['table'=>'pre_order','column'=>'addtime','msg'=>'删除30天前订单记录成功！'],
+		'cleansettle'=>['table'=>'pre_settle','column'=>'addtime','msg'=>'删除30天前结算记录成功！'],
+		'cleanrecord'=>['table'=>'pre_record','column'=>'date','msg'=>'删除30天前资金明细成功！'],
+		'cleantransfer'=>['table'=>'pre_transfer','column'=>'paytime','msg'=>'删除30天前付款记录成功！'],
+		'cleanpsorder'=>['table'=>'pre_psorder','column'=>'addtime','msg'=>'删除30天前分账记录成功！'],
+		'cleanlog'=>['table'=>'pre_log','column'=>'date','msg'=>'删除30天前登录记录成功！'],
+	];
+	$custom = ['cleanorderi'=>'cleanorder','cleansettlei'=>'cleansettle','cleanrecordi'=>'cleanrecord','cleantransferi'=>'cleantransfer','cleanpsorderi'=>'cleanpsorder','cleanlogi'=>'cleanlog'];
+	if(isset($custom[$mod])) $mod = $custom[$mod];
+	if($mod === 'cleancache'){
+		$CACHE->clear(); if(function_exists('opcache_reset')) @opcache_reset();
+		echojson(['code'=>0,'msg'=>$map[$mod]['msg']]);
+	}
+	if(!isset($map[$mod])) echojsonmsg('无效的清理操作');
+	$item = $map[$mod];
+	$threshold = date('Y-m-d H:i:s', strtotime('-'.$days.' days'));
+	$DB->exec("DELETE FROM `{$item['table']}` WHERE `{$item['column']}`<:thtime", [':thtime'=>$threshold]);
+	$DB->exec("OPTIMIZE TABLE `{$item['table']}`");
+	echojson(['code'=>0,'msg'=>$days === 30 ? $item['msg'] : '清理完成，共处理 '.$days.' 天前的数据。']);
+}
+
+$actions = [
+	['label'=>'清理设置缓存','description'=>'清理数据库配置缓存并刷新 OPcache。','endpoint'=>'./clean.php?mod=cleancache&format=json','method'=>'POST'],
+	['label'=>'删除 30 天前订单','description'=>'删除订单历史记录，操作不可恢复。','endpoint'=>'./clean.php?mod=cleanorder&format=json','method'=>'POST','destructive'=>true],
+	['label'=>'删除 30 天前结算','description'=>'删除结算历史记录，操作不可恢复。','endpoint'=>'./clean.php?mod=cleansettle&format=json','method'=>'POST','destructive'=>true],
+	['label'=>'删除 30 天前资金明细','description'=>'删除资金变动历史记录，操作不可恢复。','endpoint'=>'./clean.php?mod=cleanrecord&format=json','method'=>'POST','destructive'=>true],
+	['label'=>'删除 30 天前付款记录','description'=>'删除平台代付历史记录，操作不可恢复。','endpoint'=>'./clean.php?mod=cleantransfer&format=json','method'=>'POST','destructive'=>true],
+	['label'=>'删除 30 天前分账记录','description'=>'删除分账历史记录，操作不可恢复。','endpoint'=>'./clean.php?mod=cleanpsorder&format=json','method'=>'POST','destructive'=>true],
+	['label'=>'删除 30 天前登录日志','description'=>'删除管理员和商户登录日志，操作不可恢复。','endpoint'=>'./clean.php?mod=cleanlog&format=json','method'=>'POST','destructive'=>true],
+];
+epay_admin_view('admin-maintenance', ['title'=>'系统数据清理','description'=>'对缓存和历史数据执行可审计的维护操作。','actions'=>$actions]);

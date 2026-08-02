@@ -30,6 +30,9 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AuthView } from "@/components/epay/auth-view"
 import { AdminOrderView, type AdminOrderConfig } from "@/components/epay/admin-order"
+import { AdminResourceView, type AdminResourceConfig } from "@/components/epay/admin-resource"
+import { AdminFormView, AdminStatsView, type AdminFormConfig } from "@/components/epay/admin-form"
+import { AdminAccountView, AdminBatchView, AdminChannelConfigView, AdminChannelTestView, AdminGroupPurchaseView, AdminMaintenanceView, AdminRollConfigView, AdminSettlementBatchView, AdminTokenView, AdminTotpView, type AdminAccountConfig, type AdminBatchConfig, type AdminChannelConfig, type AdminChannelTestConfig, type AdminGroupPurchaseConfig, type AdminMaintenanceConfig, type AdminRollConfig, type AdminSettlementBatchConfig, type AdminTokenConfig, type AdminTotpConfig } from "@/components/epay/admin-tools"
 import { GoldPlanView, type GoldPlanConfig } from "@/components/epay/gold-plan"
 import {
   GatewayShell,
@@ -105,6 +108,19 @@ import { cn } from "@/lib/utils"
 type EpayView =
   | "admin-dashboard"
   | "admin-order"
+  | "admin-resource"
+  | "admin-form"
+  | "admin-stats"
+  | "admin-token"
+  | "admin-maintenance"
+  | "admin-settle-batch"
+  | "admin-account"
+  | "admin-group-purchase"
+  | "admin-channel-config"
+  | "admin-channel-test"
+  | "admin-totp"
+  | "admin-batches"
+  | "admin-roll-config"
   | "admin-shell"
   | "merchant-dashboard"
   | "merchant-shell"
@@ -252,6 +268,7 @@ const adminNav: NavItem[] = [
   { label: "中转代理配置", href: "./set.php?mod=proxy", icon: ShieldCheck },
   { label: "微信客服支付", href: "./set_wxkf.php", icon: Store },
   { label: "管理员账户", href: "./set.php?mod=account", icon: Users },
+  { label: "TOTP 二次验证", href: "./set_totp.php", icon: ShieldCheck },
   {
     section: "其他功能",
     label: "风控记录",
@@ -1869,6 +1886,162 @@ export function EpayApp({ view, config }: EpayAppProps) {
         features={objectOf(shellConfig, "features")}
       >
         <AdminOrderView config={config as AdminOrderConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-resource")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "平台管理"}
+        description="统一管理平台数据与运营配置"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminResourceView config={config as AdminResourceConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-form")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "平台配置"}
+        description="统一维护平台运营配置"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminFormView config={config as AdminFormConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-stats")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "数据统计"}
+        description="按条件查询平台统计数据"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminStatsView config={config as AdminFormConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-token")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "获取用户标识"}
+        description="生成 OAuth 与 OpenID 授权链接"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminTokenView config={config as AdminTokenConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-maintenance")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "系统维护"}
+        description="执行缓存和历史数据维护"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminMaintenanceView config={config as AdminMaintenanceConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-settle-batch")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "批量结算"}
+        description="逐笔处理待结算记录"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminSettlementBatchView config={config as AdminSettlementBatchConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-account")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "管理员账户设置"}
+        description="分别维护后台登录凭据和支付密码"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminAccountView config={config as AdminAccountConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-group-purchase")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "用户组购买设置"}
+        description="控制用户组购买开关与商品规则"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminGroupPurchaseView config={config as AdminGroupPurchaseConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-channel-config")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "支付通道密钥配置"}
+        description="使用支付插件字段维护通道配置"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminChannelConfigView config={config as AdminChannelConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-channel-test")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "测试支付"}
+        description="创建测试订单并验证支付通道"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminChannelTestView config={config as AdminChannelTestConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-totp")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "TOTP 二次验证"}
+        description="保护管理员登录凭据"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminTotpView config={config as AdminTotpConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-batches")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "批量结算"}
+        description="生成、导出并处理结算批次"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminBatchView config={config as AdminBatchConfig | undefined} />
+      </WorkspaceShell>
+    )
+  if (view === "admin-roll-config")
+    return (
+      <WorkspaceShell
+        kind="admin"
+        title={shellTitle || "配置轮询通道"}
+        description="维护轮询组的通道顺序和权重"
+        sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
+      >
+        <AdminRollConfigView config={config as AdminRollConfig | undefined} />
       </WorkspaceShell>
     )
   if (view === "merchant-shell")

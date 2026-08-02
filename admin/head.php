@@ -1,181 +1,31 @@
 <?php
+/** 后台统一 shadcn 应用壳。所有后台入口通过 data-epay-view 交给 React 渲染。 */
 @header('Content-Type: text/html; charset=UTF-8');
-
-// CSRF 防护令牌
-if(!isset($_SESSION['admin_csrf_token'])) {
-	$_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
-}
+if(!isset($_SESSION['admin_csrf_token'])) $_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
 $admin_csrf_token = $_SESSION['admin_csrf_token'];
-$epay_ui_view = isset($epay_ui_view) ? (string)$epay_ui_view : ($islogin==1 ? 'admin-shell' : '');
-$epay_ui_legacy_assets = !$epay_ui_view || !in_array($epay_ui_view, ['admin-order', 'admin-dashboard', 'admin-login'], true);
+$epay_ui_view = isset($epay_ui_view) ? (string)$epay_ui_view : 'admin-dashboard';
 $epay_ui_config = isset($epay_ui_config) && is_array($epay_ui_config) ? $epay_ui_config : [];
-if($epay_ui_view){
-	$epay_ui_config['features'] = array_merge([
-		'domain' => (int)($conf['pay_domain_forbid'] ?? 0) === 1 || (int)($conf['pay_domain_open'] ?? 0) === 1,
-		'invitecode' => (int)($conf['reg_open'] ?? 0) === 2,
-		'satf' => class_exists('\\lib\\AlipaySATF\\AlipaySATF') && file_exists(__DIR__.'/satf_transfer.php'),
-		'applyments' => class_exists('\\lib\\Applyments\\CommUtil') && file_exists(__DIR__.'/applyments_channel.php') && file_exists(__DIR__.'/applyments_merchant.php'),
-		'complain' => class_exists('\\lib\\Complain\\CommUtil') && file_exists(__DIR__.'/complain.php'),
-		'mchrisk' => class_exists('\\lib\\WxMchRisk') && file_exists(__DIR__.'/mchrisk.php'),
-	], isset($epay_ui_config['features']) && is_array($epay_ui_config['features']) ? $epay_ui_config['features'] : []);
-}
-if($epay_ui_view && !isset($epay_ui_config['title'])) $epay_ui_config['title'] = isset($title) ? $title : '平台运营';
-if($epay_ui_view && !isset($epay_ui_config['sitename'])) $epay_ui_config['sitename'] = $conf['sitename'];
-
-$admin_cdnpublic = 0;
-if($admin_cdnpublic==1){
-	$cdnpublic = '//lib.baomitu.com/';
-}elseif($admin_cdnpublic==2){
-	$cdnpublic = 'https://s4.zstatic.net/ajax/libs/';
-}elseif($admin_cdnpublic==4){
-	$cdnpublic = 'https://cdnjs.snrat.com/ajax/libs/';
-}else{
-	$cdnpublic = '/assets/vendor/';
-}
+$epay_ui_config['csrf_token'] = $admin_csrf_token;
+if(!isset($epay_ui_config['title'])) $epay_ui_config['title'] = isset($title) ? $title : '平台运营';
+if(!isset($epay_ui_config['sitename'])) $epay_ui_config['sitename'] = $conf['sitename'] ?? 'Rainbow Pay';
+$epay_ui_config['features'] = array_merge([
+	'domain' => (int)($conf['pay_domain_forbid'] ?? 0) === 1 || (int)($conf['pay_domain_open'] ?? 0) === 1,
+	'invitecode' => (int)($conf['reg_open'] ?? 0) === 2,
+	'satf' => class_exists('\\lib\\AlipaySATF\\AlipaySATF') && file_exists(__DIR__.'/satf_transfer.php'),
+	'applyments' => class_exists('\\lib\\Applyments\\CommUtil') && file_exists(__DIR__.'/applyments_channel.php') && file_exists(__DIR__.'/applyments_merchant.php'),
+	'complain' => class_exists('\\lib\\Complain\\CommUtil') && file_exists(__DIR__.'/complain.php'),
+	'mchrisk' => class_exists('\\lib\\WxMchRisk') && file_exists(__DIR__.'/mchrisk.php'),
+], isset($epay_ui_config['features']) && is_array($epay_ui_config['features']) ? $epay_ui_config['features'] : []);
 ?>
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="renderer" content="webkit">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title><?php echo $title ?></title>
-  <?php if($epay_ui_legacy_assets){?>
-  <link href="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="../assets/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="../assets/css/bootstrap-table.css?v=1" rel="stylesheet"/>
-  <link href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
-  <?php }?>
-  <?php if($epay_ui_view){?><link href="../assets/dist/epay-ui.css" rel="stylesheet"/><?php }?>
-  <?php if($epay_ui_legacy_assets){?>
-  <script src="<?php echo $cdnpublic?>modernizr/2.8.3/modernizr.min.js"></script>
-  <script src="<?php echo $cdnpublic?>jquery/3.4.1/jquery.min.js"></script>
-  <script src="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <?php }?>
-  <?php if($epay_ui_view){?><script type="module" src="../assets/dist/epay-ui.js"></script><?php }?>
-  <!--[if lt IE 9]>
-    <script src="<?php echo $cdnpublic?>html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="<?php echo $cdnpublic?>respond.js/1.4.2/respond.min.js"></script>
-  <![endif]-->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title><?php echo htmlspecialchars((string)$epay_ui_config['title'], ENT_QUOTES, 'UTF-8'); ?></title>
+  <link href="../assets/dist/epay-ui.css" rel="stylesheet" />
+  <script type="module" src="../assets/dist/epay-ui.js"></script>
 </head>
 <body>
-<?php if($epay_ui_view){?><div id="epay-react-root" data-epay-view="<?php echo htmlspecialchars($epay_ui_view, ENT_QUOTES, 'UTF-8');?>" data-epay-config="<?php echo htmlspecialchars(json_encode($epay_ui_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div><?php }?>
-<?php if($islogin==1 && !$epay_ui_view){?>
-  <nav class="navbar navbar-fixed-top navbar-default">
-    <div class="container">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-          <span class="sr-only">导航按钮</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="./">支付管理中心</a>
-      </div><!-- /.navbar-header -->
-      <div id="navbar" class="collapse navbar-collapse">
-        <ul class="nav navbar-nav navbar-right">
-          <li class="<?php echo checkIfActive('index,')?>">
-            <a href="./"><i class="fa fa-home"></i> 平台首页</a>
-          </li>
-          <li class="<?php echo checkIfActive('order,export,ps_receiver,ps_order,buyerstat,blacklist')?>">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-list"></i> 收款订单<b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a href="./order.php">订单管理</a></li>
-              <li><a href="./export.php">导出订单</a><li>
-              <li><a href="./buyerstat.php">支付用户统计</a></li>
-              <li><a href="./blacklist.php">黑名单管理</a></li>
-              <li role="separator" class="divider"></li>
-              <li><a href="./ps_receiver.php">分账规则</a><li>
-              <li><a href="./ps_order.php">分账记录</a><li>
-            </ul>
-          </li>
-          <li class="<?php echo checkIfActive('settle,settle_batch,slist,transfer,transfer_add,transfer_export,transfer_red,transfer_batch,transfer_stat')?>">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cloud"></i> 付款管理<b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a href="./slist.php">结算管理</a></li>
-              <li><a href="./settle.php">批量结算</a><li>
-              <li role="separator" class="divider"></li>
-              <li><a href="./transfer.php">付款记录</a><li>
-              <li><a href="./transfer_add.php">新增付款</a><li>
-              <li><a href="./transfer_red.php">创建红包</a><li>
-              <li><a href="./transfer_stat.php">付款统计</a><li>
-              <li><a href="./transfer_export.php">导出付款记录</a><li>
-              <?php if(class_exists('\\lib\\AlipaySATF\\AlipaySATF') && file_exists(__DIR__.'/satf_transfer.php')){?><li><a href="./satf_transfer.php">安全发转账记录</a></li><?php }?>
-            </ul>
-          </li>
-		  <li class="<?php echo checkIfActive('ulist,glist,gedit,group,record,uset,domain,ustat,invitecode,uexport')?>">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> 商户管理<b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a href="./ulist.php">用户列表</a></li>
-			  <li><a href="./glist.php">用户组设置</a></li>
-			  <li><a href="./group.php">用户组购买</a></li>
-			  <li><a href="./record.php">资金明细</a></li>
-        <li><a href="./ustat.php">支付统计</a></li>
-        <?php if($conf['pay_domain_forbid']==1 || $conf['pay_domain_open']==1){?><li><a href="./domain.php">授权域名</a></li><?php }?>
-        <?php if($conf['reg_open']==2){?><li><a href="./invitecode.php">邀请码管理</a></li><?php }?>
-            </ul>
-          </li>
-		  <li class="<?php echo checkIfActive('pay_channel,pay_roll,pay_type,pay_plugin,pay_weixin,applyments_channel,applyments_merchant,applyments_form')?>">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-credit-card"></i> 支付接口<b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a href="./pay_channel.php">支付通道</a></li>
-			  <li><a href="./pay_type.php">支付方式</a></li>
-			  <li><a href="./pay_plugin.php">支付插件</a></li>
-        <li><a href="./pay_roll.php">支付通道轮询</a></li>
-        <li><a href="./pay_weixin.php">公众号小程序</a></li>
-        <?php if(class_exists('\\lib\\Applyments\\CommUtil') && file_exists(__DIR__.'/applyments_channel.php') && file_exists(__DIR__.'/applyments_merchant.php')){?><li><a href="./applyments_channel.php">进件渠道管理</a></li>
-        <li><a href="./applyments_merchant.php">进件商户管理</a></li><?php }?>
-            </ul>
-          </li>
-		  <li class="<?php echo checkIfActive('set,gonggao,set_wxkf')?>">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cog"></i> 系统设置<b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a href="./set.php?mod=site">网站信息配置</a></li>
-			  <li><a href="./set.php?mod=pay">支付相关配置</a><li>
-        <li><a href="./set.php?mod=risk">风控检测配置</a><li>
-        <li><a href="./set.php?mod=settle">结算规则配置</a><li>
-			  <li><a href="./set.php?mod=transfer">转账付款配置</a><li>
-			  <li><a href="./set.php?mod=oauth">快捷登录配置</a><li>
-        <li><a href="./set.php?mod=notice">消息提醒配置</a><li>
-			  <li><a href="./set.php?mod=certificate">实名认证配置</a><li>
-			  <li><a href="./gonggao.php">网站公告配置</a></li>
-			  <li><a href="./set.php?mod=template">首页模板配置</a><li>
-			  <li><a href="./set.php?mod=mail">邮箱与短信配置</a><li>
-			  <li><a href="./set.php?mod=upimg">网站Logo上传</a><li>
-			  <li><a href="./set.php?mod=cron">计划任务配置</a><li>
-        <li><a href="./set.php?mod=proxy">中转代理配置</a><li>
-        <li><a href="./set_wxkf.php">H5跳转微信客服支付</a></li>
-            </ul>
-          </li>
-		  <li class="<?php echo checkIfActive('clean,log,risk,gettoken,complain,complain_info,mchrisk')?>">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cube"></i> 其他功能<b class="caret"></b></a>
-            <ul class="dropdown-menu">
-			  <li><a href="./risk.php">风控记录</a><li>
-			  <li><a href="./log.php">登录日志</a><li>
-			  <li><a href="./clean.php">数据清理</a><li>
-        <li><a href="./gettoken.php">获取用户标识</a><li>
-        <?php if(class_exists('\\lib\\Complain\\CommUtil') && file_exists(__DIR__.'/complain.php')){?><li><a href="./complain.php">支付交易投诉</a></li><?php }?>
-        <?php if(class_exists('\\lib\\WxMchRisk') && file_exists(__DIR__.'/mchrisk.php')){?><li><a href="./mchrisk.php">渠道商户违规记录</a></li><?php }?>
-            </ul>
-          </li>
-          <li><a href="./login.php?logout" onclick="return confirm('是否确定退出登录？')"><i class="fa fa-power-off"></i> 退出登录</a></li>
-        </ul>
-      </div><!-- /.navbar-collapse -->
-    </div><!-- /.container -->
-  </nav><!-- /.navbar -->
-<?php }?>
-<?php if($epay_ui_legacy_assets){?><script>
-var ADMIN_CSRF_TOKEN = '<?php echo $admin_csrf_token?>';
-$(function(){
-	$.ajaxSetup({
-		beforeSend: function(xhr, settings) {
-			if(settings.type && settings.type.toUpperCase() === 'POST'){
-				var data = settings.data || '';
-				if(typeof data === 'string' && data.indexOf('csrf_token=') === -1){
-					settings.data = data + (data ? '&' : '') + 'csrf_token=' + ADMIN_CSRF_TOKEN;
-				}
-			}
-		}
-	});
-});
-</script><?php }?>
+  <div id="epay-react-root" data-epay-view="<?php echo htmlspecialchars($epay_ui_view, ENT_QUOTES, 'UTF-8'); ?>" data-epay-config="<?php echo htmlspecialchars(json_encode($epay_ui_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8'); ?>"></div>

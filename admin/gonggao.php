@@ -1,172 +1,66 @@
 <?php
-/**
- * 公告设置
-**/
+/** 网站公告（原生 shadcn 列表与表单） */
 include("../includes/common.php");
-$title='公告设置';
-include './head.php';
-if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
-if($_SERVER['REQUEST_METHOD']==='POST' && (!isset($_POST['csrf_token']) || $_POST['csrf_token']!==$_SESSION['admin_csrf_token'])) showmsg('CSRF验证失败，请刷新页面后重试',3);
-?>
-<link href="<?php echo $cdnpublic?>bootstrap-colorpicker/2.5.3/css/bootstrap-colorpicker.min.css" rel="stylesheet"/>
-  <div class="container" style="padding-top:70px;">
-    <div class="col-xs-12 col-sm-10 col-lg-8 center-block" style="float: none;">
-<?php
-$my=isset($_GET['my'])?$_GET['my']:null;
-if($my=='edit'){
-	$id=intval($_GET['id']);
-	$rows=$DB->getRow("select * from pre_anounce where id = :id limit 1", [':id'=>$id]);
-	if(!$rows)
-		showmsg('当前公告不存在！',3);
-?>
-<div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">修改公告(ID:<?php echo $id?>)</h3></div>
-<div class="panel-body">
-	<form action="./gonggao.php?my=edit_submit&id=<?php echo $id?>" role="form" class="form-horizontal" method="post">
-		<input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>">
-		<div class="list-group-item">
-			<div class="input-group">
-				<div class="input-group-addon">公告内容</div>
-				<textarea class="form-control" name="content" rows="5" placeholder="输入公告内容" required><?php echo $rows['content']?></textarea>
-			</div>
-		</div>
-		<div class="list-group-item form-inline">
-			<div class="input-group">
-				<div class="input-group-addon">排序</div>
-				<input type="text" name="sort" value="<?php echo $rows['sort']?>" class="form-control" required/>
-			</div>
-			<div class="input-group input-colorpicker colorpicker-element">
-				<input type="text" name="color" value="<?php echo $rows['color']?>" class="form-control" placeholder="文字颜色" maxlength="7"/>
-				<span class="input-group-addon"><i></i></span>
-			</div>
-		</div>
-		<div class="list-group-item">
-			<input type="submit" value="保存" class="btn btn-primary btn-block">
-		</div>
-	</form>
-</div>
-</div>
-<?php
+require_once __DIR__.'/epay_ui_entry.php';
+$my = isset($_GET['my']) ? (string)$_GET['my'] : '';
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+if($_SERVER['REQUEST_METHOD'] === 'POST'){
+	if(!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['admin_csrf_token']) epay_admin_view('admin-form', ['title'=>'公告保存失败','description'=>'CSRF 校验失败，请刷新后重试。','notice'=>'CSRF 校验失败。']);
+	$content = trim((string)($_POST['content'] ?? ''));
+	$sort = intval($_POST['sort'] ?? 0);
+	$color = trim((string)($_POST['color'] ?? ''));
+	if($content === '' || $sort <= 0) epay_admin_view('admin-form', ['title'=>'公告保存失败','description'=>'公告内容和排序不能为空。','notice'=>'请填写公告内容和大于 0 的排序值。','fields'=>[['key'=>'content','label'=>'公告内容','type'=>'textarea','value'=>$content,'required'=>true],['key'=>'sort','label'=>'排序','type'=>'number','value'=>(string)$sort,'required'=>true],['key'=>'color','label'=>'文字颜色','value'=>$color]],'action'=>['endpoint'=>'./gonggao.php?my='.($my==='edit_submit' ? 'edit_submit&id='.$id : 'add_submit'),'method'=>'POST']]);
+	if($my === 'edit_submit'){
+		$ok = $DB->exec("UPDATE `pre_anounce` SET `content`=:content,`sort`=:sort,`color`=:color WHERE `id`=:id", [':content'=>$content, ':sort'=>$sort, ':color'=>$color, ':id'=>$id]);
+		if($ok === false) epay_admin_view('admin-form', ['title'=>'公告保存失败','description'=>'数据库写入失败。','notice'=>$DB->error()]);
+	}else{
+		$ok = $DB->exec("INSERT INTO `pre_anounce` (`content`,`color`,`sort`,`addtime`,`status`) VALUES (:content,:color,:sort,:addtime,1)", [':content'=>$content, ':color'=>$color, ':sort'=>$sort, ':addtime'=>$date]);
+		if(!$ok) epay_admin_view('admin-form', ['title'=>'公告保存失败','description'=>'数据库写入失败。','notice'=>$DB->error()]);
+	}
+	header('Location: ./gonggao.php');
+	exit;
 }
-elseif($my=='add_submit'){
-$content=$_POST['content'];
-$sort=intval($_POST['sort']);
-$color=trim($_POST['color']);
-if(!$content || !$sort){
-showmsg('公告内容不能为空',3);
-} else {
-$sds=$DB->exec("INSERT INTO `pre_anounce` (`content`, `color`, `sort`, `addtime`, `status`) VALUES (:content, :color, :sort, :addtime, 1)", [':content'=>$content, ':color'=>$color, ':sort'=>$sort, ':addtime'=>$date]);
-if($sds){
-	showmsg('添加公告成功！<br/><br/><a href="./gonggao.php">>>返回公告列表</a>',1);
-}else
-	showmsg('添加公告失败！<br/>错误信息：'.$DB->error(),4);
+
+if($my === 'edit'){
+	$row = $DB->getRow("SELECT * FROM pre_anounce WHERE id=:id LIMIT 1", [':id'=>$id]);
+	if(!$row) epay_admin_view('admin-form', ['title'=>'公告不存在','description'=>'找不到对应公告。','links'=>[['label'=>'返回公告列表','href'=>'./gonggao.php']]]);
+	epay_admin_view('admin-form', [
+		'title'=>'编辑公告', 'description'=>'修改公告内容、排序和文字颜色。',
+		'action'=>['endpoint'=>'./gonggao.php?my=edit_submit&id='.$id, 'method'=>'POST', 'submitLabel'=>'保存公告'],
+		'links'=>[['label'=>'返回公告列表','href'=>'./gonggao.php']],
+		'values'=>['content'=>$row['content'], 'sort'=>$row['sort'], 'color'=>$row['color']],
+		'fields'=>[
+			['key'=>'content','label'=>'公告内容','type'=>'textarea','required'=>true],
+			['key'=>'sort','label'=>'排序','type'=>'number','required'=>true],
+			['key'=>'color','label'=>'文字颜色','placeholder'=>'例如 #111111'],
+		],
+	], '编辑公告');
 }
+
+if($my === 'add'){
+	epay_admin_view('admin-form', [
+		'title'=>'新增公告', 'description'=>'发布新的平台公告。',
+		'action'=>['endpoint'=>'./gonggao.php?my=add_submit', 'method'=>'POST', 'submitLabel'=>'发布公告'],
+		'links'=>[['label'=>'返回公告列表','href'=>'./gonggao.php']],
+		'values'=>['sort'=>'50'],
+		'fields'=>[
+			['key'=>'content','label'=>'公告内容','type'=>'textarea','required'=>true],
+			['key'=>'sort','label'=>'排序','type'=>'number','value'=>'50','required'=>true],
+			['key'=>'color','label'=>'文字颜色','placeholder'=>'例如 #111111'],
+		],
+	], '新增公告');
 }
-elseif($my=='edit_submit'){
-$id=intval($_GET['id']);
-$rows=$DB->getRow("select * from pre_anounce where id = :id limit 1", [':id'=>$id]);
-if(!$rows)
-	showmsg('当前公告不存在！',3);
-$content=$_POST['content'];
-$sort=intval($_POST['sort']);
-$color=trim($_POST['color']);
-if(!$content || !$sort){
-showmsg('公告内容不能为空',3);
-} else {
-$sds=$DB->exec("UPDATE `pre_anounce` SET `content` = :content, `sort` = :sort, `color` = :color WHERE `id` = :id", [':content'=>$content, ':sort'=>$sort, ':color'=>$color, ':id'=>$id]);
-if($sds!==false){
-	showmsg('修改公告成功！<br/><br/><a href="./gonggao.php">>>返回公告列表</a>',1);
-}else
-	showmsg('修改公告失败！<br/>错误信息：'.$DB->error(),4);
+
+$rows = [];
+foreach($DB->getAll("SELECT id,content,color,sort,addtime,status FROM pre_anounce ORDER BY sort ASC,id DESC") as $row){
+	$rows[] = [
+		'id'=>(string)$row['id'], 'content'=>(string)$row['content'], 'color'=>(string)$row['color'],
+		'sort'=>(string)$row['sort'], 'addtime'=>(string)$row['addtime'], 'status'=>(string)$row['status'],
+	];
 }
-}else{
-$list = $DB->getAll("SELECT * FROM pre_anounce ORDER BY sort ASC");
-?>
-<div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">添加公告</h3></div>
-<div class="panel-body">
-	<form action="./gonggao.php?my=add_submit" role="form" class="form-horizontal" method="post">
-		<input type="hidden" name="csrf_token" value="<?php echo $admin_csrf_token?>">
-		<div class="list-group-item">
-			<div class="input-group">
-				<div class="input-group-addon">公告内容</div>
-				<textarea class="form-control" name="content" rows="5" placeholder="输入公告内容" required></textarea>
-			</div>
-		</div>
-		<div class="list-group-item form-inline">
-			<div class="input-group">
-				<div class="input-group-addon">排序</div>
-				<input type="text" name="sort" value="50" class="form-control" required/>
-			</div>
-			<div class="input-group input-colorpicker colorpicker-element">
-				<input type="text" name="color" value="" class="form-control" placeholder="文字颜色" maxlength="7"/>
-				<span class="input-group-addon"><i></i></span>
-			</div>
-		</div>
-		<div class="list-group-item">
-			<input type="submit" value="添加" class="btn btn-primary btn-block">
-			<a href="./set.php?mod=gonggao" class="btn btn-default btn-block">弹出公告与首页底部设置</a>
-		</div>
-	</form>
-</div>
-</div>
-<div class="panel panel-primary">
-<div class="panel-heading"><h3 class="panel-title">已发公告</h3></div>
-<div class="panel-body">
-<?php foreach($list as $row){?>
-		<div class="list-group-item">
-			<em class="fa fa-fw fa-volume-up"></em><font color="<?php echo h($row['color'])?$row['color']:null?>"><?php echo $row['content']?></font><small>&nbsp;-<?php echo $row['addtime']?></small>&nbsp;&nbsp;<?php echo $row['status']==1?'<span class="btn btn-xs btn-success" onclick="setStatus('.$row['id'].',0)">显示</span>':'<span class="btn btn-xs btn-warning" onclick="setStatus('.$row['id'].',1)">隐藏</span>'?>&nbsp;<a class="btn btn-xs btn-info" href="./gonggao.php?my=edit&id=<?php echo $row['id']?>">编辑</a>&nbsp;<a class="btn btn-xs btn-danger" href="javascript:delItem(<?php echo $row['id']?>)">删除</a>
-		</div>
-<?php }?>
-</div>
-</div>
-<?php }?>
- </div>
-</div>
-<script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
-<script src="<?php echo $cdnpublic?>bootstrap-colorpicker/2.5.3/js/bootstrap-colorpicker.min.js"></script>
-<script>
-function setStatus(id,status) {
-	$.ajax({
-		type : 'GET',
-		url : 'ajax.php?act=setGonggao&id='+id+'&status='+status,
-		dataType : 'json',
-		success : function(data) {
-			if(data.code == 0){
-				window.location.reload();
-			}else{
-				layer.msg(data.msg, {icon:2, time:1500});
-			}
-		},
-		error:function(data){
-			layer.msg('服务器错误');
-			return false;
-		}
-	});
-}
-function delItem(id) {
-	var confirmobj = layer.confirm('你确实要删除此公告吗？', {
-		btn: ['确定','取消']
-	}, function(){
-		$.ajax({
-			type : 'GET',
-			url : 'ajax.php?act=delGonggao&id='+id,
-			dataType : 'json',
-			success : function(data) {
-				if(data.code == 0){
-					window.location.reload();
-				}else{
-					layer.msg(data.msg, {icon:2, time:1500});
-				}
-			},
-			error:function(data){
-				layer.msg('服务器错误');
-				return false;
-			}
-		});
-	});
-}
-$(document).ready(function(){
-	$('.input-colorpicker').colorpicker({format: 'hex'});
-})
-</script>
+epay_admin_view('admin-resource', [
+	'resource'=>'announcements', 'title'=>'网站公告',
+	'description'=>'发布、排序和控制首页公告显示状态。', 'rows'=>$rows,
+	'headerActions'=>[['label'=>'新增公告','href'=>'./gonggao.php?my=add']],
+]);

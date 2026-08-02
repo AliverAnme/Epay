@@ -245,6 +245,34 @@ case 'batch_submit':
 		}
 	}
 break;
+case 'red_submit':
+	$type = isset($_POST['type']) ? trim($_POST['type']) : 'alipay';
+	if(!in_array($type, ['alipay','wxpay'], true)) exit('{"code":-1,"msg":"红包类型错误"}');
+	if(!isset($_POST['paypwd']) || $_POST['paypwd'] !== $conf['admin_paypwd']) exit('{"code":-1,"msg":"支付密码错误"}');
+	$money = trim($_POST['money']);
+	$desc = htmlspecialchars(trim($_POST['desc'] ?? ''));
+	if(!is_numeric($money) || !preg_match('/^[0-9.]+$/', $money) || $money <= 0) exit('{"code":-1,"msg":"红包金额输入不规范"}');
+	if($desc && mb_strlen($desc) > 32) exit('{"code":-1,"msg":"红包备注最多32个字"}');
+	$out_biz_no = date('YmdHis').rand(11111,99999);
+	$result = \lib\Transfer::red_add(0, $type, $out_biz_no, $money, $desc, $_POST['channel'] ?? null);
+	if($result['code'] == 0) exit(json_encode(['code'=>0,'msg'=>'红包创建成功！请在付款记录列表查看红包二维码。'], JSON_UNESCAPED_UNICODE));
+	exit(json_encode(['code'=>-1,'msg'=>'红包创建失败：'.$result['msg']], JSON_UNESCAPED_UNICODE));
+break;
+case 'batch_many':
+	$type = isset($_POST['type']) ? trim($_POST['type']) : 'alipay';
+	if(!isset($_POST['paypwd']) || $_POST['paypwd'] !== $conf['admin_paypwd']) exit('{"code":-1,"msg":"支付密码错误"}');
+	$items = json_decode((string)($_POST['items'] ?? ''), true);
+	if(!is_array($items) || !$items) exit('{"code":-1,"msg":"请提供有效的 JSON 收款列表"}');
+	$channelid = $_POST['channel'] ?? null; $results = [];
+	foreach(array_slice($items, 0, 500) as $item){
+		$account = htmlspecialchars(trim((string)($item['account'] ?? ''))); $name = htmlspecialchars(trim((string)($item['name'] ?? $item['username'] ?? ''))); $money = trim((string)($item['money'] ?? '')); $desc = htmlspecialchars(trim((string)($item['desc'] ?? '')));
+		if($account === '' || !is_numeric($money) || $money <= 0){ $results[] = ['code'=>-1,'msg'=>'收款账号或金额无效','account'=>$account]; continue; }
+		$outBizNo = date('YmdHis').rand(11111,99999);
+		$result = \lib\Transfer::add(0, $type, $outBizNo, $account, $name, $money, null, $desc, null, $channelid);
+		$results[] = ['code'=>$result['code'] ?? -1,'msg'=>$result['code']==0 ? '提交成功' : ($result['msg'] ?? '提交失败'),'account'=>$account,'money'=>$money];
+	}
+	exit(json_encode(['code'=>0,'msg'=>'批量付款处理完成','results'=>$results], JSON_UNESCAPED_UNICODE));
+break;
 
 case 'stat':
 	$startday = trim($_POST['startday']);

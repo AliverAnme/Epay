@@ -597,11 +597,16 @@ case 'user_settle_info':
 	$rows=$DB->getRow("select * from pre_user where uid=:uid limit 1", [':uid'=>$uid]);
 	if(!$rows)
 		exit('{"code":-1,"msg":"当前用户不存在！"}');
-	$data = '<div class="form-group"><div class="input-group"><div class="input-group-addon">结算方式</div><select class="form-control" id="pay_type" default="'.$rows['settle_id'].'">'.($conf['settle_alipay']?'<option value="1">支付宝</option>':null).''.($conf['settle_wxpay']?'<option value="2">微信</option>':null).''.($conf['settle_qqpay']?'<option value="3">QQ钱包</option>':null).''.($conf['settle_bank']?'<option value="4">银行卡</option>':null).'</select></div></div>';
-	$data .= '<div class="form-group"><div class="input-group"><div class="input-group-addon">结算账号</div><input type="text" id="pay_account" value="'.$rows['account'].'" class="form-control" required/></div></div>';
-	$data .= '<div class="form-group"><div class="input-group"><div class="input-group-addon">真实姓名</div><input type="text" id="pay_name" value="'.$rows['username'].'" class="form-control" required/></div></div>';
-	$data .= '<input type="submit" id="save" onclick="saveInfo('.$uid.')" class="btn btn-primary btn-block" value="保存">';
-	$result=array("code"=>0,"msg"=>"succ","data"=>$data,"pay_type"=>$rows['settle_id']);
+	$types = [];
+	if($conf['settle_alipay']) $types[] = ['value'=>'1','label'=>'支付宝'];
+	if($conf['settle_wxpay']) $types[] = ['value'=>'2','label'=>'微信'];
+	if($conf['settle_qqpay']) $types[] = ['value'=>'3','label'=>'QQ钱包'];
+	if($conf['settle_bank']) $types[] = ['value'=>'4','label'=>'银行卡'];
+	$result = ['code'=>0,'msg'=>'succ','data'=>['uid'=>$uid,'fields'=>[
+		['key'=>'pay_type','label'=>'结算方式','type'=>'select','value'=>(string)$rows['settle_id'],'options'=>$types],
+		['key'=>'pay_account','label'=>'结算账号','type'=>'text','value'=>(string)$rows['account'],'required'=>true],
+		['key'=>'pay_name','label'=>'真实姓名','type'=>'text','value'=>(string)$rows['username'],'required'=>true],
+	]],'pay_type'=>$rows['settle_id']];
 	exit(json_encode($result));
 break;
 case 'user_settle_save':
@@ -757,26 +762,14 @@ case 'subChannelInfo':
 
 	$info = json_decode($subrow['info'], true);
 	$config = json_decode($row['config'],true);
-	$data = '<div class="modal-body"><form class="form" id="form-info">';
+	$fields = [];
 	foreach($plugin['inputs'] as $key=>$input){
-		if(substr($config[$key],0,1)=='['){
-			$key = substr($config[$key],1,-1);
-			if($input['type'] == 'textarea'){
-				$data .= '<div class="form-group"><label>'.$input['name'].'：</label><br/><textarea id="'.$key.'" name="info['.$key.']" rows="2" class="form-control" placeholder="'.$input['note'].'">'.$info[$key].'</textarea></div>';
-			}elseif($input['type'] == 'select'){
-				$addOptions = '';
-				foreach($input['options'] as $k=>$v){
-					$addOptions.='<option value="'.$k.'" '.($info[$key]==$k?'selected':'').'>'.$v.'</option>';
-				}
-				$data .= '<div class="form-group"><label>'.$input['name'].'：</label><br/><select class="form-control" name="info['.$key.']" default="'.$info[$key].'">'.$addOptions.'</select></div>';
-			}else{
-				$data .= '<div class="form-group"><label>'.$input['name'].'：</label><br/><input type="text" id="'.$key.'" name="info['.$key.']" value="'.$info[$key].'" class="form-control" placeholder="'.$input['note'].'"/></div>';
-			}
-		}
+		if(!isset($config[$key]) || substr((string)$config[$key],0,1) != '[') continue;
+		$fieldKey = substr((string)$config[$key],1,-1);
+		$fieldType = in_array($input['type'] ?? 'text', ['textarea','select','checkbox'], true) ? $input['type'] : 'text';
+		$fields[] = ['key'=>$fieldKey,'label'=>(string)($input['name'] ?? $fieldKey),'type'=>$fieldType,'value'=>$info[$fieldKey] ?? '', 'note'=>(string)($input['note'] ?? ''),'options'=>$input['options'] ?? []];
 	}
-
-	$data .= '<button type="button" id="save" onclick="saveInfo('.$id.')" class="btn btn-primary btn-block">保存</button></form></div>';
-	$result=array("code"=>0,"msg"=>"succ","data"=>$data);
+	$result = ['code'=>0,'msg'=>'succ','data'=>['id'=>$id,'channel'=>(int)$subrow['channel'],'type'=>(int)$row['type'],'typename'=>(string)$typename,'fields'=>$fields]];
 	exit(json_encode($result));
 break;
 case 'saveSubChannelInfo':

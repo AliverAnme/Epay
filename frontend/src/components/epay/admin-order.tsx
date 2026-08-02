@@ -784,6 +784,7 @@ export function AdminOrderView({ config = {} }: { config?: AdminOrderConfig }) {
             {error ? (
               <div className="p-6"><Alert variant="destructive"><AlertTitle>订单列表加载失败</AlertTitle><AlertDescription>{error}</AlertDescription></Alert></div>
             ) : (
+              <div className="overflow-x-auto">
               <Table className="min-w-[1280px]">
                 <TableHeader>
                   <TableRow>
@@ -812,6 +813,7 @@ export function AdminOrderView({ config = {} }: { config?: AdminOrderConfig }) {
                   }) : <TableRow><TableCell colSpan={9} className="h-32 text-center text-muted-foreground">暂无符合条件的订单</TableCell></TableRow>}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
           <CardFooter className="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between">

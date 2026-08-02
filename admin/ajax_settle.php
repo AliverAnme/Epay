@@ -143,11 +143,16 @@ case 'settle_info':
 	$rows=$DB->getRow("select * from pre_settle where id=:id limit 1", [':id'=>$id]);
 	if(!$rows)
 		exit('{"code":-1,"msg":"当前结算记录不存在！"}');
-	$data = '<div class="form-group"><div class="input-group"><div class="input-group-addon">结算方式</div><select class="form-control" id="pay_type" default="'.$rows['type'].'">'.($conf['settle_alipay']?'<option value="1">支付宝</option>':null).''.($conf['settle_wxpay']?'<option value="2">微信</option>':null).''.($conf['settle_qqpay']?'<option value="3">QQ钱包</option>':null).''.($conf['settle_bank']?'<option value="4">银行卡</option>':null).'</select></div></div>';
-	$data .= '<div class="form-group"><div class="input-group"><div class="input-group-addon">结算账号</div><input type="text" id="pay_account" value="'.$rows['account'].'" class="form-control" required/></div></div>';
-	$data .= '<div class="form-group"><div class="input-group"><div class="input-group-addon">真实姓名</div><input type="text" id="pay_name" value="'.$rows['username'].'" class="form-control" required/></div></div>';
-	$data .= '<input type="submit" id="save" onclick="saveInfo('.$id.')" class="btn btn-primary btn-block" value="保存">';
-	$result=array("code"=>0,"msg"=>"succ","data"=>$data,"pay_type"=>$rows['type']);
+	$types = [];
+	if($conf['settle_alipay']) $types[] = ['value'=>'1','label'=>'支付宝'];
+	if($conf['settle_wxpay']) $types[] = ['value'=>'2','label'=>'微信'];
+	if($conf['settle_qqpay']) $types[] = ['value'=>'3','label'=>'QQ钱包'];
+	if($conf['settle_bank']) $types[] = ['value'=>'4','label'=>'银行卡'];
+	$result = ['code'=>0,'msg'=>'succ','data'=>['id'=>$id,'fields'=>[
+		['key'=>'pay_type','label'=>'结算方式','type'=>'select','value'=>(string)$rows['type'],'options'=>$types],
+		['key'=>'pay_account','label'=>'结算账号','type'=>'text','value'=>(string)$rows['account'],'required'=>true],
+		['key'=>'pay_name','label'=>'真实姓名','type'=>'text','value'=>(string)$rows['username'],'required'=>true],
+	]],'pay_type'=>$rows['type']];
 	exit(json_encode($result));
 break;
 case 'settle_save':
@@ -183,6 +188,7 @@ case 'paypwd_reset':
 break;
 
 case 'transfer':
+	if(isset($_POST['paypwd']) && hash_equals((string)$conf['admin_paypwd'], (string)$_POST['paypwd'])) $_SESSION['paypwd'] = $_POST['paypwd'];
 	$id = isset($_POST['id'])?intval($_POST['id']):exit('{"code":-1,"msg":"ID不能为空"}');
 	$type = isset($_POST['type'])?intval($_POST['type']):exit('{"code":-1,"msg":"type不能为空"}');
 	$channelid = isset($_POST['channel'])?intval($_POST['channel']):0;
