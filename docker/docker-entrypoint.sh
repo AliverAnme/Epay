@@ -67,6 +67,18 @@ else
     echo "[entrypoint] config.php 已存在，跳过"
 fi
 
+# 部署自定义配置：API_TIMESTAMP_CHECK 环境变量（可选，幂等写入 config.php）
+if [ -n "${API_TIMESTAMP_CHECK:-}" ]; then
+    if [ "${API_TIMESTAMP_CHECK}" != "0" ] && [ "${API_TIMESTAMP_CHECK}" != "1" ]; then
+        echo "[entrypoint] 警告：API_TIMESTAMP_CHECK 只能为 0 或 1，已忽略"
+    elif ! grep -q "API_TIMESTAMP_CHECK" "$CONFIG_FILE" 2>/dev/null; then
+        printf "\n/*部署自定义配置*/\ndefine('API_TIMESTAMP_CHECK', %s);\n" "${API_TIMESTAMP_CHECK}" >> "$CONFIG_FILE"
+        chown www-data:www-data "$CONFIG_FILE"
+        chmod 640 "$CONFIG_FILE"
+        echo "[entrypoint] 已写入 API_TIMESTAMP_CHECK=${API_TIMESTAMP_CHECK}"
+    fi
+fi
+
 # ============================================
 # 2. 等待 MySQL 就绪
 # ============================================

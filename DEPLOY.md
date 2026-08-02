@@ -130,6 +130,12 @@ ADMIN_PASSWORD=admin123
 # Cron 密钥（首次启动后从日志获取并填回）
 CRON_KEY=
 
+# 部署自定义配置（可选）
+# API 接口是否校验 timestamp：1=开启（默认），0=关闭（兼容不传 timestamp 的老平台）
+# 留空则使用后台「系统设置 → 支付相关 → API接口校验timestamp」的配置
+# 仅对新建 config.php 或尚未定义该常量的实例生效，已存在则需手动编辑 config.php
+API_TIMESTAMP_CHECK=
+
 # 数据库端口暴露到宿主机（调试用，生产建议注释掉）
 # DB_EXPOSE_PORT=33060
 ```
@@ -247,6 +253,16 @@ $dbconfig = [
     'dbqz'      => 'pay_'           // 表前缀 pre_pay_xxx
 ];
 ```
+
+**部署自定义配置**：如需在部署层覆盖系统设置，可在 `config.php` 末尾追加常量定义，优先级高于后台配置。例如关闭 API 接口的 timestamp 校验（兼容不传 timestamp 的老平台）：
+
+```php
+// API 接口是否校验 timestamp：1=开启（默认），0=关闭（兼容不传 timestamp 的老平台）
+// 关闭后会降低接口防重放能力，请确认商户接口安全后再关闭
+define('API_TIMESTAMP_CHECK', 0);
+```
+
+> 提示：关闭 timestamp 校验后，老平台接口请求可不传 `timestamp` 参数（签名串会自行忽略该字段，不影响签名验证），适合对接旧版 SDK 的商户。注意：关闭后请求不再有 300 秒时间窗口限制，若商户同时未传 `nonce` 参数，已捕获的请求可被无限重放，建议商户接口同时使用 `nonce` 防重放（代付、退款等资金类接口尤其如此）。
 
 ### 3.3 创建数据库
 

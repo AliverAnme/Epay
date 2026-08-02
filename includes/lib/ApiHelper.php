@@ -65,13 +65,19 @@ class ApiHelper
 
     //API签名校验
     static public function api_verify($userrow, $queryArr, $forceRsa = false){
+        global $conf;
         if($forceRsa && $queryArr['sign_type'] != 'RSA')throw new Exception('该接口只能使用RSA签名类型');
         if($userrow['keytype'] == 1 && $queryArr['sign_type'] != 'RSA')throw new Exception('该商户只能使用RSA签名类型');
-        if(empty($queryArr['timestamp'])){
-            throw new Exception('timestamp 不能为空');
-        }
-        if(abs(time() - $queryArr['timestamp']) > 300){
-            throw new Exception('时间戳字段不正确，请检查服务器时间');
+        //timestamp校验开关，兼容不传timestamp的老平台。优先级：部署常量API_TIMESTAMP_CHECK > 后台配置api_timestamp_check > 默认开启
+        $api_timestamp_check = isset($conf['api_timestamp_check']) && $conf['api_timestamp_check'] !== '' ? $conf['api_timestamp_check'] : 1;
+        if(defined('API_TIMESTAMP_CHECK')) $api_timestamp_check = API_TIMESTAMP_CHECK;
+        if($api_timestamp_check){
+            if(empty($queryArr['timestamp'])){
+                throw new Exception('timestamp 不能为空');
+            }
+            if(abs(time() - $queryArr['timestamp']) > 300){
+                throw new Exception('时间戳字段不正确，请检查服务器时间');
+            }
         }
         if(!empty($queryArr['nonce'])){
             if(strlen($queryArr['nonce']) < 8){

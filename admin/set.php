@@ -444,6 +444,10 @@ $(document).ready(function(){
 	  <label class="col-sm-3 control-label">分账失败的24小时后重试</label>
 	  <div class="col-sm-9"><select class="form-control" name="profits_failretry" default="<?php echo $conf['profits_failretry']?>"><option value="0">否</option><option value="1">是</option></select></div>
 	</div><br/>
+	<div class="form-group">
+	  <label class="col-sm-3 control-label">API接口校验timestamp</label>
+	  <div class="col-sm-9"><select class="form-control" name="api_timestamp_check" default="<?php echo isset($conf['api_timestamp_check']) ? $conf['api_timestamp_check'] : 1?>"><option value="1">开启</option><option value="0">关闭</option></select><font color="red">关闭后将不再校验接口请求的timestamp字段（不传timestamp也不会报错），用于兼容部分不传timestamp的老平台。此操作会降低接口防重放能力，关闭后建议商户接口同时使用nonce参数防重放（否则已捕获的请求可被无限重放），请确认商户接口安全后再关闭。也可在config.php中定义常量API_TIMESTAMP_CHECK覆盖此设置。</font></div>
+	</div><br/>
 	<?php if(class_exists('\\lib\\Ip2Region')){?><div class="form-group">
 	  <label class="col-sm-3 control-label">校验扫码IP所在地与下单IP所在地是否一致</label>
 	  <div class="col-sm-9"><select class="form-control" name="check_pay_regoin" default="<?php echo $conf['check_pay_regoin']?>"><option value="0">否</option><option value="1">是（不一致时禁止支付）</option><option value="2">是（不一致时弹出提示）</option></select><font color="green">仅支持支付宝&微信扫码支付场景，开启前确保<a href="./set.php?mod=iptype">获取IP方式</a>正确。使用此功能需要<a href="http://file.cccyun.cc/resource/ip2region.xdb">下载IP地址数据库</a>并上传到/includes/目录下。</font></div>

@@ -62,6 +62,7 @@ INSERT INTO `pre_config` VALUES ('pageordername', '1');
 INSERT INTO `pre_config` VALUES ('notifyordername', '1');
 INSERT INTO `pre_config` VALUES ('user_refund', '1');
 INSERT INTO `pre_config` VALUES ('cdnpublic', '0');
+INSERT INTO `pre_config` VALUES ('api_timestamp_check', '1');
 INSERT INTO `pre_config` VALUES ('ip_type', '2');
 
 

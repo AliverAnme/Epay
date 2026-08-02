@@ -28,6 +28,8 @@ services:
       DB_PREFIX: ${DB_PREFIX:-pay}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       SITE_URL: ${SITE_URL:-http://localhost}
+      # 部署自定义配置（可选）：API 接口是否校验 timestamp，1=开启（默认），0=关闭（兼容不传 timestamp 的老平台）
+      API_TIMESTAMP_CHECK: ${API_TIMESTAMP_CHECK:-}
     volumes:
       - app_data:/var/www/html
       - ./plugins:/var/www/html/plugins
