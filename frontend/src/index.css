@@ -939,6 +939,20 @@ body:has(#epay-react-root) {
   display: none !important;
 }
 
+/* 旧版 jQuery 验证码初始化会通过 .show() 切换节点；仅对这些兼容节点放行，
+ * 其余 React 区域继续保留 Tailwind hidden 工具类的隐藏语义。 */
+#epay-react-root #captcha_wait[style*="display: block"],
+#epay-react-root #captcha_wait[style*="display: inline"],
+#epay-react-root #captcha_wait[style*="display: flex"],
+#epay-react-root #wait[style*="display: block"],
+#epay-react-root #wait[style*="display: inline"],
+#epay-react-root #wait[style*="display: flex"],
+#epay-react-legacy-slot .hidden[style*="display: block"],
+#epay-react-legacy-slot .hidden[style*="display: inline"],
+#epay-react-legacy-slot .hidden[style*="display: flex"] {
+  display: block !important;
+}
+
 @media (min-width: 640px) {
   #epay-react-root .sm\:block {
     display: block !important;

@@ -60,6 +60,37 @@ createRoot(mount).render(
   </StrictMode>
 )
 
+// 旧版 Geetest/Bootstrap 代码通过 jQuery `.show()` 切换少数节点。
+// Tailwind 的 hidden 工具类带有 important，因此同步 inline display 状态并移除
+// 这些旧版节点上的 hidden，避免验证码加载状态被壳层样式再次压住。
+const legacyDisplayObserver = new MutationObserver((records) => {
+  records.forEach((record) => {
+    if (
+      record.type !== "attributes" ||
+      !(record.target instanceof HTMLElement)
+    ) {
+      return
+    }
+    const element = record.target
+    const legacyOwned =
+      element.id === "captcha_wait" ||
+      element.id === "wait" ||
+      Boolean(element.closest("#epay-react-legacy-slot"))
+    if (
+      legacyOwned &&
+      element.style.display &&
+      element.style.display !== "none"
+    ) {
+      element.classList.remove("hidden")
+    }
+  })
+})
+legacyDisplayObserver.observe(document.body, {
+  subtree: true,
+  attributes: true,
+  attributeFilter: ["style"],
+})
+
 if (view === "pay-page") {
   let mountAttempts = 0
   const notifyMounted = () => {
