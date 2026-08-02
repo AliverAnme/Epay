@@ -19,6 +19,12 @@ const view = (mount?.dataset.epayView ?? "admin-dashboard") as
   | "test-payment"
   | "payment-status"
   | "transfer-confirm"
+  | "gold-plan"
+  | "legacy-auth"
+  | "gateway-shell"
+  | "installer-shell"
+  | "public-legacy-shell"
+  | "documentation-shell"
   | "pay-page"
   | "admin-login"
   | "user-login"
@@ -54,8 +60,12 @@ createRoot(mount).render(
 if (view === "pay-page") {
   let mountAttempts = 0
   const notifyMounted = () => {
-    if (document.getElementById("keyboard")) {
-      window.dispatchEvent(new Event("epay-ui-mounted"))
+    const payPageReady = ["keyboard", "amount", "clearBtn", "payBtn"].every(
+      (id) => document.getElementById(id)
+    )
+    if (payPageReady) {
+      ;(window as Window & { __epayUiMounted?: boolean }).__epayUiMounted = true
+      document.dispatchEvent(new Event("epay-ui-mounted"))
       return
     }
     if (mountAttempts++ > 120) return
@@ -66,19 +76,32 @@ if (view === "pay-page") {
 
 if (
   mount.id === "epay-react-root" &&
-  (view === "admin-shell" || view === "merchant-shell")
+  (view === "admin-shell" ||
+    view === "merchant-shell" ||
+    view === "legacy-auth" ||
+    view === "gateway-shell" ||
+    view === "installer-shell" ||
+    view === "public-legacy-shell" ||
+    view === "documentation-shell")
 ) {
-  window.setTimeout(() => {
+  let legacyMoveAttempts = 0
+  const moveLegacyContent = () => {
     const slot = document.getElementById("epay-react-legacy-slot")
     const source = document.getElementById("epay-react-legacy-source")
-    if (!slot) return
+    if (!slot) {
+      if (legacyMoveAttempts++ < 120) {
+        window.requestAnimationFrame(moveLegacyContent)
+      }
+      return
+    }
     const nodes = source
       ? Array.from(source.childNodes)
       : Array.from(document.body.childNodes)
     nodes.forEach((node) => {
       if (
         node === mount ||
-        (node.nodeType === Node.ELEMENT_NODE &&
+        (!source &&
+          node.nodeType === Node.ELEMENT_NODE &&
           (node as Element).tagName === "SCRIPT")
       )
         return
@@ -86,5 +109,6 @@ if (
       slot.appendChild(node)
     })
     source?.remove()
-  }, 0)
+  }
+  window.requestAnimationFrame(moveLegacyContent)
 }

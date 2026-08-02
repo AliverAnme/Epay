@@ -20,6 +20,7 @@ $html = $certify->certify($certify_id);
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
 	<title>正在跳转</title>
+	<link rel="stylesheet" href="../assets/dist/epay-ui.css" type="text/css" />
 	<style type="text/css">
         body {margin:0;padding:0;}
         p {position:absolute;
@@ -33,7 +34,11 @@ $html = $certify->certify($certify_id);
     </style>
 </head>
 <body>
+<div id="epay-react-root" data-epay-view="legacy-auth" data-epay-config="<?php echo htmlspecialchars(json_encode(['kind'=>'certificate','title'=>'实名认证','sitename'=>$conf['sitename']], JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div>
+<div id="epay-react-legacy-source">
 <p>正在跳转，请稍候...</p>
 <?php echo $html?>
+</div>
+<script type="module" src="../assets/dist/epay-ui.js"></script>
 </body>
 </html>

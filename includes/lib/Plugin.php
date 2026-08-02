@@ -85,7 +85,7 @@ class Plugin {
 						return ['type'=>'error','msg'=>'请勿用他人发过来的二维码或链接进行支付，以防资金损失！<br/><br/>若为您本人操作，请使用与下单时相同的网络环境进行支付，谢谢配合！<br/>'];
 					}elseif($conf['check_pay_regoin'] == 2){
 						global $cdnpublic;
-						include PAYPAGE_ROOT.'pay_warning.php';
+						\lib\Payment::renderLegacyPaymentPage('pay_warning', get_defined_vars());
 						exit;
 					}
 				}

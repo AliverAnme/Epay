@@ -188,9 +188,12 @@ if(isset($_GET['auth_code'])){
 <link rel="stylesheet" href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
 <link rel="stylesheet" href="./assets/css/font.css" type="text/css" />
 <link rel="stylesheet" href="./assets/css/app.css" type="text/css" />
+<link rel="stylesheet" href="../assets/dist/epay-ui.css" type="text/css" />
 <style>input:-webkit-autofill{-webkit-box-shadow:0 0 0px 1000px white inset;-webkit-text-fill-color:#333;}img.logo{width:14px;height:14px;margin:0 5px 0 3px;}</style>
 </head>
 <body>
+<div id="epay-react-root" data-epay-view="legacy-auth" data-epay-config="<?php echo htmlspecialchars(json_encode(['kind'=>'alipay','title'=>'支付宝快捷登录','sitename'=>$conf['sitename']], JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div>
+<div id="epay-react-legacy-source">
 <div class="app app-header-fixed  ">
 <div class="container w-xxl w-auto-xs" ng-controller="SigninFormController" ng-init="app.settings.container = false;">
 <span class="navbar-brand block m-t" id="sitename"><?php echo $conf['sitename']?></span>
@@ -209,6 +212,7 @@ if(isset($_GET['auth_code'])){
 <p>
 <small class="text-muted"><a href="/"><?php echo $conf['sitename']?></a><br>&copy; 2016~<?php echo date("Y")?></small>
 </p>
+</div>
 </div>
 </div>
 </div>
@@ -245,6 +249,7 @@ function checkopenid(){
 	});
 }
 </script>
+<script type="module" src="../assets/dist/epay-ui.js"></script>
 </body>
 </html>
 <?php

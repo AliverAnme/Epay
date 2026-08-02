@@ -156,4 +156,4 @@ if($islogin2==1){
 	exit("<script language='javascript'>window.location.href='./certificate.php';</script>");
 }
 @header('Content-Type: text/html; charset=UTF-8');
-include PAYPAGE_ROOT.'certok.php';
+\lib\Payment::renderLegacyPaymentPage('certok', get_defined_vars());

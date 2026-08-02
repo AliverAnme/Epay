@@ -1256,11 +1256,11 @@ function showPayVerifyPage($defend_key, $query_arr){
 	global $conf, $cdnpublic;
 	if($conf['pay_verify_type'] == 0){
 		$key = time().$defend_key.rand(111111,999999);
-		include PAYPAGE_ROOT.'verify_jump.php';
+		\lib\Payment::renderLegacyPaymentPage('verify_jump', get_defined_vars());
 	}elseif($conf['pay_verify_type'] == 1){
-		include PAYPAGE_ROOT.'verify_invisible.php';
+		\lib\Payment::renderLegacyPaymentPage('verify_invisible', get_defined_vars());
 	}elseif($conf['pay_verify_type'] == 2){
-		include PAYPAGE_ROOT.'verify_slide.php';
+		\lib\Payment::renderLegacyPaymentPage('verify_slide', get_defined_vars());
 	}
 	exit;
 }

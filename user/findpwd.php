@@ -141,7 +141,7 @@ var handlerEmbed = function (captchaObj) {
 	}).onError(function(){
 		layer.msg('验证码加载失败，请刷新页面重试', {icon: 5});
 	});
-	$('#sendcode').click(function () {
+	$(document).on('click', '#sendcode', function () {
 		if ($(this).attr("data-lock") === "true") return;
 		type = $("select[name='type']").val();
 		sendto=$("input[name='account']").val();
@@ -169,7 +169,7 @@ $(document).ready(function(){
 		}
 	});
 	$("select[name='type']").change();
-	$("#submit").click(function(){
+	$(document).on("click", "#submit", function(){
 		if ($(this).attr("data-lock") === "true") return;
 		var type=$("select[name='type']").val();
 		var account=$("input[name='account']").val();

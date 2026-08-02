@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 type JsonObject = Record<string, unknown>
 type AuthMode = "admin-login" | "user-login" | "user-register" | "user-recovery"
@@ -234,9 +234,10 @@ function LoginForm({
                   autoComplete="off"
                   required
                 />
-                <button
+                <Button
                   type="button"
-                  className="overflow-hidden rounded-xl border bg-muted"
+                  variant="outline"
+                  className="h-11 w-28 overflow-hidden rounded-xl bg-muted p-0"
                   title="点击更换验证码"
                 >
                   <img
@@ -245,7 +246,7 @@ function LoginForm({
                     alt="验证码"
                     className="h-11 w-28 object-cover"
                   />
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -304,8 +305,34 @@ function LoginForm({
     )
   }
 
+  const submitUserLogin = () => {
+    const form = document.forms.namedItem("form")
+    const type = form?.elements.namedItem("type") as HTMLInputElement | null
+    const user = form?.elements.namedItem("user") as HTMLInputElement | null
+    const pass = form?.elements.namedItem("pass") as HTMLInputElement | null
+    const legacyWindow = window as Window & {
+      submitLogin?: (
+        loginType: string,
+        loginUser: string,
+        loginPass: string
+      ) => void
+    }
+    legacyWindow.submitLogin?.(
+      type?.value ?? (keyMode ? "0" : "1"),
+      user?.value.trim() ?? "",
+      pass?.value ?? ""
+    )
+  }
+
   return (
-    <form name="form" className="space-y-4">
+    <form
+      name="form"
+      className="space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault()
+        submitUserLogin()
+      }}
+    >
       <input
         type="hidden"
         name="csrf_token"
@@ -313,26 +340,24 @@ function LoginForm({
       />
       <input type="hidden" name="type" value={keyMode ? "0" : "1"} />
       {!enabled(config, "close_keylogin") && (
-        <div className="grid grid-cols-2 rounded-xl bg-muted p-1 text-sm">
-          <a
-            href="./login.php"
-            className={cn(
-              "rounded-lg px-3 py-2 text-center transition-colors",
-              !keyMode && "bg-background font-medium shadow-sm"
-            )}
-          >
+        <ToggleGroup
+          type="single"
+          value={keyMode ? "key" : "password"}
+          variant="outline"
+          spacing={1}
+          className="grid w-full grid-cols-2 rounded-xl bg-muted p-1 text-sm"
+          onValueChange={(value) => {
+            if (value === "key") window.location.href = "./login.php?m=key"
+            if (value === "password") window.location.href = "./login.php"
+          }}
+        >
+          <ToggleGroupItem value="password" className="w-full rounded-lg">
             密码登录
-          </a>
-          <a
-            href="./login.php?m=key"
-            className={cn(
-              "rounded-lg px-3 py-2 text-center transition-colors",
-              keyMode && "bg-background font-medium shadow-sm"
-            )}
-          >
+          </ToggleGroupItem>
+          <ToggleGroupItem value="key" className="w-full rounded-lg">
             密钥登录
-          </a>
-        </div>
+          </ToggleGroupItem>
+        </ToggleGroup>
       )}
       <div className="space-y-2">
         <Label htmlFor="user">{keyMode ? "商户 ID" : "邮箱 / 手机号"}</Label>
@@ -371,7 +396,7 @@ function LoginForm({
           </div>
         </div>
       )}
-      <Button id="submit" type="button" className="h-11 w-full rounded-xl">
+      <Button id="submit" type="submit" className="h-11 w-full rounded-xl">
         立即登录
       </Button>
       <div className="flex items-center justify-between gap-3 text-sm">

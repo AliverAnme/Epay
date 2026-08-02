@@ -3,6 +3,7 @@ import {
   Activity,
   ArrowUpRight,
   BarChart3,
+  BookOpen,
   Check,
   ChevronRight,
   CircleDollarSign,
@@ -27,6 +28,14 @@ import {
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AuthView } from "@/components/epay/auth-view"
+import { GoldPlanView, type GoldPlanConfig } from "@/components/epay/gold-plan"
+import {
+  GatewayShell,
+  InstallerShell,
+  LegacyAuthShell,
+  PublicLegacyShell,
+  type LegacyShellConfig,
+} from "@/components/epay/legacy-shell"
 import { PublicHomeView } from "@/components/epay/public-home"
 import {
   TransferConfirmView,
@@ -101,6 +110,12 @@ type EpayView =
   | "test-payment"
   | "payment-status"
   | "transfer-confirm"
+  | "gold-plan"
+  | "legacy-auth"
+  | "gateway-shell"
+  | "installer-shell"
+  | "public-legacy-shell"
+  | "documentation-shell"
   | "pay-page"
   | "admin-login"
   | "user-login"
@@ -126,25 +141,141 @@ type EpayAppProps = {
   config?: JsonObject | CashierConfig
 }
 
-type NavItem = { label: string; href: string; icon: React.ElementType }
+type NavItem = {
+  label: string
+  href: string
+  icon: React.ElementType
+  section?: string
+}
 
+// 与 admin/head.php 中的旧版导航保持一一对应，避免新外壳吞掉原有入口。
 const adminNav: NavItem[] = [
-  { label: "平台首页", href: "./", icon: LayoutDashboard },
-  { label: "收款订单", href: "./order.php", icon: FileText },
-  { label: "付款管理", href: "./transfer.php", icon: WalletCards },
-  { label: "商户管理", href: "./ulist.php", icon: Users },
-  { label: "支付接口", href: "./pay_channel.php", icon: CreditCard },
-  { label: "系统设置", href: "./set.php?mod=site", icon: Settings },
+  { section: "概览", label: "平台首页", href: "./", icon: LayoutDashboard },
+  {
+    section: "收款订单",
+    label: "订单管理",
+    href: "./order.php",
+    icon: FileText,
+  },
+  { label: "导出订单", href: "./export.php", icon: FileText },
+  { label: "支付用户统计", href: "./buyerstat.php", icon: BarChart3 },
+  { label: "黑名单管理", href: "./blacklist.php", icon: ShieldCheck },
+  { label: "分账规则", href: "./ps_receiver.php", icon: Settings },
+  { label: "分账记录", href: "./ps_order.php", icon: FileText },
+  {
+    section: "付款管理",
+    label: "结算管理",
+    href: "./slist.php",
+    icon: PackageCheck,
+  },
+  { label: "批量结算", href: "./settle.php", icon: PackageCheck },
+  { label: "付款记录", href: "./transfer.php", icon: WalletCards },
+  { label: "新增付款", href: "./transfer_add.php", icon: ArrowUpRight },
+  { label: "创建红包", href: "./transfer_red.php", icon: WalletCards },
+  { label: "付款统计", href: "./transfer_stat.php", icon: BarChart3 },
+  { label: "导出付款记录", href: "./transfer_export.php", icon: FileText },
+  { label: "批量转账", href: "./transfer_batch.php", icon: ArrowUpRight },
+  { section: "商户管理", label: "用户列表", href: "./ulist.php", icon: Users },
+  { label: "用户组设置", href: "./glist.php", icon: Users },
+  { label: "用户组购买", href: "./group.php", icon: Store },
+  { label: "资金明细", href: "./record.php", icon: BarChart3 },
+  { label: "支付统计", href: "./ustat.php", icon: Activity },
+  { label: "授权域名", href: "./domain.php", icon: ShieldCheck },
+  { label: "邀请码管理", href: "./invitecode.php", icon: ShieldCheck },
+  {
+    section: "支付接口",
+    label: "支付通道",
+    href: "./pay_channel.php",
+    icon: CreditCard,
+  },
+  { label: "支付方式", href: "./pay_type.php", icon: CreditCard },
+  { label: "支付插件", href: "./pay_plugin.php", icon: PackageCheck },
+  { label: "支付通道轮询", href: "./pay_roll.php", icon: RefreshCw },
+  { label: "公众号小程序", href: "./pay_weixin.php", icon: ShieldCheck },
+  { label: "企业微信账号", href: "./pay_wework.php", icon: Store },
+  {
+    section: "系统设置",
+    label: "网站信息配置",
+    href: "./set.php?mod=site",
+    icon: Settings,
+  },
+  { label: "支付相关配置", href: "./set.php?mod=pay", icon: CreditCard },
+  { label: "风控检测配置", href: "./set.php?mod=risk", icon: ShieldCheck },
+  { label: "结算规则配置", href: "./set.php?mod=settle", icon: PackageCheck },
+  { label: "转账付款配置", href: "./set.php?mod=transfer", icon: WalletCards },
+  { label: "快捷登录配置", href: "./set.php?mod=oauth", icon: Users },
+  { label: "消息提醒配置", href: "./set.php?mod=notice", icon: Activity },
+  {
+    label: "实名认证配置",
+    href: "./set.php?mod=certificate",
+    icon: ShieldCheck,
+  },
+  { label: "网站公告配置", href: "./gonggao.php", icon: FileText },
+  { label: "首页模板配置", href: "./set.php?mod=template", icon: Store },
+  { label: "邮箱与短信配置", href: "./set.php?mod=mail", icon: FileText },
+  { label: "网站 Logo 上传", href: "./set.php?mod=upimg", icon: ArrowUpRight },
+  { label: "计划任务配置", href: "./set.php?mod=cron", icon: RefreshCw },
+  { label: "中转代理配置", href: "./set.php?mod=proxy", icon: ShieldCheck },
+  { label: "微信客服支付", href: "./set_wxkf.php", icon: Store },
+  { label: "管理员账户", href: "./set.php?mod=account", icon: Users },
+  {
+    section: "其他功能",
+    label: "风控记录",
+    href: "./risk.php",
+    icon: ShieldCheck,
+  },
+  { label: "登录日志", href: "./log.php", icon: FileText },
+  { label: "数据清理", href: "./clean.php", icon: RefreshCw },
+  { label: "获取用户标识", href: "./gettoken.php", icon: ShieldCheck },
 ]
 
+// 与 user/head.php 中的用户中心、查询、其他三组入口保持一致。
 const merchantNav: NavItem[] = [
-  { label: "用户中心", href: "./", icon: LayoutDashboard },
-  { label: "订单记录", href: "order.php", icon: FileText },
-  { label: "结算记录", href: "settle.php", icon: PackageCheck },
-  { label: "资金明细", href: "record.php", icon: BarChart3 },
-  { label: "申请提现", href: "apply.php", icon: ArrowUpRight },
-  { label: "个人资料", href: "userinfo.php?mod=api", icon: Store },
+  { section: "概览", label: "用户中心", href: "./", icon: LayoutDashboard },
+  {
+    section: "个人资料",
+    label: "API 信息",
+    href: "./userinfo.php?mod=api",
+    icon: ShieldCheck,
+  },
+  { label: "修改资料", href: "./editinfo.php", icon: Store },
+  { label: "修改密码", href: "./userinfo.php?mod=account", icon: Settings },
+  { label: "实名认证", href: "./certificate.php", icon: ShieldCheck },
+  { label: "保证金", href: "./deposit.php", icon: WalletCards },
+  { section: "查询", label: "订单记录", href: "./order.php", icon: FileText },
+  { label: "结算记录", href: "./settle.php", icon: PackageCheck },
+  { label: "资金明细", href: "./record.php", icon: BarChart3 },
+  { label: "申请提现", href: "./apply.php", icon: ArrowUpRight },
+  { label: "余额充值", href: "./recharge.php", icon: CircleDollarSign },
+  { label: "购买会员", href: "./groupbuy.php", icon: Store },
+  { label: "授权域名", href: "./domain.php", icon: ShieldCheck },
+  {
+    section: "其他",
+    label: "代付管理",
+    href: "./transfer.php",
+    icon: ArrowUpRight,
+  },
+  { label: "聚合收款", href: "./onecode.php", icon: CreditCard },
+  { label: "邀请返现", href: "./invite.php", icon: Users },
+  { section: "帮助", label: "开发文档", href: "/doc.html", icon: BookOpen },
 ]
+
+function normalizeRoutePath(pathname: string) {
+  const path = pathname.replace(/\/+$/, "") || "/"
+  return path.endsWith("/index.php") ? path.slice(0, -10) || "/" : path
+}
+
+function isNavItemActive(href: string) {
+  if (typeof window === "undefined") return false
+  const target = new URL(href, window.location.href)
+  const current = new URL(window.location.href)
+  if (
+    normalizeRoutePath(target.pathname) !== normalizeRoutePath(current.pathname)
+  ) {
+    return false
+  }
+  return !target.search || target.search === current.search
+}
 
 function valueOf(
   data: JsonObject | null | undefined,
@@ -190,28 +321,44 @@ function NavLinks({
 }) {
   return (
     <nav className="grid gap-1" aria-label="主导航">
-      {items.map(({ label, href, icon: Icon }, index) => (
-        <Button
-          key={label}
-          asChild
-          variant={index === 0 ? "secondary" : "ghost"}
-          className={cn(
-            "h-10 justify-start gap-3 rounded-xl px-3 font-normal",
-            index === 0 && "font-medium"
-          )}
-        >
-          <a href={href} onClick={onNavigate}>
-            <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
-            <span>{label}</span>
-            {index === 0 && (
-              <ChevronRight
-                className="ml-auto size-4 text-muted-foreground"
-                aria-hidden="true"
-              />
+      {items.map(({ label, href, icon: Icon, section }) => {
+        const active = isNavItemActive(href)
+        return (
+          <React.Fragment key={href}>
+            {section && (
+              <p className="px-3 pt-4 pb-1 text-[11px] font-medium tracking-wider text-muted-foreground first:pt-0">
+                {section}
+              </p>
             )}
-          </a>
-        </Button>
-      ))}
+            <Button
+              asChild
+              variant={active ? "secondary" : "ghost"}
+              className={cn(
+                "h-10 justify-start gap-3 rounded-xl px-3 font-normal",
+                active && "font-medium"
+              )}
+            >
+              <a
+                href={href}
+                onClick={onNavigate}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon
+                  className="size-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <span>{label}</span>
+                {active && (
+                  <ChevronRight
+                    className="ml-auto size-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                )}
+              </a>
+            </Button>
+          </React.Fragment>
+        )
+      })}
     </nav>
   )
 }
@@ -282,12 +429,14 @@ function WorkspaceShell({
               {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </Button>
             <Button
+              asChild
               variant="ghost"
               size="icon"
               className="hidden rounded-xl sm:inline-flex"
-              aria-label="帮助中心"
             >
-              <LifeBuoy className="size-4" />
+              <a href="/doc.html" aria-label="打开开发文档">
+                <LifeBuoy className="size-4" />
+              </a>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -341,7 +490,7 @@ function WorkspaceShell({
         </div>
       </header>
       <div className="mx-auto flex max-w-[1440px]">
-        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 shrink-0 border-r bg-background/60 p-4 md:block">
+        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 shrink-0 flex-col border-r bg-background/60 p-4 md:flex">
           <div className="mb-6 rounded-2xl border bg-card p-4 shadow-sm">
             <p className="text-xs font-medium tracking-wide text-muted-foreground">
               当前工作区
@@ -357,7 +506,9 @@ function WorkspaceShell({
               运行正常
             </Badge>
           </div>
-          <NavLinks items={nav} />
+          <ScrollArea className="min-h-0 flex-1 pr-2">
+            <NavLinks items={nav} />
+          </ScrollArea>
           <div className="mt-auto pt-8">
             <Separator className="mb-4" />
             <div className="flex items-center gap-2 px-2 text-xs text-muted-foreground">
@@ -409,9 +560,12 @@ function PageHeading({
   )
 }
 
-function LegacyContentSlot() {
+function LegacyContentSlot({ className }: { className?: string } = {}) {
   return (
-    <Card className="epay-legacy-card rounded-2xl shadow-sm">
+    <Card className={cn("epay-legacy-card rounded-2xl shadow-sm", className)}>
+      <CardHeader className="sr-only">
+        <CardTitle>页面内容</CardTitle>
+      </CardHeader>
       <CardContent className="p-0">
         <div
           id="epay-react-legacy-slot"
@@ -420,6 +574,180 @@ function LegacyContentSlot() {
         />
       </CardContent>
     </Card>
+  )
+}
+
+const documentationNav: Array<{
+  label: string
+  href: string
+  icon: React.ElementType
+}> = [
+  { label: "接口说明", href: "/doc/index.html", icon: BookOpen },
+  { label: "签名规则", href: "/doc/sign_note.html", icon: ShieldCheck },
+  { label: "支付方式", href: "/doc/paytype.html", icon: CreditCard },
+  { label: "页面跳转支付", href: "/doc/pay_submit.html", icon: ArrowUpRight },
+  { label: "统一下单接口", href: "/doc/pay_create.html", icon: FileText },
+  { label: "订单查询", href: "/doc/pay_query.html", icon: FileText },
+  { label: "支付结果通知", href: "/doc/pay_notify.html", icon: Activity },
+  { label: "订单退款", href: "/doc/pay_refund.html", icon: WalletCards },
+  {
+    label: "订单退款查询",
+    href: "/doc/pay_refundquery.html",
+    icon: WalletCards,
+  },
+  { label: "关闭订单", href: "/doc/pay_close.html", icon: ShieldCheck },
+  { label: "商户信息", href: "/doc/merchant_info.html", icon: Users },
+  { label: "商户订单", href: "/doc/merchant_orders.html", icon: FileText },
+  { label: "转账发起", href: "/doc/transfer_submit.html", icon: ArrowUpRight },
+  { label: "转账查询", href: "/doc/transfer_query.html", icon: FileText },
+  {
+    label: "余额查询",
+    href: "/doc/transfer_balance.html",
+    icon: CircleDollarSign,
+  },
+  { label: "SDK 下载", href: "/doc/sdk.html", icon: PackageCheck },
+  { label: "服务条款", href: "/agreement.html", icon: ShieldCheck },
+  { label: "旧版接口文档", href: "/doc_old.html", icon: FileText },
+  { label: "微信支付教程", href: "/wx.html", icon: CreditCard },
+]
+
+function DocumentationNav({
+  active,
+  onNavigate,
+}: {
+  active: string
+  onNavigate?: () => void
+}) {
+  return (
+    <nav className="grid gap-1" aria-label="开发文档目录">
+      {documentationNav.map(({ label, href, icon: Icon }) => {
+        const activeItem =
+          href.endsWith(`${active}.html`) ||
+          (active === "index" && href.endsWith("/index.html"))
+        return (
+          <Button
+            key={href}
+            asChild
+            variant={activeItem ? "secondary" : "ghost"}
+            className={cn(
+              "h-10 justify-start gap-3 rounded-xl px-3 font-normal",
+              activeItem && "font-medium"
+            )}
+          >
+            <a href={href} onClick={onNavigate}>
+              <Icon
+                className="size-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <span>{label}</span>
+            </a>
+          </Button>
+        )
+      })}
+    </nav>
+  )
+}
+
+function DocumentationShell({ config }: { config?: JsonObject }) {
+  const { theme, setTheme } = useTheme()
+  const [mobileOpen, setMobileOpen] = React.useState(false)
+  const active = String(config?.doc ?? "index")
+  const title = String(config?.title ?? "开发文档")
+  const sitename = String(config?.sitename ?? "Rainbow Pay")
+  const dark = theme === "dark"
+
+  return (
+    <div className="min-h-svh bg-muted/30 text-foreground antialiased">
+      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                aria-label="打开文档目录"
+              >
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[290px] p-0">
+              <SheetHeader className="border-b px-5 py-4 text-left">
+                <SheetTitle>
+                  <Brand />
+                </SheetTitle>
+                <SheetDescription>快速浏览接口文档</SheetDescription>
+              </SheetHeader>
+              <ScrollArea className="h-[calc(100vh-118px)] px-4 py-5">
+                <DocumentationNav
+                  active={active}
+                  onNavigate={() => setMobileOpen(false)}
+                />
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
+          <div className="hidden md:block">
+            <Brand />
+          </div>
+          <Separator
+            orientation="vertical"
+            className="mx-2 hidden h-6 md:block"
+          />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">开发文档</p>
+            <p className="hidden truncate text-xs text-muted-foreground sm:block">
+              {sitename} API 与接入指南
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-xl"
+              onClick={() => setTheme(dark ? "light" : "dark")}
+              aria-label={dark ? "切换亮色模式" : "切换暗色模式"}
+            >
+              {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="hidden rounded-xl sm:inline-flex"
+            >
+              <a href="/">返回官网</a>
+            </Button>
+          </div>
+        </div>
+      </header>
+      <div className="mx-auto flex max-w-[1440px]">
+        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 shrink-0 border-r bg-background/60 p-4 md:block">
+          <div className="mb-6 rounded-2xl border bg-card p-4 shadow-sm">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground">
+              文档中心
+            </p>
+            <p className="mt-1 font-semibold">{title}</p>
+            <Badge
+              variant="secondary"
+              className="mt-3 gap-1.5 rounded-lg font-normal"
+            >
+              <BookOpen className="size-3.5" />
+              持续更新
+            </Badge>
+          </div>
+          <ScrollArea className="h-[calc(100vh-220px)] pr-2">
+            <DocumentationNav active={active} />
+          </ScrollArea>
+        </aside>
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+          <PageHeading
+            eyebrow="开发文档"
+            title={title}
+            description="使用统一的接口规范接入收款、退款、商户与代付能力。"
+          />
+          <LegacyContentSlot />
+        </main>
+      </div>
+    </div>
   )
 }
 
@@ -663,7 +991,7 @@ function AdminDashboard() {
                 <CardTitle className="text-base">快捷入口</CardTitle>
                 <CardDescription>高频运营动作</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-2">
+              <CardContent className="grid gap-2 sm:grid-cols-2">
                 <Button
                   asChild
                   variant="outline"
@@ -699,6 +1027,45 @@ function AdminDashboard() {
                     <span className="flex items-center gap-2">
                       <CreditCard className="size-4 text-emerald-500" />
                       支付通道
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 justify-between rounded-xl"
+                >
+                  <a href="./transfer.php">
+                    <span className="flex items-center gap-2">
+                      <WalletCards className="size-4 text-amber-500" />
+                      付款记录
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 justify-between rounded-xl"
+                >
+                  <a href="./slist.php">
+                    <span className="flex items-center gap-2">
+                      <PackageCheck className="size-4 text-cyan-500" />
+                      结算管理
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 justify-between rounded-xl"
+                >
+                  <a href="./set.php?mod=site">
+                    <span className="flex items-center gap-2">
+                      <Settings className="size-4 text-slate-500" />
+                      网站设置
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
                   </a>
@@ -909,6 +1276,45 @@ function MerchantDashboard({ config }: { config?: JsonObject }) {
                     <ChevronRight className="size-4 text-muted-foreground" />
                   </a>
                 </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 w-full justify-between rounded-xl"
+                >
+                  <a href="./record.php">
+                    <span className="flex items-center gap-2">
+                      <BarChart3 className="size-4" />
+                      查看资金明细
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 w-full justify-between rounded-xl"
+                >
+                  <a href="./apply.php">
+                    <span className="flex items-center gap-2">
+                      <ArrowUpRight className="size-4" />
+                      申请提现
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 w-full justify-between rounded-xl"
+                >
+                  <a href="./userinfo.php?mod=account">
+                    <span className="flex items-center gap-2">
+                      <ShieldCheck className="size-4" />
+                      修改密码
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground" />
+                  </a>
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -999,15 +1405,18 @@ function CashierView({ config }: { config?: CashierConfig }) {
               </CardHeader>
               <CardContent className="grid gap-3 p-5 sm:grid-cols-2 sm:p-7">
                 {types.map((type) => (
-                  <button
+                  <Button
+                    variant={
+                      selected === String(type.id) ? "secondary" : "outline"
+                    }
                     type="button"
                     key={String(type.id)}
                     aria-pressed={selected === String(type.id)}
                     onClick={() => setSelected(String(type.id))}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl border bg-background p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-sm",
+                      "group flex h-auto min-h-16 w-full items-center gap-3 rounded-xl p-4 text-left whitespace-normal transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-sm",
                       selected === String(type.id) &&
-                        "border-primary bg-primary/5 ring-2 ring-primary/15"
+                        "border-primary ring-2 ring-primary/15"
                     )}
                   >
                     <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
@@ -1019,7 +1428,7 @@ function CashierView({ config }: { config?: CashierConfig }) {
                     {selected === String(type.id) && (
                       <Check className="size-4 text-primary" />
                     )}
-                  </button>
+                  </Button>
                 ))}
               </CardContent>
             </Card>
@@ -1096,12 +1505,26 @@ export function EpayApp({ view, config }: EpayAppProps) {
     return (
       <PaymentStatusView config={config as PaymentStatusConfig | undefined} />
     )
+  if (view === "gold-plan")
+    return <GoldPlanView config={config as GoldPlanConfig | undefined} />
+  if (view === "legacy-auth")
+    return <LegacyAuthShell config={config as LegacyShellConfig | undefined} />
+  if (view === "gateway-shell")
+    return <GatewayShell config={config as LegacyShellConfig | undefined} />
+  if (view === "installer-shell")
+    return <InstallerShell config={config as LegacyShellConfig | undefined} />
+  if (view === "public-legacy-shell")
+    return (
+      <PublicLegacyShell config={config as LegacyShellConfig | undefined} />
+    )
   if (view === "transfer-confirm")
     return (
       <TransferConfirmView
         config={config as TransferConfirmConfig | undefined}
       />
     )
+  if (view === "documentation-shell")
+    return <DocumentationShell config={config as JsonObject | undefined} />
   if (view === "pay-page")
     return <PayPageView config={config as PayPageConfig | undefined} />
   if (view === "merchant-dashboard")
@@ -1113,7 +1536,7 @@ export function EpayApp({ view, config }: EpayAppProps) {
         title={shellTitle || "商户工作台"}
         description="收款、结算与接口配置一站式管理"
       >
-        <LegacyContentSlot />
+        <LegacyContentSlot className="epay-legacy-workspace-surface" />
       </WorkspaceShell>
     )
   if (view === "cashier")
@@ -1126,7 +1549,7 @@ export function EpayApp({ view, config }: EpayAppProps) {
         title={shellTitle || "平台运营"}
         description="统一管理订单、商户、支付通道与结算"
       >
-        <LegacyContentSlot />
+        <LegacyContentSlot className="epay-legacy-workspace-surface" />
       </WorkspaceShell>
     )
   return <AdminDashboard />

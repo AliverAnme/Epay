@@ -194,7 +194,7 @@ var handlerEmbed = function (captchaObj) {
 	}).onError(function(){
 		layer.msg('验证码加载失败，请刷新页面重试', {icon: 5});
 	});
-	$('#sendcode').click(function () {
+	$(document).on('click', '#sendcode', function () {
 		if ($(this).attr("data-lock") === "true") return;
 		if($("input[name='verifytype']").val()=='1'){
 			sendto=$("input[name='phone']").val();
@@ -214,7 +214,7 @@ var handlerEmbed = function (captchaObj) {
 	});
 };
 $(document).ready(function(){
-	$("#submit").click(function(){
+	$(document).on("click", "#submit", function(){
 		if ($(this).attr("data-lock") === "true") return;
 		var email=$("input[name='email']").val();
 		var phone=$("input[name='phone']").val();

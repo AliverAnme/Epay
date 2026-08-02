@@ -5,7 +5,7 @@ if(isset($_GET['ucode'])){
 	$code=is_string($_GET['ucode'])?trim($_GET['ucode']):'';
     if(!preg_match('/^[a-zA-Z0-9]{1,32}$/',$code)) showerror('参数错误');
     $uid = $DB->findColumn('onecode', 'uid', ['code' => $code]);
-    if(!$uid) showerror('当前码牌未绑定商户<br/>码牌编号：'.$code.'<br/><p class="weui-btn-area"><a href="/user/onecode.php?bind='.$code.'" class="weui-btn weui-btn_primary">点此绑定</a></p>');
+    if(!$uid) showerror('当前码牌未绑定商户<br/>码牌编号：'.$code.'<br/><a href="/user/onecode.php?bind='.$code.'">点此绑定</a>');
 }elseif(isset($_GET['merchant'])){
 	$merchant=is_string($_GET['merchant'])?trim($_GET['merchant']):'';
 	$uid = authcode($merchant, 'DECODE', SYS_KEY);
@@ -185,7 +185,11 @@ $epay_paypage_config=[
         script.onload = function(){loadNext(index + 1);};
         document.body.appendChild(script);
     }
-    document.addEventListener('epay-ui-mounted', function(){loadNext(0);}, {once:true});
+    if(window.__epayUiMounted){
+        loadNext(0);
+    }else{
+        document.addEventListener('epay-ui-mounted', function(){loadNext(0);}, {once:true});
+    }
 })();
 </script>
 </body>

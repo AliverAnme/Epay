@@ -133,9 +133,222 @@
 }
 
 @layer components {
-  /* The adapter keeps unchanged PHP forms and tables inside the same shadcn shell. */
+  /*
+   * The adapter keeps unchanged PHP forms and tables inside the same shadcn
+   * shell.  These selectors are deliberately scoped to the legacy slot: the
+   * generated shadcn primitives remain the source of truth for new UI, while
+   * existing server-rendered controls keep their names, IDs and event hooks.
+   */
   .epay-legacy-card > [data-slot="card-content"] {
     overflow: visible;
+  }
+
+  .epay-legacy-workspace-surface {
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #epay-react-legacy-slot {
+    color: var(--foreground);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  /* QR/auth/payment pages keep their provider-owned DOM and scripts inside
+     the native shell.  This adapter only normalizes the outer geometry; IDs,
+     callbacks and payment protocol markup remain untouched. */
+  #epay-react-legacy-slot .app,
+  #epay-react-legacy-slot .body,
+  #epay-react-legacy-slot .main,
+  #epay-react-legacy-slot .container,
+  #epay-react-legacy-slot .container-fluid,
+  #epay-react-legacy-slot .w-xxl,
+  #epay-react-legacy-slot .w-auto-xs {
+    width: auto !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  #epay-react-legacy-slot .app,
+  #epay-react-legacy-slot .body,
+  #epay-react-legacy-slot .main {
+    padding: 0 !important;
+  }
+
+  #epay-react-legacy-slot .navbar-brand,
+  #epay-react-legacy-slot #sitename {
+    display: block;
+    margin: 0 0 1.25rem !important;
+    padding: 0 !important;
+    color: var(--foreground) !important;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  #epay-react-legacy-slot .app > .container > .navbar-brand,
+  #epay-react-legacy-slot .app > .container > #sitename,
+  #epay-react-legacy-slot .app > .container > .m-b-lg > .wrapper,
+  #epay-react-legacy-slot .app > .container > .text-center {
+    display: none !important;
+  }
+
+  #epay-react-legacy-slot .form-validation,
+  #epay-react-legacy-slot .m-b-lg {
+    margin: 0 !important;
+  }
+
+  #epay-react-legacy-slot .m-t,
+  #epay-react-legacy-slot .wrapper,
+  #epay-react-legacy-slot .text-center {
+    margin-top: 0 !important;
+  }
+
+  #epay-react-legacy-slot .form-group[style*="text-align"] {
+    text-align: left !important;
+  }
+
+  #epay-react-legacy-slot #login,
+  #epay-react-legacy-slot #qrimg,
+  #epay-react-legacy-slot #qrcode,
+  #epay-react-legacy-slot #mobile {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #epay-react-legacy-slot #qrimg,
+  #epay-react-legacy-slot #qrcode,
+  #epay-react-legacy-slot .qr-image {
+    display: flex;
+    min-height: 12rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 1rem !important;
+  }
+
+  #epay-react-legacy-slot #qrimg img,
+  #epay-react-legacy-slot #qrcode img,
+  #epay-react-legacy-slot #qrcode canvas,
+  #epay-react-legacy-slot .qr-image img,
+  #epay-react-legacy-slot .qr-image canvas {
+    display: block;
+    width: min(230px, 100%) !important;
+    max-width: 100%;
+    height: auto !important;
+    margin: 0 auto;
+  }
+
+  #epay-react-legacy-slot .btn-group {
+    width: 100%;
+  }
+
+  #epay-react-legacy-slot .btn-group > .btn,
+  #epay-react-legacy-slot .btn-group > a {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  #epay-react-legacy-slot .mod-title {
+    margin: 0 0 1rem !important;
+    color: var(--foreground) !important;
+    font-size: 1.125rem !important;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  #epay-react-legacy-slot .body > .mod-title,
+  #epay-react-legacy-slot .main > .mod-title {
+    display: none !important;
+  }
+
+  #epay-react-legacy-slot .mod-ct {
+    width: auto !important;
+    max-width: 32rem !important;
+    margin: 0 auto !important;
+    padding: 1rem !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 1rem;
+    background: var(--card) !important;
+    color: var(--card-foreground) !important;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+  }
+
+  #epay-react-legacy-slot .amount {
+    color: var(--foreground) !important;
+    font-size: 1.75rem !important;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  #epay-react-legacy-slot .tip,
+  #epay-react-legacy-slot .foot,
+  #epay-react-legacy-slot .detail,
+  #epay-react-legacy-slot .mobile-btn,
+  #epay-react-legacy-slot .open_app {
+    border-color: var(--border) !important;
+    color: var(--muted-foreground) !important;
+  }
+
+  #epay-react-legacy-slot .mobile-tip {
+    border-color: var(--border) !important;
+    background: color-mix(in oklch, var(--muted) 45%, transparent) !important;
+    color: var(--muted-foreground) !important;
+  }
+
+  #epay-react-legacy-slot .weui-msg,
+  #epay-react-legacy-slot .weui-form,
+  #epay-react-legacy-slot .container.js_container,
+  #epay-react-legacy-slot .container > .page {
+    width: auto !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  #epay-react-legacy-slot .weui-msg__text-area,
+  #epay-react-legacy-slot .weui-form__text-area,
+  #epay-react-legacy-slot .weui-form__control-area,
+  #epay-react-legacy-slot .weui-form__opr-area {
+    max-width: 32rem;
+    margin-inline: auto;
+  }
+
+  #epay-react-legacy-slot > p,
+  #epay-react-legacy-slot #waiting {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 0 1rem !important;
+    padding: 1rem !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 0.9rem;
+    background: color-mix(in oklch, var(--muted) 35%, transparent) !important;
+    color: var(--foreground) !important;
+    font: inherit !important;
+    text-indent: 0 !important;
+  }
+
+  #epay-react-legacy-slot .app-content,
+  #epay-react-legacy-slot .app-content-body,
+  #epay-react-legacy-slot #content,
+  #epay-react-legacy-slot .control,
+  #epay-react-legacy-slot .wrapper,
+  #epay-react-legacy-slot .wrapper-md,
+  #epay-react-legacy-slot .container,
+  #epay-react-legacy-slot .container-fluid {
+    width: auto !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin-inline: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
   }
 
   #epay-react-legacy-slot > .container,
@@ -150,13 +363,469 @@
   #epay-react-legacy-slot .panel,
   #epay-react-legacy-slot .panel-default,
   #epay-react-legacy-slot .panel-primary {
+    overflow: hidden;
+    border: 1px solid var(--border) !important;
     border-radius: 1rem;
+    background: var(--card) !important;
+    color: var(--card-foreground);
     box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
   }
 
+  #epay-react-legacy-slot .panel-heading,
+  #epay-react-legacy-slot .panel-footer {
+    border-color: var(--border) !important;
+    background: color-mix(in oklch, var(--muted) 35%, transparent) !important;
+    color: var(--foreground) !important;
+  }
+
+  #epay-react-legacy-slot .panel-heading {
+    padding: 0.9rem 1.1rem;
+    font-weight: 600;
+  }
+
+  #epay-react-legacy-slot .panel-body {
+    padding: 1.1rem;
+  }
+
+  #epay-react-legacy-slot .panel-title,
+  #epay-react-legacy-slot h1,
+  #epay-react-legacy-slot h2,
+  #epay-react-legacy-slot h3,
+  #epay-react-legacy-slot h4,
+  #epay-react-legacy-slot h5 {
+    color: var(--foreground);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  #epay-react-legacy-slot .bg-light,
+  #epay-react-legacy-slot .bg-white,
+  #epay-react-legacy-slot .lter,
+  #epay-react-legacy-slot .b-light {
+    background: transparent !important;
+    border-color: var(--border) !important;
+  }
+
+  #epay-react-legacy-slot .form-group {
+    margin-bottom: 0.85rem;
+  }
+
+  #epay-react-legacy-slot .form-horizontal .form-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-inline: 0;
+  }
+
+  #epay-react-legacy-slot .form-horizontal .control-label,
+  #epay-react-legacy-slot .form-horizontal .col-sm-2,
+  #epay-react-legacy-slot .form-horizontal .col-sm-10,
+  #epay-react-legacy-slot .form-horizontal .col-sm-offset-2 {
+    float: none !important;
+    width: 100% !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+    text-align: left;
+  }
+
+  #epay-react-legacy-slot .form-horizontal .control-label {
+    padding-bottom: 0.4rem;
+  }
+
+  #epay-react-legacy-slot .form-horizontal .btn {
+    width: 100%;
+  }
+
+  #epay-react-legacy-slot .form-inline,
+  #epay-react-legacy-slot .input-group,
+  #epay-react-legacy-slot .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
   #epay-react-legacy-slot .form-control,
-  #epay-react-legacy-slot .btn {
+  #epay-react-legacy-slot select,
+  #epay-react-legacy-slot textarea,
+  #epay-react-legacy-slot input[type="text"],
+  #epay-react-legacy-slot input[type="password"],
+  #epay-react-legacy-slot input[type="number"],
+  #epay-react-legacy-slot input[type="email"],
+  #epay-react-legacy-slot input[type="url"] {
+    min-height: 2.5rem;
+    width: 100%;
+    border: 1px solid var(--input) !important;
     border-radius: 0.75rem;
+    background: var(--background) !important;
+    color: var(--foreground) !important;
+    box-shadow: none !important;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  #epay-react-legacy-slot .form-control:focus,
+  #epay-react-legacy-slot select:focus,
+  #epay-react-legacy-slot textarea:focus,
+  #epay-react-legacy-slot input:focus {
+    border-color: var(--ring) !important;
+    outline: 0;
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 20%, transparent) !important;
+  }
+
+  #epay-react-legacy-slot .input-group {
+    flex-wrap: nowrap;
+  }
+
+  #epay-react-legacy-slot .input-group .form-control {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  #epay-react-legacy-slot .input-group-addon,
+  #epay-react-legacy-slot .input-group-text {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    border: 1px solid var(--border) !important;
+    border-radius: 0.75rem;
+    background: var(--muted) !important;
+    color: var(--muted-foreground) !important;
+  }
+
+  #epay-react-legacy-slot .btn {
+    display: inline-flex;
+    min-height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border: 1px solid var(--border) !important;
+    border-radius: 0.75rem !important;
+    background: var(--background) !important;
+    color: var(--foreground) !important;
+    box-shadow: none !important;
+    transition: background-color 150ms ease, border-color 150ms ease,
+      transform 150ms ease;
+  }
+
+  #epay-react-legacy-slot .btn:hover,
+  #epay-react-legacy-slot .btn:focus {
+    border-color: var(--ring) !important;
+    background: var(--muted) !important;
+    color: var(--foreground) !important;
+  }
+
+  #epay-react-legacy-slot .btn-primary,
+  #epay-react-legacy-slot .btn-info,
+  #epay-react-legacy-slot .btn-success {
+    border-color: var(--primary) !important;
+    background: var(--primary) !important;
+    color: var(--primary-foreground) !important;
+  }
+
+  #epay-react-legacy-slot .btn-danger,
+  #epay-react-legacy-slot .alert-danger {
+    border-color: color-mix(in oklch, var(--destructive) 45%, var(--border)) !important;
+  }
+
+  #epay-react-legacy-slot .btn-danger {
+    background: var(--destructive) !important;
+    color: white !important;
+  }
+
+  #epay-react-legacy-slot .alert {
+    border: 1px solid var(--border) !important;
+    border-radius: 0.9rem;
+    background: color-mix(in oklch, var(--muted) 35%, transparent) !important;
+    color: var(--foreground);
+  }
+
+  #epay-react-legacy-slot .table-responsive {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+  }
+
+  #epay-react-legacy-slot .table {
+    width: 100%;
+    min-width: 620px;
+    margin-bottom: 0;
+    color: var(--foreground);
+  }
+
+  #epay-react-legacy-slot .table > thead > tr > th,
+  #epay-react-legacy-slot .table > tbody > tr > td {
+    border-color: var(--border) !important;
+    padding: 0.75rem 0.85rem;
+    vertical-align: middle;
+  }
+
+  #epay-react-legacy-slot .table > thead > tr > th {
+    background: color-mix(in oklch, var(--muted) 50%, transparent) !important;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  #epay-react-legacy-slot .table-striped > tbody > tr:nth-of-type(odd),
+  #epay-react-legacy-slot .table-hover > tbody > tr:hover {
+    background: color-mix(in oklch, var(--muted) 32%, transparent) !important;
+  }
+
+  #epay-react-legacy-slot .list-group {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 0.85rem;
+  }
+
+  #epay-react-legacy-slot .list-group-item {
+    border-color: var(--border) !important;
+    background: var(--card) !important;
+    color: var(--foreground);
+  }
+
+  #epay-react-legacy-slot .nav-tabs {
+    border-bottom-color: var(--border);
+  }
+
+  #epay-react-legacy-slot .nav-tabs > li > a {
+    border-radius: 0.65rem 0.65rem 0 0;
+    color: var(--muted-foreground);
+  }
+
+  #epay-react-legacy-slot .nav-tabs > li.active > a,
+  #epay-react-legacy-slot .nav-tabs > li.active > a:focus,
+  #epay-react-legacy-slot .nav-tabs > li.active > a:hover {
+    border-color: var(--border) var(--border) var(--card);
+    background: var(--card);
+    color: var(--foreground);
+  }
+
+  #epay-react-legacy-slot .pagination > li > a,
+  #epay-react-legacy-slot .pagination > li > span {
+    border-color: var(--border);
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  #epay-react-legacy-slot .pagination > .active > a,
+  #epay-react-legacy-slot .pagination > .active > span {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  #epay-react-legacy-slot .modal-content {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: var(--card);
+    color: var(--card-foreground);
+    box-shadow: 0 20px 60px rgb(0 0 0 / 16%);
+  }
+
+  #epay-react-legacy-slot .modal-header,
+  #epay-react-legacy-slot .modal-footer {
+    border-color: var(--border);
+  }
+
+  #epay-react-legacy-slot .modal-header {
+    background: color-mix(in oklch, var(--muted) 35%, transparent);
+  }
+
+  #epay-react-legacy-slot .close {
+    color: var(--muted-foreground);
+    opacity: 0.8;
+  }
+
+  /* Legacy document bodies are rendered inside the native documentation shell. */
+  #epay-react-legacy-slot #navbar,
+  #epay-react-legacy-slot #leftbar,
+  #epay-react-legacy-slot #mask,
+  #epay-react-legacy-slot #main-nav,
+  #epay-react-legacy-slot #scroll_Top,
+  #epay-react-legacy-slot #ielt9 > header,
+  #epay-react-legacy-slot #ielt9 > .address,
+  #epay-react-legacy-slot #ielt9 > footer,
+  #epay-react-legacy-slot > header,
+  #epay-react-legacy-slot > .address {
+    display: none !important;
+  }
+
+  #epay-react-legacy-slot #body,
+  #epay-react-legacy-slot #content_body,
+  #epay-react-legacy-slot #article-content {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  #epay-react-legacy-slot img,
+  #epay-react-legacy-slot video,
+  #epay-react-legacy-slot iframe,
+  #epay-react-legacy-slot canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  #epay-react-legacy-slot .row,
+  #epay-react-legacy-slot .about_banner,
+  #epay-react-legacy-slot .api_doc,
+  #epay-react-legacy-slot .api_doc_content,
+  #epay-react-legacy-slot .post,
+  #epay-react-legacy-slot article {
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+  }
+
+  #epay-react-legacy-slot .markdown-body,
+  #epay-react-legacy-slot .post-content {
+    padding: 1.5rem;
+    color: var(--foreground);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+  }
+
+  #epay-react-legacy-slot .markdown-body h1,
+  #epay-react-legacy-slot .markdown-body h2,
+  #epay-react-legacy-slot .markdown-body h3,
+  #epay-react-legacy-slot .markdown-body h4,
+  #epay-react-legacy-slot .post-content h1,
+  #epay-react-legacy-slot .post-content h2,
+  #epay-react-legacy-slot .post-content h3,
+  #epay-react-legacy-slot .post-content h4 {
+    color: var(--foreground);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-block: 1.5rem 0.75rem;
+  }
+
+  #epay-react-legacy-slot .markdown-body h1,
+  #epay-react-legacy-slot .post-content h1 {
+    font-size: 1.75rem;
+  }
+
+  #epay-react-legacy-slot .markdown-body h2,
+  #epay-react-legacy-slot .post-content h2 {
+    font-size: 1.25rem;
+  }
+
+  #epay-react-legacy-slot .markdown-body a,
+  #epay-react-legacy-slot .post-content a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  #epay-react-legacy-slot .markdown-body code,
+  #epay-react-legacy-slot .post-content code {
+    border-radius: 0.4rem;
+    background: var(--muted);
+    padding: 0.15rem 0.35rem;
+    font-size: 0.875em;
+  }
+
+  #epay-react-legacy-slot .markdown-body pre,
+  #epay-react-legacy-slot .post-content pre {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    background: color-mix(in oklch, var(--muted) 55%, transparent);
+    padding: 1rem;
+  }
+
+  #epay-react-legacy-slot .markdown-body table,
+  #epay-react-legacy-slot .post-content table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border);
+    border-radius: 0.85rem;
+  }
+
+  #epay-react-legacy-slot .markdown-body th,
+  #epay-react-legacy-slot .markdown-body td,
+  #epay-react-legacy-slot .post-content th,
+  #epay-react-legacy-slot .post-content td {
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 0.8rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  #epay-react-legacy-slot .markdown-body tr:last-child td,
+  #epay-react-legacy-slot .post-content tr:last-child td {
+    border-bottom: 0;
+  }
+
+  #epay-react-legacy-slot .markdown-body th,
+  #epay-react-legacy-slot .post-content th {
+    background: color-mix(in oklch, var(--muted) 60%, transparent);
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    #epay-react-legacy-slot .btn-group {
+      flex-direction: column;
+    }
+
+    #epay-react-legacy-slot .btn-group > .btn,
+    #epay-react-legacy-slot .btn-group > a {
+      width: 100%;
+      flex: 1 1 auto;
+    }
+
+    #epay-react-legacy-slot .mod-ct {
+      padding: 0.75rem !important;
+    }
+
+    #epay-react-legacy-slot .detail-ct {
+      overflow-wrap: anywhere;
+    }
+
+    #epay-react-legacy-slot .form-inline {
+      align-items: stretch;
+    }
+
+    #epay-react-legacy-slot .form-inline .form-group,
+    #epay-react-legacy-slot .form-inline .input-group {
+      width: 100%;
+      flex: 1 1 100%;
+    }
+
+    #epay-react-legacy-slot .form-inline > .form-control {
+      width: 100%;
+      flex: 1 1 100%;
+    }
+
+    #epay-react-legacy-slot .form-inline > .btn {
+      width: 100%;
+      flex: 1 1 100%;
+    }
+
+    #epay-react-legacy-slot .table-responsive {
+      max-width: 100%;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    /* Small lookup tables can fit the viewport; dense order tables stay
+       horizontally scrollable so their columns remain usable. */
+    #epay-react-legacy-slot .table-responsive .table:not(:has(> thead > tr > th:nth-child(5))) {
+      min-width: 100%;
+      table-layout: auto;
+    }
+
+    #epay-react-legacy-slot .markdown-body,
+    #epay-react-legacy-slot .post-content {
+      padding: 1rem;
+    }
   }
 
   .epay-pay-page .none {

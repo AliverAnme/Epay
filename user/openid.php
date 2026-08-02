@@ -89,4 +89,4 @@ if($is_alipay){
 	$openid_name = 'OpenId';
 	$openid_content = $openId;
 }
-include PAYPAGE_ROOT.'openid.php';
+\lib\Payment::renderLegacyPaymentPage('openid', get_defined_vars());
