@@ -29,6 +29,7 @@ import {
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AuthView } from "@/components/epay/auth-view"
+import { AdminOrderView, type AdminOrderConfig } from "@/components/epay/admin-order"
 import { GoldPlanView, type GoldPlanConfig } from "@/components/epay/gold-plan"
 import {
   GatewayShell,
@@ -103,6 +104,7 @@ import { cn } from "@/lib/utils"
 
 type EpayView =
   | "admin-dashboard"
+  | "admin-order"
   | "admin-shell"
   | "merchant-dashboard"
   | "merchant-shell"
@@ -814,6 +816,124 @@ function DocumentationNav({
   )
 }
 
+function safeDocumentationUrl(value: string | null, kind: "href" | "src") {
+  if (!value) return undefined
+  const url = value.trim()
+  if (url.startsWith("#") || url.startsWith("/") || url.startsWith("./") || url.startsWith("../")) return url
+  if (kind === "href" && /^(https?:|mailto:)/i.test(url)) return url
+  if (kind === "src" && /^https?:/i.test(url)) return url
+  return undefined
+}
+
+function renderDocumentationChildren(node: Node, key: string): React.ReactNode[] {
+  return Array.from(node.childNodes).map((child, index) =>
+    renderDocumentationNode(child, `${key}-${index}`)
+  )
+}
+
+function renderDocumentationNode(node: Node, key: string): React.ReactNode {
+  if (node.nodeType === 3) return node.textContent
+  if (node.nodeType !== 1) return null
+  const element = node as HTMLElement
+  const tag = element.tagName.toLowerCase()
+  if (["script", "style", "link", "meta", "iframe", "object", "embed", "form", "input", "button", "textarea", "select"].includes(tag)) return null
+  const children = renderDocumentationChildren(node, key)
+  switch (tag) {
+    case "h1":
+      return <h2 key={key} className="scroll-mt-24 border-b pb-3 text-2xl font-semibold tracking-tight">{children}</h2>
+    case "h2":
+      return <h3 key={key} className="scroll-mt-24 pt-4 text-xl font-semibold tracking-tight">{children}</h3>
+    case "h3":
+      return <h4 key={key} className="scroll-mt-24 pt-3 text-lg font-semibold">{children}</h4>
+    case "h4":
+    case "h5":
+    case "h6":
+      return <h5 key={key} className="pt-2 text-base font-semibold">{children}</h5>
+    case "p":
+      return <p key={key} className="text-sm leading-7 text-foreground/90">{children}</p>
+    case "ul":
+      return <ul key={key} className="list-disc space-y-2 pl-6 text-sm leading-7">{children}</ul>
+    case "ol":
+      return <ol key={key} className="list-decimal space-y-2 pl-6 text-sm leading-7">{children}</ol>
+    case "li":
+      return <li key={key} className="pl-1">{children}</li>
+    case "blockquote":
+      return <blockquote key={key} className="border-l-2 pl-4 text-sm italic leading-7 text-muted-foreground">{children}</blockquote>
+    case "pre":
+      return <pre key={key} className="overflow-x-auto rounded-xl border bg-muted/50 p-4 font-mono text-xs leading-6 whitespace-pre-wrap break-words">{children}</pre>
+    case "code":
+      return <code key={key} className={element.parentElement?.tagName.toLowerCase() === "pre" ? "font-mono" : "rounded-md bg-muted px-1.5 py-0.5 font-mono text-[0.85em]"}>{children}</code>
+    case "table":
+      return <div key={key} className="overflow-x-auto rounded-xl border"><Table>{children}</Table></div>
+    case "thead":
+      return <TableHeader key={key}>{children}</TableHeader>
+    case "tbody":
+      return <TableBody key={key}>{children}</TableBody>
+    case "tfoot":
+      return <tfoot key={key} className="border-t bg-muted/30">{children}</tfoot>
+    case "tr":
+      return <TableRow key={key}>{children}</TableRow>
+    case "th":
+      return <TableHead key={key}>{children}</TableHead>
+    case "td":
+      return <TableCell key={key} className="whitespace-normal break-words">{children}</TableCell>
+    case "a": {
+      const href = safeDocumentationUrl(element.getAttribute("href"), "href")
+      return href ? <a key={key} href={href} className="font-medium underline underline-offset-4 hover:text-muted-foreground" target={/^https?:/i.test(href) ? "_blank" : undefined} rel={/^https?:/i.test(href) ? "noreferrer" : undefined}>{children}</a> : <span key={key}>{children}</span>
+    }
+    case "img": {
+      const src = safeDocumentationUrl(element.getAttribute("src"), "src")
+      return src ? <img key={key} src={src} alt={element.getAttribute("alt") ?? ""} loading="lazy" className="max-w-full rounded-xl border" /> : null
+    }
+    case "hr":
+      return <Separator key={key} className="my-2" />
+    case "br":
+      return <br key={key} />
+    case "strong":
+    case "b":
+      return <strong key={key}>{children}</strong>
+    case "em":
+    case "i":
+      return <em key={key}>{children}</em>
+    case "dl":
+      return <div key={key} className="space-y-3">{children}</div>
+    case "dt":
+      return <dt key={key} className="font-medium">{children}</dt>
+    case "dd":
+      return <dd key={key} className="pl-4 text-sm leading-7 text-muted-foreground">{children}</dd>
+    case "div":
+    case "section":
+    case "article":
+    case "main":
+    case "header":
+    case "footer":
+    case "figure":
+    case "figcaption":
+      return <div key={key} className="space-y-4">{children}</div>
+    default:
+      return <span key={key}>{children}</span>
+  }
+}
+
+function DocumentationContent({ html }: { html: string }) {
+  const nodes = React.useMemo(() => {
+    if (!html || typeof DOMParser === "undefined") return []
+    const container = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html").body.firstElementChild
+    return container ? renderDocumentationChildren(container, "doc") : []
+  }, [html])
+  return (
+    <Card className="rounded-2xl shadow-sm">
+      <CardHeader className="border-b">
+        <CardTitle className="text-base">文档正文</CardTitle>
+        <CardDescription>内容已按统一的 shadcn 文档样式渲染。</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5 p-5 sm:p-8">
+        {nodes.length ? nodes : <Alert><AlertTitle>暂无文档内容</AlertTitle><AlertDescription>该文档暂时没有可展示的正文。</AlertDescription></Alert>}
+      </CardContent>
+    </Card>
+  )
+}
+
 function DocumentationShell({ config }: { config?: JsonObject }) {
   const { resolvedTheme, setTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = React.useState(false)
@@ -911,7 +1031,7 @@ function DocumentationShell({ config }: { config?: JsonObject }) {
             description="使用统一的接口规范接入收款、退款、商户与代付能力。"
             brandName={sitename}
           />
-          <LegacyContentSlot />
+          <DocumentationContent html={String(config?.docHtml ?? "")} />
         </main>
       </div>
     </div>
@@ -1739,6 +1859,8 @@ export function EpayApp({ view, config }: EpayAppProps) {
     return <PayPageView config={config as PayPageConfig | undefined} />
   if (view === "merchant-dashboard")
     return <MerchantDashboard config={config as JsonObject | undefined} />
+  if (view === "admin-order")
+    return <AdminOrderView config={config as AdminOrderConfig | undefined} />
   if (view === "merchant-shell")
     return (
       <WorkspaceShell

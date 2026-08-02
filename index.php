@@ -32,18 +32,56 @@ function wrap_epay_legacy_page($html, $view, $config = []){
     return $html;
 }
 
+function extract_epay_document_content($html){
+    $html = preg_replace('~<(script|style|link|meta)\b[^>]*>.*?</\1\s*>~is', '', $html);
+    $html = preg_replace('~<(link|meta)\b[^>]*\/?>~is', '', $html);
+    if(class_exists('DOMDocument')){
+        $previous = libxml_use_internal_errors(true);
+        $document = new DOMDocument('1.0', 'UTF-8');
+        $document->loadHTML('<?xml encoding="UTF-8">'.$html, LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD);
+        $xpath = new DOMXPath($document);
+        $nodes = $xpath->query('//*[@id="article-content"]');
+        if($nodes && $nodes->length){
+            $content = '';
+            foreach($nodes->item(0)->childNodes as $child){
+                $content .= $document->saveHTML($child);
+            }
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+            return $content;
+        }
+        $articles = $document->getElementsByTagName('article');
+        if($articles->length){
+            $content = '';
+            foreach($articles->item(0)->childNodes as $child){
+                $content .= $document->saveHTML($child);
+            }
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+            return $content;
+        }
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+    }
+    if(preg_match('~<div\b[^>]*\bid=["\']article-content["\'][^>]*>(.*?)</div>~is', $html, $matches)) return $matches[1];
+    if(preg_match('~<article\b[^>]*>(.*?)</article>~is', $html, $matches)) return $matches[1];
+    if(preg_match('~<body\b[^>]*>(.*?)</body>~is', $html, $matches)) return $matches[1];
+    return $html;
+}
+
 if(isset($_GET['doc'])){
     $doc = trim($_GET['doc']);
     if(!$conf['apiurl'])$conf['apiurl'] = $siteurl;
     $loadfile = \lib\Template::loadDoc($doc);
     ob_start();
     include $loadfile;
-    echo wrap_epay_legacy_page(ob_get_clean(), 'documentation-shell', [
+    $doc_html = extract_epay_document_content(ob_get_clean());
+    render_epay_ui_page('documentation-shell', [
         'doc' => $doc,
         'sitename' => $conf['sitename'],
         'title' => '开发文档',
-    ]);
-    exit;
+        'docHtml' => $doc_html,
+    ], '开发文档 - '.$conf['sitename']);
 }
 
 $mod = isset($_GET['mod'])?$_GET['mod']:'index';
@@ -60,12 +98,13 @@ if(in_array($mod, ['agreement', 'doc_old', 'wx'], true)){
     $loadfile = \lib\Template::load($mod);
     ob_start();
     include $loadfile;
-    echo wrap_epay_legacy_page(ob_get_clean(), 'documentation-shell', [
+    $doc_html = extract_epay_document_content(ob_get_clean());
+    render_epay_ui_page('documentation-shell', [
         'doc' => $mod,
         'sitename' => $conf['sitename'],
         'title' => $mod === 'agreement' ? '服务条款' : ($mod === 'wx' ? '微信支付教程' : '旧版开发文档'),
-    ]);
-    exit;
+        'docHtml' => $doc_html,
+    ], ($mod === 'agreement' ? '服务条款' : ($mod === 'wx' ? '微信支付教程' : '旧版开发文档')).' - '.$conf['sitename']);
 }
 
 if(isset($_GET['invite'])){

@@ -10,6 +10,7 @@ const mount =
   document.getElementById("root") ?? document.getElementById("epay-react-root")
 const view = (mount?.dataset.epayView ?? "admin-dashboard") as
   | "admin-dashboard"
+  | "admin-order"
   | "admin-shell"
   | "merchant-dashboard"
   | "merchant-shell"
@@ -117,8 +118,7 @@ if (
     view === "legacy-auth" ||
     view === "gateway-shell" ||
     view === "installer-shell" ||
-    view === "public-legacy-shell" ||
-    view === "documentation-shell")
+    view === "public-legacy-shell")
 ) {
   let legacyMoveAttempts = 0
   const moveLegacyContent = () => {

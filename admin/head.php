@@ -7,6 +7,7 @@ if(!isset($_SESSION['admin_csrf_token'])) {
 }
 $admin_csrf_token = $_SESSION['admin_csrf_token'];
 $epay_ui_view = isset($epay_ui_view) ? (string)$epay_ui_view : ($islogin==1 ? 'admin-shell' : '');
+$epay_ui_legacy_assets = !$epay_ui_view || !in_array($epay_ui_view, ['admin-order', 'admin-dashboard', 'admin-login'], true);
 $epay_ui_config = isset($epay_ui_config) && is_array($epay_ui_config) ? $epay_ui_config : [];
 if($epay_ui_view){
 	$epay_ui_config['features'] = array_merge([
@@ -39,14 +40,18 @@ if($admin_cdnpublic==1){
   <meta name="renderer" content="webkit">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title><?php echo $title ?></title>
+  <?php if($epay_ui_legacy_assets){?>
   <link href="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="../assets/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="../assets/css/bootstrap-table.css?v=1" rel="stylesheet"/>
   <link href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"/>
+  <?php }?>
   <?php if($epay_ui_view){?><link href="../assets/dist/epay-ui.css" rel="stylesheet"/><?php }?>
+  <?php if($epay_ui_legacy_assets){?>
   <script src="<?php echo $cdnpublic?>modernizr/2.8.3/modernizr.min.js"></script>
   <script src="<?php echo $cdnpublic?>jquery/3.4.1/jquery.min.js"></script>
   <script src="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <?php }?>
   <?php if($epay_ui_view){?><script type="module" src="../assets/dist/epay-ui.js"></script><?php }?>
   <!--[if lt IE 9]>
     <script src="<?php echo $cdnpublic?>html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -159,7 +164,7 @@ if($admin_cdnpublic==1){
     </div><!-- /.container -->
   </nav><!-- /.navbar -->
 <?php }?>
-<script>
+<?php if($epay_ui_legacy_assets){?><script>
 var ADMIN_CSRF_TOKEN = '<?php echo $admin_csrf_token?>';
 $(function(){
 	$.ajaxSetup({
@@ -173,4 +178,4 @@ $(function(){
 		}
 	});
 });
-</script>
+</script><?php }?>
