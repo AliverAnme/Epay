@@ -5,6 +5,97 @@ use Exception;
 
 class Payment {
 
+    // 将支付通道页面放入统一的原生 shadcn 外壳，保留通道自己的脚本、ID 和回调协议。
+    static public function renderLegacyPaymentPage($page, $vars){
+        global $sitename;
+        ob_start();
+        extract($vars, EXTR_SKIP);
+        $pageFile = PAYPAGE_ROOT.$page.'.php';
+        if(!is_file($pageFile) && defined('ROOT')) {
+            $pageFile = ROOT.'paypage/'.$page.'.php';
+        }
+        if(!is_file($pageFile)) {
+            ob_end_clean();
+            throw new Exception('支付页面不存在: '.$page);
+        }
+        include $pageFile;
+        $html = ob_get_clean();
+        if(strpos($html, 'id="epay-react-root"') !== false) {
+            echo $html;
+            return;
+        }
+
+        $titleMap = [
+            'alipay_qrcode' => '支付宝扫码支付',
+            'alipay_qrcodepc' => '支付宝扫码支付',
+            'alipay_wap' => '支付宝支付',
+            'alipay_h5' => '支付宝支付',
+            'alipay_jspay' => '支付宝支付',
+            'wxpay_qrcode' => '微信扫码支付',
+            'wxpay_wap' => '微信支付',
+            'wxpay_h5' => '微信支付',
+            'wxpay_jspay' => '微信支付',
+            'qqpay_qrcode' => 'QQ扫码支付',
+            'qqpay_wap' => 'QQ支付',
+            'qqpay_jspay' => 'QQ支付',
+            'bank_qrcode' => '网银扫码支付',
+            'jdpay_qrcode' => '京东扫码支付',
+            'bank_h5' => '网银支付',
+            'verify_jump' => '支付安全验证',
+            'verify_invisible' => '支付安全验证',
+            'verify_slide' => '支付安全验证',
+            'douyinpay_h5' => '抖音支付',
+            'douyinpay_wap' => '抖音支付',
+            'douyinpay_qrcode' => '抖音扫码支付',
+            'douyinpay_jspay' => '抖音支付',
+            'wxopen' => '支付提示',
+            'ok' => '支付成功',
+            'return' => '支付结果',
+            'error' => '支付失败',
+            'openid' => '获取授权信息',
+            'wxtrans_confirm' => '微信转账确认',
+            'certok' => '实名认证成功',
+            'verify_invisible' => '支付安全验证',
+            'verify_slide' => '支付安全验证',
+            'pay_warning' => '支付风险提示',
+        ];
+        $title = isset($titleMap[$page]) ? $titleMap[$page] : '支付页面';
+        $description = $page === 'verify_jump'
+            ? '正在完成支付安全校验，请勿关闭或刷新页面。'
+            : '请按照页面提示完成支付，支付状态会由原支付通道实时回传。';
+        $payload = htmlspecialchars(json_encode([
+            'page' => $page,
+            'title' => $title,
+            'description' => $description,
+            'sitename' => $sitename ?: 'Rainbow Pay',
+        ], JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+        $root = '<div id="epay-react-root" data-epay-view="gateway-shell" data-epay-config="'.$payload.'"></div><div id="epay-react-legacy-source">';
+        $headAssets = '<link rel="stylesheet" href="/assets/dist/epay-ui.css" type="text/css">';
+        $bodyAssets = '<script type="module" src="/assets/dist/epay-ui.js"></script>';
+
+        $bodyTag = preg_match('/<body\b[^>]*>/i', $html, $bodyMatch, PREG_OFFSET_CAPTURE) ? $bodyMatch[0] : null;
+        if($bodyTag){
+            $bodyOffset = $bodyTag[1];
+            $html = substr_replace($html, $bodyTag[0].$root, $bodyOffset, strlen($bodyTag[0]));
+        }else{
+            $html = $root.$html;
+        }
+        $bodyClose = stripos($html, '</body>');
+        $tail = '</div>'.$bodyAssets;
+        if($bodyClose === false){
+            $html .= $tail;
+        }else{
+            $html = substr_replace($html, $tail, $bodyClose, 0);
+        }
+        $headClose = stripos($html, '</head>');
+        if($headClose === false){
+            $html = $headAssets.$html;
+        }else{
+            $html = substr_replace($html, $headAssets, $headClose, 0);
+        }
+        echo $html;
+    }
+
     //生成待签名字符串
     static private function getSignContent($data){
         ksort($data);
@@ -56,6 +147,15 @@ class Payment {
         global $cdnpublic,$order,$conf,$sitename,$ordername,$siteurl;
         $type = $result['type'];
         if(!$type) return false;
+        $allowed_pages = [
+            'alipay_qrcode', 'alipay_qrcodepc', 'alipay_h5', 'alipay_jspay',
+            'wxpay_qrcode', 'wxpay_wap', 'wxpay_jspay', 'wxpay_h5',
+            'qqpay_qrcode', 'qqpay_wap', 'qqpay_jspay', 'bank_qrcode',
+            'jdpay_qrcode', 'douyinpay_h5', 'douyinpay_wap',
+            'douyinpay_qrcode', 'douyinpay_jspay', 'wxopen', 'ok', 'return',
+            'error', 'verify_jump', 'verify_invisible', 'verify_slide',
+            'openid', 'wxtrans_confirm',
+        ];
         switch($type){
             case 'jump': //跳转
                 $selfurl = is_self_url($result['url']);
@@ -82,14 +182,13 @@ class Payment {
                 echo json_encode($result['data']);
                 break;
             case 'page': //显示指定页面
-                $allowed_pages = ['alipay_qrcode', 'alipay_wap', 'alipay_h5', 'alipay_jspay', 'wxpay_qrcode', 'wxpay_wap', 'wxpay_jspay', 'wxpay_h5', 'qqpay_qrcode', 'qqpay_wap', 'bank_qrcode', 'bank_h5', 'verify_jump', 'douyinpay_jspay', 'openid', 'wxtrans_confirm'];
                 if(!in_array($result['page'], $allowed_pages)) {
                     showerror('invalid page');
                 }
                 include_once SYSTEM_ROOT.'txprotect.php';
                 if(isset($result['data'])) extract($result['data']);
                 if($conf['pageordername']==1)$order['name']=$ordername?$ordername:'onlinepay';
-                include PAYPAGE_ROOT.$result['page'].'.php';
+                self::renderLegacyPaymentPage($result['page'], get_defined_vars());
                 break;
             case 'qrcode': //扫码页面
                 $selfurl = is_self_url($result['url']);
@@ -125,7 +224,7 @@ class Payment {
                     if($code_url_wxkf){
                         $code_url = $code_url_wxkf;
                         $code_url2 = $result['url'];
-                        include PAYPAGE_ROOT.'wxpay_h5.php';
+                        self::renderLegacyPaymentPage('wxpay_h5', get_defined_vars());
                         break;
                     }
                 }
@@ -134,14 +233,14 @@ class Payment {
                     if($code_url_wxkf){
                         $code_url = $code_url_wxkf;
                         $code_url2 = $result['url'];
-                        include PAYPAGE_ROOT.'wxpay_h5.php';
+                        self::renderLegacyPaymentPage('wxpay_h5', get_defined_vars());
                         break;
                     }
                 }
                 if(!in_array($result['page'], $allowed_pages)) {
                     showerror('invalid page');
                 }
-                include PAYPAGE_ROOT.$result['page'].'.php';
+                self::renderLegacyPaymentPage($result['page'], get_defined_vars());
                 break;
             case 'return': //同步回调
                 returnTemplate($result['url']);

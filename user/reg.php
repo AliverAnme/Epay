@@ -20,6 +20,15 @@ if(isset($_GET['invite'])){
 
 $csrf_token = md5(mt_rand(0,999).time());
 $_SESSION['csrf_token'] = $csrf_token;
+$epay_ui_view='user-register';
+$epay_ui_config=[
+	'sitename'=>$conf['sitename'],
+	'csrf_token'=>$csrf_token,
+	'verifytype'=>(int)$conf['verifytype'],
+	'reg_pay'=>(int)$conf['reg_pay'],
+	'reg_pay_price'=>$conf['reg_pay_price'],
+	'invite_open'=>(int)$conf['reg_open']===2,
+];
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -32,9 +41,14 @@ $_SESSION['csrf_token'] = $csrf_token;
 <link rel="stylesheet" href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css" type="text/css" />
 <link rel="stylesheet" href="./assets/css/font.css" type="text/css" />
 <link rel="stylesheet" href="./assets/css/app.css" type="text/css" />
+<link rel="stylesheet" href="../assets/dist/epay-ui.css" type="text/css" />
+<script type="module" src="../assets/dist/epay-ui.js"></script>
 <style>input:-webkit-autofill{-webkit-box-shadow:0 0 0px 1000px white inset;-webkit-text-fill-color:#333;}img.logo{width:14px;height:14px;margin:0 5px 0 3px;}</style>
 </head>
 <body>
+
+<div id="epay-react-root" data-epay-view="<?php echo htmlspecialchars($epay_ui_view, ENT_QUOTES, 'UTF-8');?>" data-epay-config="<?php echo htmlspecialchars(json_encode($epay_ui_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div>
+<?php if(!$epay_ui_view){?>
 
 		<div class="modal inmodal fade" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
 			<div class="modal-dialog">
@@ -111,6 +125,7 @@ $_SESSION['csrf_token'] = $csrf_token;
 </div>
 </div>
 </div>
+<?php }?>
 <script src="<?php echo $cdnpublic?>jquery/3.4.1/jquery.min.js"></script>
 <script src="<?php echo $cdnpublic?>twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <script src="<?php echo $cdnpublic?>jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
@@ -179,7 +194,7 @@ var handlerEmbed = function (captchaObj) {
 	}).onError(function(){
 		layer.msg('验证码加载失败，请刷新页面重试', {icon: 5});
 	});
-	$('#sendcode').click(function () {
+	$(document).on('click', '#sendcode', function () {
 		if ($(this).attr("data-lock") === "true") return;
 		if($("input[name='verifytype']").val()=='1'){
 			sendto=$("input[name='phone']").val();
@@ -199,7 +214,7 @@ var handlerEmbed = function (captchaObj) {
 	});
 };
 $(document).ready(function(){
-	$("#submit").click(function(){
+	$(document).on("click", "#submit", function(){
 		if ($(this).attr("data-lock") === "true") return;
 		var email=$("input[name='email']").val();
 		var phone=$("input[name='phone']").val();
@@ -207,7 +222,8 @@ $(document).ready(function(){
 		var pwd=$("input[name='pwd']").val();
 		var pwd2=$("input[name='pwd2']").val();
 		var invitecode=$("input[name='invitecode']").val();
-		if(email=='' || phone=='' || code=='' || pwd=='' || pwd2==''){layer.alert('请确保各项不能为空！');return false;}
+		var verifytype=$("input[name='verifytype']").val();
+		if((verifytype=='1' && phone=='') || (verifytype!='1' && email=='') || code=='' || pwd=='' || pwd2==''){layer.alert('请确保各项不能为空！');return false;}
 		if($("input[name='invitecode']").length>0 && invitecode==''){layer.alert('邀请码不能为空！');return false;}
 		if(pwd!=pwd2){layer.alert('两次输入密码不一致！');return false;}
 		if($("input[name='verifytype']").val()=='1'){
@@ -280,7 +296,7 @@ $(document).ready(function(){
 			}
 		}
 	});
-	<?php if(!empty($conf['zhuce'])){?>
+	<?php if(!empty($conf['zhuce']) && !$epay_ui_view){?>
 	$('#myModal').modal('show');
 	<?php }?>
 });

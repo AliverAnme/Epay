@@ -1,3 +1,4 @@
+<?php if(!empty($epay_ui_view)){echo '</div></body></html>'; return;}?>
   <!-- / content -->
 
   <!-- footer -->

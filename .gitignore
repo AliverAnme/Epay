@@ -12,3 +12,5 @@ Thumbs.db
 /.agents/skills/
 /.claude/skills/
 /skills-lock.json
+# Local Pi runtime state
+.atl/

@@ -1,8 +1,10 @@
 <?php
 include("../includes/common.php");
 $title='支付管理中心';
+$epay_ui_view='admin-dashboard';
 include './head.php';
 if($islogin==1){}else exit("<script language='javascript'>window.location.href='./login.php';</script>");
+if($epay_ui_view){exit('</body></html>');}
 ?>
 <?php
 if($conf['admin_pwd']==='123456'){

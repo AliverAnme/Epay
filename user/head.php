@@ -15,6 +15,10 @@ switch($conf['user_style']){
 }
 $groupconfig = getGroupConfig($userrow['gid']);
 $conf = array_merge($conf, $groupconfig);
+$epay_ui_view = isset($epay_ui_view) ? (string)$epay_ui_view : 'merchant-shell';
+$epay_ui_config = isset($epay_ui_config) && is_array($epay_ui_config) ? $epay_ui_config : [];
+if($epay_ui_view && !isset($epay_ui_config['title'])) $epay_ui_config['title'] = isset($title) ? $title : '商户管理';
+if($epay_ui_view && !isset($epay_ui_config['sitename'])) $epay_ui_config['sitename'] = $conf['sitename'];
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -29,8 +33,13 @@ $conf = array_merge($conf, $groupconfig);
   <link rel="stylesheet" href="./assets/css/font.css" type="text/css" />
   <link rel="stylesheet" href="./assets/css/app.css" type="text/css" />
   <link rel="stylesheet" href="../assets/css/bootstrap-table.css?v=1"/>
+  <?php if($epay_ui_view){?><link rel="stylesheet" href="../assets/dist/epay-ui.css" /><?php }?>
+  <?php if($epay_ui_view){?><script type="module" src="../assets/dist/epay-ui.js"></script><?php }?>
 </head>
 <body>
+<?php if($epay_ui_view){?><div id="epay-react-root" data-epay-view="<?php echo htmlspecialchars($epay_ui_view, ENT_QUOTES, 'UTF-8');?>" data-epay-config="<?php echo htmlspecialchars(json_encode($epay_ui_config, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div>
+<div id="epay-react-legacy-source">
+<?php return; }?>
 <div class="app app-header-fixed  ">
   <!-- header -->
   <header id="header" class="app-header navbar" role="menu">

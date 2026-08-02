@@ -153,8 +153,11 @@ if($step==3){
     <meta content="black" name="apple-mobile-web-app-status-bar-style">
     <title>彩虹易支付 - 安装程序</title>
     <link href="//lib.baomitu.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/dist/epay-ui.css" rel="stylesheet">
 </head>
 <body>
+<div id="epay-react-root" data-epay-view="installer-shell" data-epay-config="<?php echo htmlspecialchars(json_encode(['sitename'=>'彩虹易支付','step'=>$step], JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div>
+<div id="epay-react-legacy-source">
 <div class="container"><br>
     <div class="row">
         <div class="col-xs-12 col-sm-10 col-md-8 center-block" style="float: none;">
@@ -309,5 +312,7 @@ if(!empty($errorMsg)){
         </div>  
     </div>
 </div>
+</div>
+<script type="module" src="../assets/dist/epay-ui.js"></script>
 </body>
 </html>

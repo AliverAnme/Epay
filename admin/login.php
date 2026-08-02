@@ -106,8 +106,14 @@ if(isset($_GET['act']) && $_GET['act']=='login'){
 	exit("<script language='javascript'>alert('您已登录！');window.location.href='./';</script>");
 }
 $title='用户登录';
+$epay_ui_view='admin-login';
+$epay_ui_config=[
+  'sitename'=>$conf['sitename'],
+  'verifycode'=>$verifycode,
+];
 include './head.php';
 ?>
+<?php if(!$epay_ui_view){?>
   <nav class="navbar navbar-fixed-top navbar-default">
     <div class="container">
       <div class="navbar-header">
@@ -175,6 +181,7 @@ include './head.php';
       </div>
     </div>
   </div>
+<?php }?>
 <div class="modal fade" id="modal-findpwd" tabindex="-1" role="dialog">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
