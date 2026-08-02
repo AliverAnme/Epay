@@ -8,6 +8,16 @@ if(!isset($_SESSION['admin_csrf_token'])) {
 $admin_csrf_token = $_SESSION['admin_csrf_token'];
 $epay_ui_view = isset($epay_ui_view) ? (string)$epay_ui_view : ($islogin==1 ? 'admin-shell' : '');
 $epay_ui_config = isset($epay_ui_config) && is_array($epay_ui_config) ? $epay_ui_config : [];
+if($epay_ui_view){
+	$epay_ui_config['features'] = array_merge([
+		'domain' => (int)($conf['pay_domain_forbid'] ?? 0) === 1 || (int)($conf['pay_domain_open'] ?? 0) === 1,
+		'invitecode' => (int)($conf['reg_open'] ?? 0) === 2,
+		'satf' => class_exists('\\lib\\AlipaySATF\\AlipaySATF') && file_exists(__DIR__.'/satf_transfer.php'),
+		'applyments' => class_exists('\\lib\\Applyments\\CommUtil') && file_exists(__DIR__.'/applyments_channel.php') && file_exists(__DIR__.'/applyments_merchant.php'),
+		'complain' => class_exists('\\lib\\Complain\\CommUtil') && file_exists(__DIR__.'/complain.php'),
+		'mchrisk' => class_exists('\\lib\\WxMchRisk') && file_exists(__DIR__.'/mchrisk.php'),
+	], isset($epay_ui_config['features']) && is_array($epay_ui_config['features']) ? $epay_ui_config['features'] : []);
+}
 if($epay_ui_view && !isset($epay_ui_config['title'])) $epay_ui_config['title'] = isset($title) ? $title : '平台运营';
 if($epay_ui_view && !isset($epay_ui_config['sitename'])) $epay_ui_config['sitename'] = $conf['sitename'];
 

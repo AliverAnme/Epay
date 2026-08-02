@@ -29,6 +29,8 @@ export type LegacyShellConfig = {
   step?: number | string
   page?: string
   amount?: string | number
+  returnHref?: string
+  returnLabel?: string
 }
 
 function LegacyContentSlot({ className }: { className?: string }) {
@@ -147,9 +149,9 @@ export function LegacyAuthShell({ config }: { config?: LegacyShellConfig }) {
             请在官方页面完成授权
           </p>
           <Button asChild variant="outline" className="rounded-xl">
-            <a href="./login.php">
+            <a href={config?.returnHref || "./login.php"}>
               <ArrowLeft data-icon="inline-start" />
-              返回登录
+              {config?.returnLabel || "返回登录"}
             </a>
           </Button>
         </CardFooter>

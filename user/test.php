@@ -156,7 +156,7 @@ function submitPay(obj){
 				window.location.href=data.url;
 			}else{
 				layer.alert(data.msg, {icon: 2});
-				$.captchaObj.reset();
+				if($.captchaObj && typeof $.captchaObj.reset === 'function') $.captchaObj.reset();
 			}
 		},
 		error: function (data) {

@@ -13,6 +13,7 @@ import {
   LifeBuoy,
   Loader2,
   LogOut,
+  MessageCircle,
   Menu,
   Moon,
   PackageCheck,
@@ -147,6 +148,8 @@ type NavItem = {
   href: string
   icon: React.ElementType
   section?: string
+  feature?: string
+  external?: boolean
 }
 
 // 与 admin/head.php 中的旧版导航保持一一对应，避免新外壳吞掉原有入口。
@@ -176,13 +179,29 @@ const adminNav: NavItem[] = [
   { label: "付款统计", href: "./transfer_stat.php", icon: BarChart3 },
   { label: "导出付款记录", href: "./transfer_export.php", icon: FileText },
   { label: "批量转账", href: "./transfer_batch.php", icon: ArrowUpRight },
+  {
+    label: "安全发转账记录",
+    href: "./satf_transfer.php",
+    icon: ShieldCheck,
+    feature: "satf",
+  },
   { section: "商户管理", label: "用户列表", href: "./ulist.php", icon: Users },
   { label: "用户组设置", href: "./glist.php", icon: Users },
   { label: "用户组购买", href: "./group.php", icon: Store },
   { label: "资金明细", href: "./record.php", icon: BarChart3 },
   { label: "支付统计", href: "./ustat.php", icon: Activity },
-  { label: "授权域名", href: "./domain.php", icon: ShieldCheck },
-  { label: "邀请码管理", href: "./invitecode.php", icon: ShieldCheck },
+  {
+    label: "授权域名",
+    href: "./domain.php",
+    icon: ShieldCheck,
+    feature: "domain",
+  },
+  {
+    label: "邀请码管理",
+    href: "./invitecode.php",
+    icon: ShieldCheck,
+    feature: "invitecode",
+  },
   {
     section: "支付接口",
     label: "支付通道",
@@ -193,6 +212,18 @@ const adminNav: NavItem[] = [
   { label: "支付插件", href: "./pay_plugin.php", icon: PackageCheck },
   { label: "支付通道轮询", href: "./pay_roll.php", icon: RefreshCw },
   { label: "公众号小程序", href: "./pay_weixin.php", icon: ShieldCheck },
+  {
+    label: "进件渠道管理",
+    href: "./applyments_channel.php",
+    icon: Store,
+    feature: "applyments",
+  },
+  {
+    label: "进件商户管理",
+    href: "./applyments_merchant.php",
+    icon: Store,
+    feature: "applyments",
+  },
   { label: "企业微信账号", href: "./pay_wework.php", icon: Store },
   {
     section: "系统设置",
@@ -228,6 +259,18 @@ const adminNav: NavItem[] = [
   { label: "登录日志", href: "./log.php", icon: FileText },
   { label: "数据清理", href: "./clean.php", icon: RefreshCw },
   { label: "获取用户标识", href: "./gettoken.php", icon: ShieldCheck },
+  {
+    label: "支付交易投诉",
+    href: "./complain.php",
+    icon: MessageCircle,
+    feature: "complain",
+  },
+  {
+    label: "渠道商户违规记录",
+    href: "./mchrisk.php",
+    icon: ShieldCheck,
+    feature: "mchrisk",
+  },
 ]
 
 // 与 user/head.php 中的用户中心、查询、其他三组入口保持一致。
@@ -241,25 +284,126 @@ const merchantNav: NavItem[] = [
   },
   { label: "修改资料", href: "./editinfo.php", icon: Store },
   { label: "修改密码", href: "./userinfo.php?mod=account", icon: Settings },
-  { label: "实名认证", href: "./certificate.php", icon: ShieldCheck },
-  { label: "保证金", href: "./deposit.php", icon: WalletCards },
+  {
+    label: "实名认证",
+    href: "./certificate.php",
+    icon: ShieldCheck,
+    feature: "cert",
+  },
+  {
+    label: "保证金",
+    href: "./deposit.php",
+    icon: WalletCards,
+    feature: "deposit",
+  },
   { section: "查询", label: "订单记录", href: "./order.php", icon: FileText },
   { label: "结算记录", href: "./settle.php", icon: PackageCheck },
   { label: "资金明细", href: "./record.php", icon: BarChart3 },
-  { label: "申请提现", href: "./apply.php", icon: ArrowUpRight },
-  { label: "余额充值", href: "./recharge.php", icon: CircleDollarSign },
-  { label: "购买会员", href: "./groupbuy.php", icon: Store },
-  { label: "授权域名", href: "./domain.php", icon: ShieldCheck },
+  {
+    label: "申请提现",
+    href: "./apply.php",
+    icon: ArrowUpRight,
+    feature: "withdraw",
+  },
+  {
+    label: "余额充值",
+    href: "./recharge.php",
+    icon: CircleDollarSign,
+    feature: "recharge",
+  },
+  {
+    label: "购买会员",
+    href: "./groupbuy.php",
+    icon: Store,
+    feature: "groupbuy",
+  },
+  {
+    label: "授权域名",
+    href: "./domain.php",
+    icon: ShieldCheck,
+    feature: "domain",
+  },
+  {
+    label: "交易投诉",
+    href: "./complain.php",
+    icon: MessageCircle,
+    feature: "complain",
+  },
+  {
+    label: "商户违规记录",
+    href: "./mchrisk.php",
+    icon: ShieldCheck,
+    feature: "mchrisk",
+  },
   {
     section: "其他",
     label: "代付管理",
     href: "./transfer.php",
     icon: ArrowUpRight,
+    feature: "transfer",
   },
-  { label: "聚合收款", href: "./onecode.php", icon: CreditCard },
-  { label: "邀请返现", href: "./invite.php", icon: Users },
+  {
+    label: "聚合收款",
+    href: "./onecode.php",
+    icon: CreditCard,
+    feature: "onecode",
+  },
+  {
+    label: "邀请返现",
+    href: "./invite.php",
+    icon: Users,
+    feature: "invite",
+  },
   { section: "帮助", label: "开发文档", href: "/doc.html", icon: BookOpen },
 ]
+
+function featureEnabled(features: JsonObject, key: string, fallback = true) {
+  const value = features[key]
+  if (value === undefined) return fallback
+  return value === true || value === 1 || value === "1"
+}
+
+function safeExternalHref(value: unknown) {
+  if (typeof value !== "string" || value.trim() === "") return null
+  try {
+    const url = new URL(value, window.location.href)
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.href
+      : null
+  } catch {
+    return null
+  }
+}
+
+function getVisibleNav(items: NavItem[], features: JsonObject) {
+  return items.filter(
+    (item) => !item.feature || featureEnabled(features, item.feature)
+  )
+}
+
+function getMerchantNav(features: JsonObject) {
+  const items = getVisibleNav(merchantNav, features)
+  const externalItems: NavItem[] = []
+  const qqGroup = safeExternalHref(features.qqqun)
+  const appUrl = safeExternalHref(features.appurl)
+  if (qqGroup) {
+    externalItems.push({
+      label: "产品QQ群",
+      href: qqGroup,
+      icon: Users,
+      external: true,
+    })
+  }
+  if (appUrl) {
+    externalItems.push({
+      label: "APP下载",
+      href: appUrl,
+      icon: ArrowUpRight,
+      external: true,
+    })
+  }
+  return [...items, ...externalItems]
+}
 
 function normalizeRoutePath(pathname: string) {
   const path = pathname.replace(/\/+$/, "") || "/"
@@ -328,7 +472,7 @@ function NavLinks({
 }) {
   return (
     <nav className="grid gap-1" aria-label="主导航">
-      {items.map(({ label, href, icon: Icon, section }) => {
+      {items.map(({ label, href, icon: Icon, section, external }) => {
         const active = isNavItemActive(href)
         return (
           <React.Fragment key={href}>
@@ -349,6 +493,8 @@ function NavLinks({
                 href={href}
                 onClick={onNavigate}
                 aria-current={active ? "page" : undefined}
+                target={external ? "_blank" : undefined}
+                rel={external ? "noopener noreferrer" : undefined}
               >
                 <Icon
                   className="size-4 text-muted-foreground"
@@ -376,17 +522,22 @@ function WorkspaceShell({
   title,
   description,
   sitename = "Rainbow Pay",
+  features,
 }: {
   children: React.ReactNode
   kind: "admin" | "merchant"
   title: string
   description: string
   sitename?: string
+  features?: JsonObject
 }) {
   const { resolvedTheme, setTheme } = useTheme()
   const dark = resolvedTheme === "dark"
   const [mobileOpen, setMobileOpen] = React.useState(false)
-  const nav = kind === "admin" ? adminNav : merchantNav
+  const nav =
+    kind === "admin"
+      ? getVisibleNav(adminNav, features ?? {})
+      : getMerchantNav(features ?? {})
   return (
     <div className="min-h-svh bg-muted/30 text-foreground antialiased">
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-xl">
@@ -870,12 +1021,14 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
   const orderToday = objectOf(data, "order_today")
   const rows = Object.entries(order).slice(0, 7)
   const sitename = String(config?.sitename ?? "Rainbow Pay")
+  const features = objectOf(config, "features")
   return (
     <WorkspaceShell
       kind="admin"
       title="平台运营"
       description="统一管理订单、商户、支付通道与结算"
       sitename={sitename}
+      features={features}
     >
       <PageHeading
         eyebrow="平台首页"
@@ -1127,12 +1280,14 @@ function MerchantDashboard({ config }: { config?: JsonObject }) {
     ? (data?.channels as JsonObject[])
     : []
   const sitename = String(config?.sitename ?? "Rainbow Pay")
+  const features = objectOf(config, "features")
   return (
     <WorkspaceShell
       kind="merchant"
       title="商户工作台"
       description="收款、结算与接口配置一站式管理"
       sitename={sitename}
+      features={features}
     >
       <PageHeading
         eyebrow="用户中心"
@@ -1311,19 +1466,21 @@ function MerchantDashboard({ config }: { config?: JsonObject }) {
                     <ChevronRight className="size-4 text-muted-foreground" />
                   </a>
                 </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-11 w-full justify-between rounded-xl"
-                >
-                  <a href="./apply.php">
-                    <span className="flex items-center gap-2">
-                      <ArrowUpRight className="size-4" />
-                      申请提现
-                    </span>
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                  </a>
-                </Button>
+                {featureEnabled(features, "withdraw") && (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 w-full justify-between rounded-xl"
+                  >
+                    <a href="./apply.php">
+                      <span className="flex items-center gap-2">
+                        <ArrowUpRight className="size-4" />
+                        申请提现
+                      </span>
+                      <ChevronRight className="size-4 text-muted-foreground" />
+                    </a>
+                  </Button>
+                )}
                 <Button
                   asChild
                   variant="outline"
@@ -1589,6 +1746,7 @@ export function EpayApp({ view, config }: EpayAppProps) {
         title={shellTitle || "商户工作台"}
         description="收款、结算与接口配置一站式管理"
         sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
       >
         <LegacyContentSlot className="epay-legacy-workspace-surface" />
       </WorkspaceShell>
@@ -1603,6 +1761,7 @@ export function EpayApp({ view, config }: EpayAppProps) {
         title={shellTitle || "平台运营"}
         description="统一管理订单、商户、支付通道与结算"
         sitename={String(shellConfig.sitename ?? "Rainbow Pay")}
+        features={objectOf(shellConfig, "features")}
       >
         <LegacyContentSlot className="epay-legacy-workspace-surface" />
       </WorkspaceShell>

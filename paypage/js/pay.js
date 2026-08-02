@@ -225,30 +225,33 @@ function QQJsPay(payStr){
 var keyboard = getId('keyboard');
 var clearBtn = getId('clearBtn');
 var payBtn = getId('payBtn');
+var reactKeyboard = keyboard && keyboard.getAttribute('data-epay-react-keyboard') === 'true';
 var valueCur = '';
 var valueFormat = '';
 var submitAble = true;
 var valueFinal = 0;
 
-new Hammer(keyboard).on('tap',keypress);
-new Hammer(payBtn).on('tap',submitFun);
-new Hammer(clearBtn).on('tap',clearFun);
+if(!reactKeyboard){
+    new Hammer(keyboard).on('tap',keypress);
+    new Hammer(payBtn).on('tap',submitFun);
+    new Hammer(clearBtn).on('tap',clearFun);
+}
 
 // 为键盘用户提供与触摸相同的操作入口。
-keyboard.addEventListener('keydown', function(e){
+if(!reactKeyboard) keyboard.addEventListener('keydown', function(e){
     if(e.key !== 'Enter' && e.key !== ' ') return;
     var target = e.target.closest('[data-value]');
     if(!target) return;
     e.preventDefault();
     keypress({preventDefault:function(){}, target:target});
 });
-payBtn.addEventListener('keydown', function(e){
+if(!reactKeyboard) payBtn.addEventListener('keydown', function(e){
     if(e.key === 'Enter' || e.key === ' '){
         e.preventDefault();
         submitFun();
     }
 });
-clearBtn.addEventListener('keydown', function(e){
+if(!reactKeyboard) clearBtn.addEventListener('keydown', function(e){
     if(e.key === 'Enter' || e.key === ' '){
         e.preventDefault();
         clearFun();

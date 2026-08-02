@@ -17,6 +17,23 @@ $groupconfig = getGroupConfig($userrow['gid']);
 $conf = array_merge($conf, $groupconfig);
 $epay_ui_view = isset($epay_ui_view) ? (string)$epay_ui_view : 'merchant-shell';
 $epay_ui_config = isset($epay_ui_config) && is_array($epay_ui_config) ? $epay_ui_config : [];
+if($epay_ui_view){
+	$epay_ui_config['features'] = array_merge([
+		'cert' => (int)($conf['cert_open'] ?? 0) > 0,
+		'deposit' => (int)($conf['user_deposit'] ?? 0) > 0,
+		'withdraw' => in_array((int)($conf['settle_open'] ?? 0), [2, 3], true),
+		'recharge' => (int)($conf['recharge'] ?? 0) === 1,
+		'groupbuy' => (int)($conf['group_buy'] ?? 0) === 1,
+		'domain' => (int)($conf['pay_domain_open'] ?? 0) === 1,
+		'complain' => (int)($conf['complain_open'] ?? 0) === 1 && file_exists(__DIR__.'/complain.php'),
+		'mchrisk' => (int)($conf['mchrisk_open'] ?? 0) === 1 && file_exists(__DIR__.'/mchrisk.php'),
+		'transfer' => (int)($conf['user_transfer'] ?? 0) === 1,
+		'onecode' => (int)($conf['onecode'] ?? 0) === 1 || (int)($userrow['open_code'] ?? 0) === 1,
+		'invite' => (int)($conf['invite_open'] ?? 0) === 1,
+		'qqqun' => $conf['qqqun'] ?? '',
+		'appurl' => $conf['appurl'] ?? '',
+	], isset($epay_ui_config['features']) && is_array($epay_ui_config['features']) ? $epay_ui_config['features'] : []);
+}
 if($epay_ui_view && !isset($epay_ui_config['title'])) $epay_ui_config['title'] = isset($title) ? $title : '商户管理';
 if($epay_ui_view && !isset($epay_ui_config['sitename'])) $epay_ui_config['sitename'] = $conf['sitename'];
 ?>

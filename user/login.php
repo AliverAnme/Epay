@@ -24,6 +24,7 @@ $epay_ui_config=[
 	'keyMode'=>(isset($_GET['m']) && $_GET['m']==='key'),
 	'captcha_open_login'=>(int)$conf['captcha_open_login'],
 	'reg_open'=>(int)$conf['reg_open'],
+	'connect'=>isset($_GET['connect']),
 	'login_alipay'=>(int)$conf['login_alipay'],
 	'login_qq'=>(int)$conf['login_qq'],
 	'login_wx'=>(int)$conf['login_wx'],
@@ -232,7 +233,7 @@ function submitLogin(type,user,pass){
 				setTimeout(function(){ window.location.href=data.url }, 1000);
 			}else{
 				layer.alert(data.msg, {icon: 2});
-				$.captchaObj.reset();
+				if($.captchaObj && typeof $.captchaObj.reset === 'function') $.captchaObj.reset();
 			}
 		},
 		error: function (data) {

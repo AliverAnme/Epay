@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 export type PayPageConfig = {
   uid?: string | number
@@ -32,12 +33,67 @@ export type PayPageConfig = {
 
 const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "dot"]
 
+function formatAmount(value: string) {
+  const [integer, decimal] = value.split(".")
+  let formattedInteger = integer
+  let grouped = ""
+  while (formattedInteger.length > 3) {
+    grouped = `,${formattedInteger.slice(-3)}${grouped}`
+    formattedInteger = formattedInteger.slice(0, -3)
+  }
+  grouped = formattedInteger + grouped
+  return decimal === undefined ? grouped : `${grouped}.${decimal}`
+}
+
+function nextAmountValue(current: string, value: string) {
+  const hasTwoDecimals = /\.\d{2,}$/.test(current)
+  if (!value || (value !== "delete" && hasTwoDecimals)) return current
+
+  let next: string
+  if (value === "0") {
+    next = current === "0" ? current : `${current}0`
+  } else if (value === "dot") {
+    next = current === "" || current.includes(".") ? current : `${current}.`
+  } else if (value === "delete") {
+    next = current.slice(0, -1)
+  } else {
+    next = current === "0" ? value : `${current}${value}`
+  }
+
+  if (
+    next &&
+    value !== "delete" &&
+    value !== "dot" &&
+    !/^\d{1,9}(\.\d{0,2})?$/.test(next)
+  ) {
+    return current
+  }
+  return next
+}
+
 export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
   const [remark, setRemark] = React.useState("")
   const [remarkOpen, setRemarkOpen] = React.useState(false)
   const [draftRemark, setDraftRemark] = React.useState("")
   const fixedAmount =
     config.money !== null && config.money !== undefined && config.money !== ""
+  const [amountValue, setAmountValue] = React.useState(
+    fixedAmount ? String(config.money) : ""
+  )
+
+  const formattedAmount = formatAmount(amountValue)
+  const canSubmit =
+    amountValue !== "" && !amountValue.endsWith(".") && Number(amountValue) > 0
+
+  const changeAmount = (value: string) => {
+    setAmountValue((current) => nextAmountValue(current, value))
+  }
+  const submitPayment = () => {
+    const input = document.getElementById("txAmount") as HTMLInputElement | null
+    if (input) input.value = amountValue
+    const legacyWindow = window as Window & { submitFun?: () => void }
+    legacyWindow.submitFun?.()
+  }
 
   const openRemark = () => {
     setDraftRemark(remark)
@@ -103,19 +159,20 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
                 value={String(config.payer ?? "")}
               />
               <input type="hidden" name="trade_no" id="trade_no" value="" />
-              {fixedAmount && (
-                <input
-                  type="hidden"
-                  name="txAmount"
-                  id="txAmount"
-                  value={String(config.money)}
-                />
-              )}
+              <input
+                type="hidden"
+                name="txAmount"
+                id="txAmount"
+                value={amountValue}
+                readOnly
+              />
               <div className="rounded-2xl bg-muted/50 p-5 text-center">
                 <p className="text-sm text-muted-foreground">请输入付款金额</p>
                 <div className="mt-2 flex items-center justify-center gap-1 text-4xl font-semibold tracking-tight text-primary">
                   <span>¥</span>
-                  <span id="amount" aria-live="polite" aria-label="付款金额" />
+                  <span id="amount" aria-live="polite" aria-label="付款金额">
+                    {formattedAmount}
+                  </span>
                 </div>
                 <span
                   id="line"
@@ -151,7 +208,8 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
             <CardContent className="p-4">
               <div
                 id="keyboard"
-                className="grid grid-cols-3 gap-2"
+                data-epay-react-keyboard="true"
+                className="grid grid-cols-3 gap-2 touch-manipulation"
                 role="group"
                 aria-label="金额键盘"
               >
@@ -161,6 +219,7 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
                     type="button"
                     variant="outline"
                     data-value={key}
+                    onClick={() => changeAmount(key)}
                     className="h-14 rounded-2xl text-lg font-medium transition-transform active:scale-95"
                   >
                     {key === "dot" ? "." : key}
@@ -171,7 +230,11 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
                   id="clearBtn"
                   data-value="delete"
                   variant="outline"
-                  className="none h-14 rounded-2xl text-lg"
+                  onClick={() => setAmountValue("")}
+                  className={cn(
+                    "h-14 rounded-2xl text-lg",
+                    !amountValue && "none"
+                  )}
                   aria-label="清除金额"
                 >
                   <Delete className="pointer-events-none" />
@@ -180,7 +243,12 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
               <Button
                 type="button"
                 id="payBtn"
-                className="mt-3 h-14 w-full rounded-2xl text-base"
+                onClick={submitPayment}
+                disabled={!canSubmit}
+                className={cn(
+                  "mt-3 h-14 w-full rounded-2xl text-base",
+                  !canSubmit && "disable"
+                )}
                 aria-label="确认支付"
               >
                 <span className="text-primary-foreground/70">确认</span>

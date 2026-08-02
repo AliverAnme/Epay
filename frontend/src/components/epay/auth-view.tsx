@@ -454,7 +454,7 @@ function LoginForm({
           </a>
         )}
       </div>
-      {!keyMode && (
+      {!keyMode && !config.connect && (
         <div className="flex justify-center gap-2 pt-2">
           {enabled(config, "login_alipay") && (
             <Button

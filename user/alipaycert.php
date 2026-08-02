@@ -34,7 +34,7 @@ $html = $certify->certify($certify_id);
     </style>
 </head>
 <body>
-<div id="epay-react-root" data-epay-view="legacy-auth" data-epay-config="<?php echo htmlspecialchars(json_encode(['kind'=>'certificate','title'=>'实名认证','sitename'=>$conf['sitename']], JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div>
+<div id="epay-react-root" data-epay-view="legacy-auth" data-epay-config="<?php echo htmlspecialchars(json_encode(['kind'=>'certificate','title'=>'实名认证','sitename'=>$conf['sitename'],'returnHref'=>'./certificate.php','returnLabel'=>'返回实名认证'], JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');?>"></div>
 <div id="epay-react-legacy-source">
 <p>正在跳转，请稍候...</p>
 <?php echo $html?>
