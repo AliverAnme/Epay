@@ -72,6 +72,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -461,37 +462,41 @@ function WorkspaceShell({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <a
-                    href={
-                      kind === "admin"
-                        ? "./set.php?mod=account"
-                        : "editinfo.php"
-                    }
-                  >
-                    <Settings className="mr-2 size-4" />
-                    账户设置
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/doc.html" target="_blank" rel="noreferrer">
-                    <FileText className="mr-2 size-4" />
-                    开发文档
-                  </a>
-                </DropdownMenuItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <a
+                      href={
+                        kind === "admin"
+                          ? "./set.php?mod=account"
+                          : "editinfo.php"
+                      }
+                    >
+                      <Settings data-icon="inline-start" />
+                      账户设置
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <a href="/doc.html" target="_blank" rel="noreferrer">
+                      <FileText data-icon="inline-start" />
+                      开发文档
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <a
-                    href={
-                      kind === "admin"
-                        ? "./login.php?logout"
-                        : "login.php?logout"
-                    }
-                  >
-                    <LogOut className="mr-2 size-4" />
-                    退出登录
-                  </a>
-                </DropdownMenuItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <a
+                      href={
+                        kind === "admin"
+                          ? "./login.php?logout"
+                          : "login.php?logout"
+                      }
+                    >
+                      <LogOut data-icon="inline-start" />
+                      退出登录
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -510,7 +515,7 @@ function WorkspaceShell({
               variant="secondary"
               className="mt-3 gap-1.5 rounded-lg font-normal"
             >
-              <span className="size-1.5 rounded-full bg-emerald-500" />
+              <span className="size-1.5 rounded-full bg-primary" />
               运行正常
             </Badge>
           </div>
@@ -778,10 +783,10 @@ function StatCard({
   loading?: boolean
 }) {
   const toneClass = {
-    blue: "bg-blue-500/10 text-blue-600",
-    green: "bg-emerald-500/10 text-emerald-600",
-    amber: "bg-amber-500/10 text-amber-600",
-    violet: "bg-violet-500/10 text-violet-600",
+    blue: "bg-primary/10 text-primary",
+    green: "bg-secondary text-secondary-foreground",
+    amber: "bg-accent text-accent-foreground",
+    violet: "bg-muted text-muted-foreground",
   }[tone]
   return (
     <Card className="group overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
@@ -797,7 +802,7 @@ function StatCard({
               </p>
             )}
             <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-              <ArrowUpRight className="size-3 text-emerald-500" />
+              <ArrowUpRight className="size-3 text-primary" />
               {hint}
             </p>
           </div>
@@ -833,7 +838,7 @@ function FetchError({ onRetry }: { onRetry: () => void }) {
       <AlertDescription className="flex flex-wrap items-center gap-3">
         请检查登录状态或稍后重试。
         <Button variant="outline" size="sm" onClick={onRetry}>
-          <RefreshCw className="mr-1.5 size-3.5" />
+          <RefreshCw data-icon="inline-start" />
           重新加载
         </Button>
       </AlertDescription>
@@ -879,7 +884,7 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
         brandName={sitename}
         action={
           <Button onClick={load} variant="outline" className="rounded-xl">
-            <RefreshCw className="mr-2 size-4" />
+            <RefreshCw data-icon="inline-start" />
             刷新数据
           </Button>
         }
@@ -926,7 +931,7 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
           </div>
           <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,.6fr)]">
             <Card className="rounded-2xl shadow-sm">
-              <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+              <CardHeader className="flex flex-row items-start justify-between gap-3">
                 <div>
                   <CardTitle className="text-base">近期开单趋势</CardTitle>
                   <CardDescription>按日期汇总的订单金额与笔数</CardDescription>
@@ -1013,7 +1018,7 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
                 >
                   <a href="./order.php">
                     <span className="flex items-center gap-2">
-                      <FileText className="size-4 text-blue-500" />
+                      <FileText className="size-4 text-primary" />
                       订单管理
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
@@ -1026,7 +1031,7 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
                 >
                   <a href="./ulist.php">
                     <span className="flex items-center gap-2">
-                      <Users className="size-4 text-violet-500" />
+                      <Users className="size-4 text-secondary-foreground" />
                       商户列表
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
@@ -1039,7 +1044,7 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
                 >
                   <a href="./pay_channel.php">
                     <span className="flex items-center gap-2">
-                      <CreditCard className="size-4 text-emerald-500" />
+                      <CreditCard className="size-4 text-primary" />
                       支付通道
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
@@ -1052,7 +1057,7 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
                 >
                   <a href="./transfer.php">
                     <span className="flex items-center gap-2">
-                      <WalletCards className="size-4 text-amber-500" />
+                      <WalletCards className="size-4 text-accent-foreground" />
                       付款记录
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
@@ -1065,7 +1070,7 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
                 >
                   <a href="./slist.php">
                     <span className="flex items-center gap-2">
-                      <PackageCheck className="size-4 text-cyan-500" />
+                      <PackageCheck className="size-4 text-muted-foreground" />
                       结算管理
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
@@ -1078,7 +1083,7 @@ function AdminDashboard({ config }: { config?: JsonObject }) {
                 >
                   <a href="./set.php?mod=site">
                     <span className="flex items-center gap-2">
-                      <Settings className="size-4 text-slate-500" />
+                      <Settings className="size-4 text-muted-foreground" />
                       网站设置
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
@@ -1138,7 +1143,7 @@ function MerchantDashboard({ config }: { config?: JsonObject }) {
           <div className="flex gap-2">
             <Button asChild variant="outline" className="rounded-xl">
               <a href="userinfo.php?mod=api">
-                <ShieldCheck className="mr-2 size-4" />
+                <ShieldCheck data-icon="inline-start" />
                 API 信息
               </a>
             </Button>
@@ -1255,9 +1260,9 @@ function MerchantDashboard({ config }: { config?: JsonObject }) {
                 <CardTitle className="text-base">账户状态</CardTitle>
                 <CardDescription>保持资料完整，收款更顺畅</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-3 rounded-xl border bg-emerald-500/5 p-3">
-                  <div className="flex size-9 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+              <CardContent className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 rounded-xl border bg-primary/5 p-3">
+                  <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Check className="size-4" />
                   </div>
                   <div>
@@ -1382,13 +1387,13 @@ function CashierView({ config }: { config?: CashierConfig }) {
             </Badge>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <ShieldCheck className="size-4 text-emerald-500" />
+            <ShieldCheck className="size-4 text-primary" />
             支付过程已加密
           </div>
         </header>
         {config?.other ? (
           <Card className="rounded-2xl shadow-sm">
-            <CardContent className="space-y-4 p-5 sm:p-7">
+            <CardContent className="flex flex-col gap-4 p-5 sm:p-7">
               <Alert className="rounded-2xl">
                 <AlertTitle>当前支付方式暂时维护</AlertTitle>
                 <AlertDescription>
@@ -1412,7 +1417,7 @@ function CashierView({ config }: { config?: CashierConfig }) {
               <CardDescription>请核对订单信息后选择支付方式</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-5 p-5 sm:grid-cols-[1fr_auto] sm:p-7">
-              <div className="space-y-3 text-sm">
+              <div className="flex flex-col gap-3 text-sm">
                 <div className="flex justify-between gap-4">
                   <span className="text-muted-foreground">商品名称</span>
                   <span className="max-w-[230px] truncate font-medium">
@@ -1479,7 +1484,7 @@ function CashierView({ config }: { config?: CashierConfig }) {
             </Card>
             <div className="mt-5 flex flex-col items-stretch gap-3 rounded-2xl border bg-background p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
               <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                <ShieldCheck className="size-4 text-emerald-500" />
+                <ShieldCheck className="size-4 text-primary" />
                 支付前请确认订单信息
               </p>
               <div className="flex items-center gap-4">
@@ -1495,7 +1500,10 @@ function CashierView({ config }: { config?: CashierConfig }) {
                   className="h-11 rounded-xl px-6"
                 >
                   {submitting ? (
-                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    <Loader2
+                      className="animate-spin"
+                      data-icon="inline-start"
+                    />
                   ) : null}
                   {submitting ? "正在跳转" : "立即支付"}
                 </Button>

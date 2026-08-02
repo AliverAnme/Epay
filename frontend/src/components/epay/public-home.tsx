@@ -152,7 +152,7 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
             <Button asChild className="rounded-xl">
               <a href="/user/reg.php">
                 注册商户
-                <ArrowRight className="ml-2 size-4" />
+                <ArrowRight data-icon="inline-end" />
               </a>
             </Button>
           </div>
@@ -162,7 +162,7 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
       <main>
         <section className="relative isolate overflow-hidden border-b bg-muted/30">
           <div className="pointer-events-none absolute -top-40 -right-40 -z-10 size-[32rem] rounded-full bg-primary/10 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-48 -left-40 -z-10 size-[30rem] rounded-full bg-blue-500/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-48 -left-40 -z-10 size-[30rem] rounded-full bg-primary/10 blur-3xl" />
           <div className="mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.1fr_.9fr] lg:items-center lg:py-28">
             <div className="max-w-2xl">
               <Badge
@@ -181,7 +181,7 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
                 <Button asChild size="lg" className="h-12 rounded-xl px-6">
                   <a href="/user/reg.php">
                     开始接入
-                    <ArrowRight className="ml-2 size-4" />
+                    <ArrowRight data-icon="inline-end" />
                   </a>
                 </Button>
                 <Button
@@ -226,12 +226,12 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 p-5 sm:p-7">
+              <CardContent className="flex flex-col gap-4 p-5 sm:p-7">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-2xl bg-muted/60 p-4">
                     <p className="text-xs text-muted-foreground">今日收款</p>
                     <p className="mt-2 text-2xl font-semibold">¥ 28,640</p>
-                    <p className="mt-1 text-xs text-emerald-600">↑ 18.6%</p>
+                    <p className="mt-1 text-xs text-primary">↑ 18.6%</p>
                   </div>
                   <div className="rounded-2xl bg-primary p-4 text-primary-foreground">
                     <p className="text-xs text-primary-foreground/70">
@@ -255,21 +255,21 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
                   </div>
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="size-2 rounded-full bg-emerald-500" />
+                      <span className="size-2 rounded-full bg-primary" />
                       支付宝
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="size-2 rounded-full bg-emerald-500" />
+                      <span className="size-2 rounded-full bg-primary" />
                       微信支付
                     </div>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className="size-2 rounded-full bg-emerald-500" />
+                      <span className="size-2 rounded-full bg-primary" />
                       QQ 钱包
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 rounded-2xl bg-muted/50 p-4">
-                  <ShieldCheck className="size-5 text-emerald-600" />
+                  <ShieldCheck className="size-5 text-primary" />
                   <p className="text-sm text-muted-foreground">
                     安全风控、订单通知与结算流程统一管理
                   </p>
@@ -350,7 +350,7 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm sm:grid-cols-3">
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               <p className="font-medium">产品</p>
               <a
                 className="block text-muted-foreground hover:text-foreground"
@@ -373,13 +373,13 @@ export function PublicHomeView({ config = {} }: { config?: JsonObject }) {
                 </a>
               )}
             </div>
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               <p className="font-medium">关于我们</p>
               <p className="max-w-[16rem] leading-6 text-muted-foreground">
                 {siteName}是{orgName}旗下的免签约支付产品。
               </p>
             </div>
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               <p className="font-medium">联系我们</p>
               {kfqq && (
                 <a

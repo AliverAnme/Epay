@@ -152,13 +152,13 @@ export function TransferConfirmView({
   return (
     <div className="flex min-h-svh items-center justify-center bg-muted/30 px-4 py-8 text-foreground sm:px-6">
       <Card className="w-full max-w-lg animate-in rounded-3xl shadow-lg duration-500 fade-in slide-in-from-bottom-3">
-        <CardHeader className="items-center space-y-4 p-7 text-center sm:p-10">
+        <CardHeader className="items-center gap-4 p-7 text-center sm:p-10">
           <div className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
             <WalletCards className="size-8" />
           </div>
           <div>
             <Badge variant="secondary" className="rounded-lg">
-              <ShieldCheck className="mr-1.5 size-3.5 text-emerald-600" />
+              <ShieldCheck className="text-primary" data-icon="inline-start" />
               安全收款
             </Badge>
             <CardTitle className="mt-4 text-2xl tracking-tight">
@@ -172,7 +172,7 @@ export function TransferConfirmView({
             ¥ {String(config.amount ?? "0.00")}
           </p>
         </CardHeader>
-        <CardContent className="space-y-5 px-7 pb-7 sm:px-10">
+        <CardContent className="flex flex-col gap-5 px-7 pb-7 sm:px-10">
           <div className="rounded-2xl border bg-muted/30 p-4 text-sm">
             <div className="flex justify-between gap-4 py-2">
               <span className="text-muted-foreground">
@@ -202,9 +202,9 @@ export function TransferConfirmView({
             onClick={submit}
           >
             {loading ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
+              <Loader2 className="animate-spin" data-icon="inline-start" />
             ) : (
-              <CheckCircle2 className="mr-2 size-4" />
+              <CheckCircle2 data-icon="inline-start" />
             )}
             {loading
               ? "处理中"

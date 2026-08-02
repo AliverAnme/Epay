@@ -47,7 +47,7 @@ export function GoldPlanView({ config }: { config?: GoldPlanConfig }) {
   return (
     <main className="flex min-h-svh items-center justify-center bg-muted/30 p-4 sm:p-8">
       <Card className="w-full max-w-lg rounded-3xl border bg-card/95 shadow-xl shadow-primary/5 backdrop-blur">
-        <CardHeader className="space-y-4 text-center sm:text-left">
+        <CardHeader className="gap-4 text-center sm:text-left">
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground sm:justify-start">
             <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
             <span>{sitename}</span>
@@ -74,9 +74,9 @@ export function GoldPlanView({ config }: { config?: GoldPlanConfig }) {
               </AlertDescription>
             </Alert>
           ) : (
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5 text-center">
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 text-center">
               <CircleCheck
-                className="mx-auto size-12 text-emerald-500"
+                className="mx-auto size-12 text-primary"
                 aria-hidden="true"
               />
               <p className="mt-3 text-3xl font-semibold tracking-tight">
@@ -93,7 +93,7 @@ export function GoldPlanView({ config }: { config?: GoldPlanConfig }) {
               onClick={() => sendJumpOut(config.jumpUrl)}
             >
               返回商家页面
-              <ArrowUpRight className="ml-2 size-4" aria-hidden="true" />
+              <ArrowUpRight data-icon="inline-end" aria-hidden="true" />
             </Button>
           </CardFooter>
         ) : null}

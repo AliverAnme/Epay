@@ -10,8 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 
 export type TestPaymentConfig = {
   sitename?: string
@@ -46,7 +46,7 @@ export function TestPaymentView({
             返回首页
           </a>
           <Badge variant="secondary" className="rounded-lg">
-            <ShieldCheck className="mr-1.5 size-3.5 text-emerald-600" />
+            <ShieldCheck className="text-primary" data-icon="inline-start" />
             测试环境
           </Badge>
         </div>
@@ -65,15 +65,15 @@ export function TestPaymentView({
             </div>
           </CardHeader>
           <CardContent className="p-5 sm:p-7">
-            <form name="alipayment" className="space-y-5">
+            <form name="alipayment" className="flex flex-col gap-5">
               <input
                 type="hidden"
                 name="csrf_token"
                 value={config.csrf_token ?? ""}
               />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="trade_no">商户订单号</Label>
+              <FieldGroup className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="trade_no">商户订单号</FieldLabel>
                   <Input
                     id="trade_no"
                     name="trade_no"
@@ -81,9 +81,9 @@ export function TestPaymentView({
                     disabled
                     readOnly
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="name">商品名称</Label>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="name">商品名称</FieldLabel>
                   <Input
                     id="name"
                     name="name"
@@ -91,10 +91,10 @@ export function TestPaymentView({
                     disabled
                     readOnly
                   />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="money">付款金额</Label>
+                </Field>
+              </FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="money">付款金额</FieldLabel>
                 <div className="relative">
                   <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
                     ¥
@@ -109,34 +109,37 @@ export function TestPaymentView({
                     required
                   />
                 </div>
-              </div>
+              </Field>
               {config.paid ? (
-                <Alert className="rounded-xl border-emerald-500/30 bg-emerald-500/5">
-                  <CheckCircle2 className="size-4 text-emerald-600" />
-                  <AlertDescription className="text-emerald-700">
+                <Alert className="rounded-xl border-primary/30 bg-primary/5">
+                  <CheckCircle2 className="text-primary" />
+                  <AlertDescription className="text-primary">
                     订单已支付成功！
                   </AlertDescription>
                 </Alert>
               ) : (
                 <>
                   {config.captcha && (
-                    <div
-                      id="captcha"
-                      className="rounded-xl border bg-muted/30 p-3"
-                    >
-                      <p
-                        id="captcha_text"
-                        className="text-center text-sm text-muted-foreground"
-                      >
-                        正在加载验证码
-                      </p>
+                    <Field>
+                      <FieldLabel>安全验证</FieldLabel>
                       <div
-                        id="captcha_wait"
-                        className="hidden text-center text-sm text-muted-foreground"
+                        id="captcha"
+                        className="rounded-xl border bg-muted/30 p-3"
                       >
-                        验证加载中…
+                        <p
+                          id="captcha_text"
+                          className="text-center text-sm text-muted-foreground"
+                        >
+                          正在加载验证码
+                        </p>
+                        <div
+                          id="captcha_wait"
+                          className="hidden text-center text-sm text-muted-foreground"
+                        >
+                          验证加载中…
+                        </div>
                       </div>
-                    </div>
+                    </Field>
                   )}
                   <div className="grid gap-3 sm:grid-cols-2">
                     {(config.paytype ?? []).map((type) => (

@@ -79,7 +79,7 @@ if(isset($_GET['invite'])){
 if($mod=='index'){
     if($conf['homepage']==2){
         echo '<html><frameset framespacing="0" border="0" rows="0" frameborder="0">
-        <frame name="main" src="'.$conf['homepage_url'].'" scrolling="auto" noresize>
+        <frame name="main" src="'.h($conf['homepage_url']).'" scrolling="auto" noresize>
     </frameset></html>';
         exit;
     }elseif($conf['homepage']==1){

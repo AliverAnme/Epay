@@ -1,5 +1,6 @@
 import { ArrowLeft, ShieldCheck } from "lucide-react"
 
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,11 +12,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -138,7 +140,7 @@ export function AuthView({ mode, config = {} }: AuthViewProps) {
               </Badge>
             </div>
             <Card className="rounded-2xl border bg-card shadow-lg shadow-primary/5">
-              <CardHeader className="space-y-2 p-6 sm:p-8">
+              <CardHeader className="gap-2 p-6 sm:p-8">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <CardTitle className="text-2xl tracking-tight">
@@ -210,7 +212,7 @@ function LoginForm({
         <form
           id="login-form"
           name="form"
-          className="space-y-4"
+          className="flex flex-col gap-4"
           onSubmit={(event) => {
             event.preventDefault()
             ;(
@@ -218,8 +220,8 @@ function LoginForm({
             ).submitlogin?.()
           }}
         >
-          <div className="space-y-2">
-            <Label htmlFor="user">用户名</Label>
+          <Field>
+            <FieldLabel htmlFor="user">用户名</FieldLabel>
             <Input
               id="user"
               name="user"
@@ -227,9 +229,9 @@ function LoginForm({
               autoComplete="username"
               required
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="pass">密码</Label>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="pass">密码</FieldLabel>
             <Input
               id="pass"
               name="pass"
@@ -238,10 +240,10 @@ function LoginForm({
               autoComplete="current-password"
               required
             />
-          </div>
+          </Field>
           {enabled(config, "verifycode") && (
-            <div className="space-y-2">
-              <Label htmlFor="code">验证码</Label>
+            <Field>
+              <FieldLabel htmlFor="code">验证码</FieldLabel>
               <div className="flex gap-2">
                 <Input
                   id="code"
@@ -272,7 +274,7 @@ function LoginForm({
                   />
                 </Button>
               </div>
-            </div>
+            </Field>
           )}
           <Button id="submit" type="submit" className="h-11 w-full rounded-xl">
             立即登录
@@ -290,17 +292,19 @@ function LoginForm({
         </form>
         <form
           id="totp-form"
-          className="hidden space-y-3"
+          className="hidden flex-col gap-3"
           onSubmit={(event) => {
             event.preventDefault()
             ;(window as Window & { doTotp?: () => boolean }).doTotp?.()
           }}
         >
-          <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-            TOTP 二次验证
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="totp_code">动态口令</Label>
+          <Alert className="rounded-xl border-primary/20 bg-primary/5 text-primary">
+            <AlertDescription className="text-primary">
+              TOTP 二次验证
+            </AlertDescription>
+          </Alert>
+          <Field>
+            <FieldLabel htmlFor="totp_code">动态口令</FieldLabel>
             <Input
               id="totp_code"
               name="totp_code"
@@ -310,7 +314,7 @@ function LoginForm({
               autoComplete="one-time-code"
               required
             />
-          </div>
+          </Field>
           <Button type="submit" className="h-11 w-full rounded-xl">
             验证并登录
           </Button>
@@ -351,7 +355,7 @@ function LoginForm({
   return (
     <form
       name="form"
-      className="space-y-4"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault()
         submitUserLogin()
@@ -383,43 +387,52 @@ function LoginForm({
           </ToggleGroupItem>
         </ToggleGroup>
       )}
-      <div className="space-y-2">
-        <Label htmlFor="user">{keyMode ? "商户 ID" : "邮箱 / 手机号"}</Label>
-        <Input
-          id="user"
-          name="user"
-          placeholder={keyMode ? "请输入商户 ID" : "请输入邮箱或手机号"}
-          autoComplete="username"
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="pass">{keyMode ? "商户密钥" : "密码"}</Label>
-        <Input
-          id="pass"
-          name="pass"
-          type="password"
-          placeholder={keyMode ? "请输入商户密钥" : "请输入密码"}
-          autoComplete="current-password"
-          required
-        />
-      </div>
-      {enabled(config, "captcha_open_login") && (
-        <div id="captcha" className="rounded-xl border bg-muted/30 p-3">
-          <p
-            id="captcha_text"
-            className="text-center text-sm text-muted-foreground"
-          >
-            正在加载验证码
-          </p>
-          <div
-            id="captcha_wait"
-            className="hidden text-center text-sm text-muted-foreground"
-          >
-            验证加载中…
-          </div>
-        </div>
-      )}
+      <FieldGroup>
+        <Field>
+          <FieldLabel htmlFor="user">
+            {keyMode ? "商户 ID" : "邮箱 / 手机号"}
+          </FieldLabel>
+          <Input
+            id="user"
+            name="user"
+            placeholder={keyMode ? "请输入商户 ID" : "请输入邮箱或手机号"}
+            autoComplete="username"
+            required
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="pass">
+            {keyMode ? "商户密钥" : "密码"}
+          </FieldLabel>
+          <Input
+            id="pass"
+            name="pass"
+            type="password"
+            placeholder={keyMode ? "请输入商户密钥" : "请输入密码"}
+            autoComplete="current-password"
+            required
+          />
+        </Field>
+        {enabled(config, "captcha_open_login") && (
+          <Field>
+            <FieldLabel>安全验证</FieldLabel>
+            <div id="captcha" className="rounded-xl border bg-muted/30 p-3">
+              <p
+                id="captcha_text"
+                className="text-center text-sm text-muted-foreground"
+              >
+                正在加载验证码
+              </p>
+              <div
+                id="captcha_wait"
+                className="hidden text-center text-sm text-muted-foreground"
+              >
+                验证加载中…
+              </div>
+            </div>
+          </Field>
+        )}
+      </FieldGroup>
       <Button id="submit" type="submit" className="h-11 w-full rounded-xl">
         立即登录
       </Button>
@@ -488,7 +501,7 @@ function RegisterForm({
   verifyType: string
 }) {
   return (
-    <form name="form" className="space-y-4">
+    <form name="form" className="flex flex-col gap-4">
       <input
         type="hidden"
         name="csrf_token"
@@ -496,17 +509,19 @@ function RegisterForm({
       />
       <input type="hidden" name="verifytype" value={verifyType} />
       {enabled(config, "reg_pay") && (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
-          商户申请价格：
-          <strong className="text-primary">
-            ¥ {String(config.reg_pay_price ?? "0")}
-          </strong>
-        </div>
+        <Alert className="rounded-xl border-primary/20 bg-primary/5">
+          <AlertDescription>
+            商户申请价格：
+            <strong className="text-primary">
+              ¥ {String(config.reg_pay_price ?? "0")}
+            </strong>
+          </AlertDescription>
+        </Alert>
       )}
-      <div className="space-y-2">
-        <Label htmlFor={verifyType === "1" ? "phone" : "email"}>
+      <Field>
+        <FieldLabel htmlFor={verifyType === "1" ? "phone" : "email"}>
           {verifyType === "1" ? "手机号" : "邮箱"}
-        </Label>
+        </FieldLabel>
         <Input
           id={verifyType === "1" ? "phone" : "email"}
           name={verifyType === "1" ? "phone" : "email"}
@@ -518,9 +533,9 @@ function RegisterForm({
           }
           required
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="code">验证码</Label>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="code">验证码</FieldLabel>
         <div className="flex gap-2">
           <Input
             id="code"
@@ -538,20 +553,15 @@ function RegisterForm({
           </Button>
         </div>
         <div
-          id="captcha"
-          className="min-h-2 rounded-xl border bg-muted/30 p-2"
+          id="wait"
+          className="hidden text-center text-xs text-muted-foreground"
           aria-live="polite"
         >
-          <div
-            id="wait"
-            className="hidden text-center text-xs text-muted-foreground"
-          >
-            验证码加载中…
-          </div>
+          验证码加载中…
         </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="pwd">登录密码</Label>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="pwd">登录密码</FieldLabel>
         <Input
           id="pwd"
           name="pwd"
@@ -559,9 +569,9 @@ function RegisterForm({
           placeholder="请输入你的密码"
           required
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="pwd2">确认密码</Label>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="pwd2">确认密码</FieldLabel>
         <Input
           id="pwd2"
           name="pwd2"
@@ -569,21 +579,21 @@ function RegisterForm({
           placeholder="请再次输入密码"
           required
         />
-      </div>
+      </Field>
       {enabled(config, "invite_open") && (
-        <div className="space-y-2">
-          <Label htmlFor="invitecode">邀请码</Label>
+        <Field>
+          <FieldLabel htmlFor="invitecode">邀请码</FieldLabel>
           <Input
             id="invitecode"
             name="invitecode"
             placeholder="请输入邀请码"
             required
           />
-        </div>
+        </Field>
       )}
-      <div className="flex items-center gap-2 pt-1">
+      <Field orientation="horizontal" className="items-center pt-1">
         <Checkbox id="agree" defaultChecked required />
-        <Label
+        <FieldLabel
           htmlFor="agree"
           className="text-sm font-normal text-muted-foreground"
         >
@@ -596,8 +606,8 @@ function RegisterForm({
           >
             服务条款
           </a>
-        </Label>
-      </div>
+        </FieldLabel>
+      </Field>
       <Button id="submit" type="button" className="h-11 w-full rounded-xl">
         立即注册
       </Button>
@@ -608,7 +618,7 @@ function RegisterForm({
         className="h-11 w-full rounded-xl"
       >
         <a href="login.php">
-          <ArrowLeft className="mr-2 size-4" />
+          <ArrowLeft data-icon="inline-start" />
           返回登录
         </a>
       </Button>
@@ -626,7 +636,7 @@ function RecoveryForm({ config }: { config: JsonObject }) {
     select.dispatchEvent(new Event("change", { bubbles: true }))
   }
   return (
-    <form name="form" className="space-y-4">
+    <form name="form" className="flex flex-col gap-4">
       <input
         type="hidden"
         name="csrf_token"
@@ -642,20 +652,27 @@ function RecoveryForm({ config }: { config: JsonObject }) {
         <option value="email">使用邮箱找回</option>
         <option value="phone">使用手机找回</option>
       </select>
-      <div className="space-y-2">
-        <Label>找回方式</Label>
-        <Select defaultValue="email" onValueChange={syncType}>
-          <SelectTrigger className="h-11 rounded-xl">
-            <SelectValue placeholder="选择找回方式" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="email">使用邮箱找回</SelectItem>
-            <SelectItem value="phone">使用手机找回</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="account">邮箱 / 手机号</Label>
+      <Field>
+        <FieldLabel htmlFor="recovery-type">找回方式</FieldLabel>
+        <div className="w-full">
+          <Select defaultValue="email" onValueChange={syncType}>
+            <SelectTrigger
+              id="recovery-type"
+              className="h-11 w-full rounded-xl"
+            >
+              <SelectValue placeholder="选择找回方式" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="email">使用邮箱找回</SelectItem>
+                <SelectItem value="phone">使用手机找回</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="account">邮箱 / 手机号</FieldLabel>
         <Input
           id="account"
           name="account"
@@ -663,9 +680,9 @@ function RecoveryForm({ config }: { config: JsonObject }) {
           autoComplete="username"
           required
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="code">验证码</Label>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="code">验证码</FieldLabel>
         <div className="flex gap-2">
           <Input id="code" name="code" placeholder="输入验证码" required />
           <Button
@@ -678,20 +695,15 @@ function RecoveryForm({ config }: { config: JsonObject }) {
           </Button>
         </div>
         <div
-          id="captcha"
-          className="min-h-2 rounded-xl border bg-muted/30 p-2"
+          id="wait"
+          className="hidden text-center text-xs text-muted-foreground"
           aria-live="polite"
         >
-          <div
-            id="wait"
-            className="hidden text-center text-xs text-muted-foreground"
-          >
-            验证码加载中…
-          </div>
+          验证码加载中…
         </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="pwd">新密码</Label>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="pwd">新密码</FieldLabel>
         <Input
           id="pwd"
           name="pwd"
@@ -700,9 +712,9 @@ function RecoveryForm({ config }: { config: JsonObject }) {
           autoComplete="new-password"
           required
         />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="pwd2">确认密码</Label>
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="pwd2">确认密码</FieldLabel>
         <Input
           id="pwd2"
           name="pwd2"
@@ -711,7 +723,7 @@ function RecoveryForm({ config }: { config: JsonObject }) {
           autoComplete="new-password"
           required
         />
-      </div>
+      </Field>
       <Button id="submit" type="button" className="h-11 w-full rounded-xl">
         确认提交
       </Button>

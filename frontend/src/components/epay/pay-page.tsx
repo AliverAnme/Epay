@@ -66,7 +66,7 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
               </div>
             </div>
             <Badge variant="secondary" className="rounded-lg">
-              <LockKeyhole className="mr-1.5 size-3.5 text-emerald-600" />
+              <LockKeyhole className="text-primary" data-icon="inline-start" />
               安全支付
             </Badge>
           </CardHeader>
@@ -136,14 +136,14 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
                   className="shrink-0 rounded-xl"
                   onClick={openRemark}
                 >
-                  <MessageSquarePlus className="mr-1.5 size-4" />
+                  <MessageSquarePlus data-icon="inline-start" />
                   {remark ? "编辑" : "添加"}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
-        <div className="space-y-5">
+        <div className="flex flex-col gap-5">
           <Card className="rounded-3xl shadow-sm">
             <CardHeader className="border-b p-5">
               <CardTitle className="text-base">输入金额</CardTitle>
@@ -174,7 +174,7 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
                   className="none h-14 rounded-2xl text-lg"
                   aria-label="清除金额"
                 >
-                  <Delete className="pointer-events-none size-5" />
+                  <Delete className="pointer-events-none" />
                 </Button>
               </div>
               <Button
@@ -183,13 +183,13 @@ export function PayPageView({ config = {} }: { config?: PayPageConfig }) {
                 className="mt-3 h-14 w-full rounded-2xl text-base"
                 aria-label="确认支付"
               >
-                <span className="mr-2 text-primary-foreground/70">确认</span>
+                <span className="text-primary-foreground/70">确认</span>
                 支付
               </Button>
             </CardContent>
           </Card>
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="size-4 text-emerald-600" />由{" "}
+            <ShieldCheck className="size-4 text-primary" />由{" "}
             {config.sitename || "Rainbow Pay"} 提供安全支付服务
           </div>
         </div>

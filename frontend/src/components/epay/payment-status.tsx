@@ -74,11 +74,11 @@ export function PaymentStatusView({
   return (
     <div className="flex min-h-svh items-center justify-center bg-muted/30 px-4 py-8 text-foreground sm:px-6">
       <Card className="w-full max-w-lg animate-in rounded-3xl shadow-lg duration-500 fade-in slide-in-from-bottom-3">
-        <CardHeader className="items-center space-y-4 p-7 text-center sm:p-10">
+        <CardHeader className="items-center gap-4 p-7 text-center sm:p-10">
           <div
             className={
               success
-                ? "flex size-16 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"
+                ? "flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary"
                 : "flex size-16 items-center justify-center rounded-full bg-destructive/10 text-destructive"
             }
           >
