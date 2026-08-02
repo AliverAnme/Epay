@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { cn } from "@/lib/utils"
 
 type JsonObject = Record<string, unknown>
 type AuthMode = "admin-login" | "user-login" | "user-register" | "user-recovery"
@@ -48,7 +49,13 @@ function isOpen(value: unknown) {
   )
 }
 
-function Brand({ compact = false }: { compact?: boolean }) {
+function Brand({
+  compact = false,
+  inverse = false,
+}: {
+  compact?: boolean
+  inverse?: boolean
+}) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
@@ -57,7 +64,14 @@ function Brand({ compact = false }: { compact?: boolean }) {
       {!compact && (
         <div className="leading-tight">
           <p className="font-semibold tracking-tight">Rainbow Pay</p>
-          <p className="text-[11px] text-muted-foreground">支付运营工作台</p>
+          <p
+            className={cn(
+              "text-[11px]",
+              inverse ? "text-primary-foreground/70" : "text-muted-foreground"
+            )}
+          >
+            支付运营工作台
+          </p>
         </div>
       )}
     </div>
@@ -83,7 +97,7 @@ export function AuthView({ mode, config = {} }: AuthViewProps) {
         <section className="relative hidden overflow-hidden bg-primary p-10 text-primary-foreground lg:flex lg:flex-col lg:justify-between">
           <div className="absolute -top-32 -right-32 size-96 rounded-full border border-white/10" />
           <div className="absolute -bottom-48 -left-20 size-[28rem] rounded-full border border-white/10" />
-          <Brand />
+          <Brand inverse />
           <div className="relative max-w-lg">
             <Badge
               variant="secondary"

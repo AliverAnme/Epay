@@ -42,6 +42,9 @@ const config = mount?.dataset.epayConfig
 
 if (!mount) throw new Error("Epay UI mount point was not found")
 
+// 兼容旧版 Bootstrap 的 html/body 全局样式；CSS 仍通过 :has() 提供首屏兜底。
+document.documentElement.classList.add("epay-ui-document")
+
 createRoot(mount).render(
   <StrictMode>
     <ThemeProvider>

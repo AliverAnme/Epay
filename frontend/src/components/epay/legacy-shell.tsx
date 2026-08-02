@@ -139,7 +139,7 @@ export function LegacyAuthShell({ config }: { config?: LegacyShellConfig }) {
           icon={meta.icon}
         />
         <CardContent className="p-3 sm:p-5">
-          <LegacyContentSlot className="border-0 shadow-none" />
+          <LegacyContentSlot className="shadow-none" />
         </CardContent>
         <CardFooter className="flex flex-col items-stretch gap-3 border-t bg-muted/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -189,7 +189,7 @@ export function GatewayShell({ config }: { config?: LegacyShellConfig }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-3 sm:p-5">
-            <LegacyContentSlot className="border-0 shadow-none" />
+            <LegacyContentSlot className="shadow-none" />
           </CardContent>
           <CardFooter className="border-t bg-muted/10 px-5 py-4 sm:px-7">
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -228,7 +228,7 @@ export function PublicLegacyShell({ config }: { config?: LegacyShellConfig }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-3 sm:p-5">
-            <LegacyContentSlot className="border-0 shadow-none" />
+            <LegacyContentSlot className="shadow-none" />
           </CardContent>
           <CardFooter className="flex items-center justify-between gap-3 border-t bg-muted/10 px-5 py-4 sm:px-7">
             <p className="text-xs text-muted-foreground">{sitename}</p>
@@ -288,7 +288,7 @@ export function InstallerShell({ config }: { config?: LegacyShellConfig }) {
             </div>
           </CardHeader>
           <CardContent className="p-3 sm:p-5">
-            <LegacyContentSlot className="border-0 shadow-none" />
+            <LegacyContentSlot className="shadow-none" />
           </CardContent>
           <CardFooter className="border-t bg-muted/10 px-5 py-4 sm:px-7">
             <p className="text-xs text-muted-foreground">
